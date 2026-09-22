@@ -93,6 +93,8 @@ Gateway ve HTTPRoute kaynaklarını uygula, sonra route durumunu incele.
 
 ```bash
 kubectl apply -n private-app -f gateway-route.local.yaml
+kubectl -n private-app wait --for=condition=Programmed gateway/devops-app-gateway --timeout=120s
+kubectl -n private-app wait --for=condition=Accepted httproute/devops-app-route --timeout=120s
 kubectl -n private-app get gateway,httproute
 kubectl -n private-app describe httproute devops-app-route
 ```

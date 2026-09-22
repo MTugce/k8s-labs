@@ -2,6 +2,11 @@
 deployment:
   kind: DaemonSet
 hostNetwork: true
+dnsPolicy: ClusterFirstWithHostNet
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 2
 service:
   enabled: false
 ingressClass:
