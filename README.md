@@ -7,7 +7,7 @@
 | 1 | [* İlk Uygulaman: Pod, Deployment ve Service](lab-01-first-app-pod-deployment-and-services/README.md) | `~/k8s-labs/lab-01-first-app-pod-deployment-and-services` |
 | 2 | [* Kendi Docker İmajını Private Docker Hub'dan Çalıştır](lab-02-private-dockerhub-image-configmap-secret/README.md) | `~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret` |
 | 3 | [* Uygulamanı NGINX Ingress ile İnternete Aç](lab-03-nginx-ingress-routing/README.md) | `~/k8s-labs/lab-03-nginx-ingress-routing` |
-| 4 | [Ingress Kurallarını Gateway API'ye Taşı](lab-04-ingress-to-gateway-api/README.md) | `~/k8s-labs/lab-04-ingress-to-gateway-api` |
+| 4 | [* Ingress Kurallarını Gateway API'ye Taşı](lab-04-ingress-to-gateway-api/README.md) | `~/k8s-labs/lab-04-ingress-to-gateway-api` |
 | 5 | [* Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage](lab-05-static-and-dynamic-storage/README.md) | `~/k8s-labs/lab-05-static-and-dynamic-storage` |
 | 6 | [* Paylaşımlı Depolama ve StatefulSet ile MySQL](lab-06-nfs-storage-and-statefulset/README.md) | `~/k8s-labs/lab-06-nfs-storage-and-statefulset` |
 | 7 | [* Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle](lab-07-daemonset-and-hpa-scaling/README.md) | `~/k8s-labs/lab-07-daemonset-and-hpa-scaling` |
