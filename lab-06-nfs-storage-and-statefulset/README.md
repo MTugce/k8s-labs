@@ -27,11 +27,13 @@ Beklenen sonuç: `nfs-server` Pod'u `Running`, aynı isimli Service ise `Cluster
 Provisioner, her PVC için NFS altında ayrı bir dizin açar. NFS Service'ine cluster içindeki sabit DNS adıyla erişebilir.
 
 ```bash
-export NFS_SERVER="nfs-server.nfs-lab.svc.cluster.local"
+export NFS_SERVER="$(kubectl -n nfs-lab get service nfs-server -o jsonpath='{.spec.clusterIP}')"
 echo "$NFS_SERVER"
 ```
 
-Beklenen sonuç: NFS Service'in cluster içi DNS adı görünür.
+Beklenen sonuç: NFS Service'in ClusterIP adresi görünür. Provisioner, NFS
+volume'unu node üzerinden mount ettiği için burada Service DNS adı değil,
+ClusterIP kullanılır; node'lar Kubernetes Service DNS alanını çözemez.
 
 Şimdi Helm ile provisioner'ı ve `lab-nfs` StorageClass'ını kur.
 
