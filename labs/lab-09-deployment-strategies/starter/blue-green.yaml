@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: devops-app-blue, namespace: private-app }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: strategy-app, version: blue } }
+  template:
+    metadata: { labels: { app: strategy-app, version: blue } }
+    spec: { containers: [{ name: app, image: __IMAGE_V1__ }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: devops-app-green, namespace: private-app }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: strategy-app, version: green } }
+  template:
+    metadata: { labels: { app: strategy-app, version: green } }
+    spec: { containers: [{ name: app, image: __IMAGE_V2__ }] }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: strategy-app, namespace: private-app }
+spec: { selector: { app: strategy-app, version: blue }, ports: [{ port: 80, targetPort: 8080 }] }

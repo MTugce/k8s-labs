@@ -1,0 +1,21 @@
+# LAB 5 cutover: Edge Nginx değişmeden 19001 -> Kind control-plane:80 akışı sürer.
+deployment:
+  kind: DaemonSet
+hostNetwork: true
+service:
+  enabled: false
+ingressClass:
+  enabled: false
+providers:
+  kubernetesIngress:
+    enabled: false
+  kubernetesGateway:
+    enabled: true
+gateway:
+  enabled: false
+gatewayClass:
+  enabled: true
+ports:
+  web:
+    port: 80
+    exposedPort: 80

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: strategy-app-v1, namespace: private-app }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: strategy-app, version: v1 } }
+  template:
+    metadata: { labels: { app: strategy-app, version: v1 } }
+    spec: { containers: [{ name: app, image: __IMAGE_V1__, ports: [{ containerPort: 8080 }] }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: strategy-app-v2, namespace: private-app }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: strategy-app, version: v2 } }
+  template:
+    metadata: { labels: { app: strategy-app, version: v2 } }
+    spec: { containers: [{ name: app, image: __IMAGE_V2__, ports: [{ containerPort: 8080 }] }] }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: strategy-app-v1, namespace: private-app }
+spec: { selector: { app: strategy-app, version: v1 }, ports: [{ port: 80, targetPort: 8080 }] }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: strategy-app-v2, namespace: private-app }
+spec: { selector: { app: strategy-app, version: v2 }, ports: [{ port: 80, targetPort: 8080 }] }
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata: { name: devops-app-canary, namespace: private-app }
+spec:
+  parentRefs: [{ name: devops-app-gateway }]
+  hostnames: [__APP_HOST__]
+  rules:
+    - backendRefs:
+        - name: strategy-app-v1
+          port: 80
+          weight: 90
+        - name: strategy-app-v2
+          port: 80
+          weight: 10

@@ -1,0 +1,148 @@
+course:
+  id: k8s-foundations-to-intermediate
+  title: Kubernetes: Başlangıçtan Orta Seviyeye Uygulamalı Laboratuvarlar
+  topic_headings:
+    - Kind ve kubectl
+    - Pod, Deployment ve Service
+    - Private image, ConfigMap ve Secret
+    - Ingress ve Gateway API
+    - Static ve dynamic storage
+    - StatefulSet, DaemonSet ve HPA
+    - Deployment stratejileri
+  lab_ids:
+    - LAB-K8S-01
+    - LAB-K8S-02
+    - LAB-K8S-03
+    - LAB-K8S-04
+    - LAB-K8S-05
+    - LAB-K8S-06
+    - LAB-K8S-07
+    - LAB-K8S-08
+    - LAB-K8S-09
+labs:
+  - id: LAB-K8S-01
+    slug: kind-cluster-and-kubectl-basics
+    title: Kind Kümeni Kur ve Kubectl ile Başla
+    topic: kubernetes
+    difficulty: başlangıç
+    estimated_minutes: 35
+    prerequisites: [platform-ready]
+    profiles: [kubectl]
+    ports: []
+    guide: labs/lab-01-kind-cluster-and-kubectl-basics/README.md
+    assets: [labs/lab-01-kind-cluster-and-kubectl-basics/starter]
+    validation_mode: kubectl
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-02
+    slug: first-app-pod-deployment-and-services
+    title: İlk Uygulaman: Pod, Deployment ve Service
+    topic: kubernetes
+    difficulty: temel
+    estimated_minutes: 45
+    prerequisites: [LAB-K8S-01]
+    profiles: [kubectl]
+    ports: [30086]
+    guide: labs/lab-02-first-app-pod-deployment-and-services/README.md
+    assets: [labs/lab-02-first-app-pod-deployment-and-services/starter]
+    validation_mode: kubectl-and-curl
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-03
+    slug: private-dockerhub-image-configmap-secret
+    title: Kendi Docker İmajını Private Docker Hub'dan Çalıştır
+    topic: kubernetes
+    difficulty: temel-orta
+    estimated_minutes: 55
+    prerequisites: [LAB-K8S-02]
+    profiles: [docker, kubectl]
+    ports: [30087]
+    guide: labs/lab-03-private-dockerhub-image-configmap-secret/README.md
+    assets: [app/devops-app, labs/lab-03-private-dockerhub-image-configmap-secret/starter]
+    validation_mode: docker-kubectl-and-curl
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-04
+    slug: nginx-ingress-routing
+    title: Uygulamanı NGINX Ingress ile İnternete Aç
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 40
+    prerequisites: [LAB-K8S-03]
+    profiles: [kubectl, nginx-ingress]
+    ports: [19001]
+    guide: labs/lab-04-nginx-ingress-routing/README.md
+    assets: [labs/lab-04-nginx-ingress-routing/starter]
+    validation_mode: external-dns-and-curl
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-05
+    slug: ingress-to-gateway-api
+    title: Ingress Kurallarını Gateway API'ye Taşı
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 45
+    prerequisites: [LAB-K8S-04]
+    profiles: [kubectl, gateway-api]
+    ports: [19001, 30088]
+    guide: labs/lab-05-ingress-to-gateway-api/README.md
+    assets: [labs/lab-05-ingress-to-gateway-api/starter]
+    validation_mode: external-dns-and-curl
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-06
+    slug: static-and-dynamic-storage
+    title: Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 50
+    prerequisites: [LAB-K8S-02]
+    profiles: [kubectl]
+    ports: []
+    guide: labs/lab-06-static-and-dynamic-storage/README.md
+    assets: [labs/lab-06-static-and-dynamic-storage/starter]
+    validation_mode: pv-pvc-and-data
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-07
+    slug: nfs-storage-and-statefulset
+    title: Paylaşımlı Depolama ve StatefulSet ile MySQL
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 60
+    prerequisites: [LAB-K8S-06]
+    profiles: [kubectl, helm]
+    ports: []
+    guide: labs/lab-07-nfs-storage-and-statefulset/README.md
+    assets: [labs/lab-07-nfs-storage-and-statefulset/starter]
+    validation_mode: pvc-and-stateful-data
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-08
+    slug: daemonset-and-hpa-scaling
+    title: Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 45
+    prerequisites: [LAB-K8S-03]
+    profiles: [kubectl, metrics-server]
+    ports: [30087]
+    guide: labs/lab-08-daemonset-and-hpa-scaling/README.md
+    assets: [labs/lab-08-daemonset-and-hpa-scaling/starter]
+    validation_mode: pods-and-hpa
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-09
+    slug: deployment-strategies
+    title: Sürümü Güvenle Yayınla: Recreate, Rolling, Blue-Green ve Canary
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 60
+    prerequisites: [LAB-K8S-05]
+    profiles: [kubectl, ingress-nginx, gateway-api]
+    ports: [19001, 19002, 19003]
+    guide: labs/lab-09-deployment-strategies/README.md
+    assets: [labs/lab-09-deployment-strategies/starter]
+    validation_mode: traffic-and-rollout
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]

@@ -1,0 +1,56 @@
+# Azure öğrenci altyapısı için Kind sözleşmesi.
+# Edge Nginx host 80/443'ün sahibidir; Kind bu portlara bağlanmaz.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: k8s-labs
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      # app1/app2/app3: mevcut Edge Nginx bu loopback slotlarına proxy yapar.
+      - containerPort: 80
+        hostPort: 19001
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+      - containerPort: 80
+        hostPort: 19002
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+      - containerPort: 80
+        hostPort: 19003
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+      # NovaShop alanından ayrılmış, doğrudan NodePort laboratuvar portları.
+      - containerPort: 30086
+        hostPort: 30086
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+      - containerPort: 30087
+        hostPort: 30087
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+      - containerPort: 30088
+        hostPort: 30088
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+      - containerPort: 30089
+        hostPort: 30089
+        listenAddress: "0.0.0.0"
+        protocol: TCP
+    extraMounts:
+      # Static hostPath PV için kontrollü host dizini.
+      - hostPath: /opt/k8s-labs/static-pv
+        containerPath: /mnt/k8s-labs/static-pv
+  - role: worker
+    extraMounts:
+      - hostPath: /opt/k8s-labs/static-pv
+        containerPath: /mnt/k8s-labs/static-pv
+  - role: worker
+    extraMounts:
+      - hostPath: /opt/k8s-labs/static-pv
+        containerPath: /mnt/k8s-labs/static-pv

@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: devops-app-recreate, namespace: private-app }
+spec:
+  replicas: 2
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: devops-app-recreate } }
+  template:
+    metadata: { labels: { app: devops-app-recreate } }
+    spec:
+      containers: [{ name: app, image: __IMAGE_V1__, ports: [{ containerPort: 8080 }] }]
+---
+apiVersion: v1
+kind: Service
+metadata: { name: strategy-recreate, namespace: private-app }
+spec: { selector: { app: devops-app-recreate }, ports: [{ port: 80, targetPort: 8080 }] }

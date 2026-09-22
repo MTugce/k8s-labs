@@ -1,0 +1,6 @@
+.env
+*.local.yaml
+secrets.local.yaml
+.DS_Store
+node_modules/
+coverage/

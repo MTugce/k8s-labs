@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: { name: node-label-agent, namespace: private-app }
+spec:
+  selector: { matchLabels: { app: node-label-agent } }
+  template:
+    metadata: { labels: { app: node-label-agent } }
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: agent
+          image: busybox:1.37
+          command: [sh, -c, "echo running-on-$(hostname); sleep 3600"]

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: shared-rwx, namespace: nfs-lab }
+spec:
+  storageClassName: lab-nfs
+  accessModes: [ReadWriteMany]
+  resources: { requests: { storage: 1Gi } }
+---
+apiVersion: v1
+kind: Pod
+metadata: { name: writer-a, namespace: nfs-lab }
+spec:
+  containers:
+    - name: writer
+      image: "busybox:1.37"
+      command: [sh, -c, "echo writer-a >> /data/shared.txt; sleep 3600"]
+      volumeMounts: [{ name: data, mountPath: /data }]
+  volumes: [{ name: data, persistentVolumeClaim: { claimName: shared-rwx } }]
+---
+apiVersion: v1
+kind: Pod
+metadata: { name: writer-b, namespace: nfs-lab }
+spec:
+  containers:
+    - name: writer
+      image: "busybox:1.37"
+      command: [sh, -c, "echo writer-b >> /data/shared.txt; cat /data/shared.txt; sleep 3600"]
+      volumeMounts: [{ name: data, mountPath: /data }]
+  volumes: [{ name: data, persistentVolumeClaim: { claimName: shared-rwx } }]
