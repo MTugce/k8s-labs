@@ -26,7 +26,7 @@ kubectl -n private-app get deployment,pods,service
 
 Beklenen sonuç: `devops-app` Deployment'ı, en az bir `Running` Pod ve `devops-app` Service'i görünür.
 
-`private-app` bulunamazsa veya `No resources found` görürsen bu labda ilerleme. Lab 2'ye dön, final Deployment adımını tamamla ve Pod'ların `Running` olduğunu gör. `kubectl ns` diye bir komut yoktur; namespace'leri listelemek için `kubectl get namespace` kullanılır.
+`private-app` bulunamazsa veya `No resources found` görürsen bu labda ilerleme. Lab 2'ye dön, final Deployment adımını tamamla ve Pod'ların `Running` olduğunu gör.
 
 ## Trafik nasıl gelir?
 
