@@ -24,14 +24,14 @@ Beklenen sonuç: `nfs-server` Pod'u `Running`, aynı isimli Service ise `Cluster
 
 ## 2. NFS provisioner'ı kur
 
-Provisioner, her PVC için NFS altında ayrı bir dizin açar. Önce NFS Service'in cluster IP'sini al.
+Provisioner, her PVC için NFS altında ayrı bir dizin açar. NFS Service'ine cluster içindeki sabit DNS adıyla erişebilir.
 
 ```bash
-export NFS_IP=$(kubectl -n nfs-lab get service nfs-server -o jsonpath='{.spec.clusterIP}')
-echo "$NFS_IP"
+export NFS_SERVER="nfs-server.nfs-lab.svc.cluster.local"
+echo "$NFS_SERVER"
 ```
 
-Beklenen sonuç: `10.x.x.x` biçiminde bir cluster IP görünür.
+Beklenen sonuç: NFS Service'in cluster içi DNS adı görünür.
 
 Şimdi Helm ile provisioner'ı ve `lab-nfs` StorageClass'ını kur.
 
@@ -39,7 +39,7 @@ Beklenen sonuç: `10.x.x.x` biçiminde bir cluster IP görünür.
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 helm upgrade --install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
   --version 4.0.18 --namespace nfs-lab \
-  --set nfs.server="$NFS_IP" --set nfs.path=/ \
+  --set nfs.server="$NFS_SERVER" --set nfs.path=/ \
   --set storageClass.name=lab-nfs --wait
 kubectl get storageclass lab-nfs
 ```

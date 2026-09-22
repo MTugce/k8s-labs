@@ -50,11 +50,40 @@ Beklenen sonuç: push sonunda `1.0` tag'i görünür. Docker Hub sayfasını yen
 
 Bu adım bilerek başarısız olur. Kubernetes, private repository'den image çekmek için Docker Hub giriş bilgisine ihtiyaç duyar.
 
+Önce bu uygulama için namespace oluştur.
+
 ```bash
 kubectl create namespace private-app
-kubectl apply -n private-app -f ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/configmap.yaml
-sed "s|__IMAGE__|${IMAGE}|g" ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/deployment.yaml | kubectl apply -n private-app -f -
+```
+
+Uygulamanın hassas olmayan ayarlarını ConfigMap olarak ekle.
+
+```bash
+kubectl apply -n private-app -f starter/configmap.yaml
+```
+
+Başlangıç manifestinin yerel bir kopyasını oluştur.
+
+```bash
+cp starter/deployment.yaml deployment.local.yaml
+```
+
+`deployment.local.yaml` dosyasını aç. `image: __IMAGE__` satırını terminalde gördüğün `$IMAGE` değeriyle değiştir ve kaydet.
+
+```bash
+nano deployment.local.yaml
+```
+
+Yerel manifestini uygula ve Pod durumunu gör.
+
+```bash
+kubectl apply -n private-app -f deployment.local.yaml
 kubectl -n private-app get pods
+```
+
+Image çekme hatasının nedenini Events bölümünde incele.
+
+```bash
 kubectl -n private-app describe pod -l app=devops-app
 ```
 
@@ -83,7 +112,7 @@ Beklenen sonuç: `dockerhub-creds` görünür. Kubernetes bu Secret'ı Pod başl
 
 ```bash
 cp ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/secret.example.yaml secrets.local.yaml
-${EDITOR:-vi} secrets.local.yaml
+nano secrets.local.yaml
 ```
 
 Yalnızca `APP_API_KEY` alanındaki şablon metnini kendi geçici değerinle değiştir ve kaydet. `secrets.local.yaml` Git'e eklenmez.
@@ -101,10 +130,34 @@ Bu çıktı bir örnek parola değildir; `stringData` arkasındaki dönüşümü
 
 Final Deployment, ayarları ConfigMap'ten, hassas değeri Secret'tan ve registry girişini `dockerhub-creds` Secret'ından alır.
 
+Önce yerel Secret dosyanı cluster'a gönder.
+
 ```bash
 kubectl apply -n private-app -f secrets.local.yaml
-sed "s|__IMAGE__|${IMAGE}|g" ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/deployment-with-pull-secret.yaml | kubectl apply -n private-app -f -
-kubectl apply -n private-app -f ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/service.yaml
+```
+
+Image çekme Secret'ını kullanan manifestin yerel kopyasını oluştur.
+
+```bash
+cp starter/deployment-with-pull-secret.yaml deployment-final.local.yaml
+```
+
+`deployment-final.local.yaml` dosyasında `image: __IMAGE__` satırını `$IMAGE` değeriyle değiştir ve kaydet.
+
+```bash
+nano deployment-final.local.yaml
+```
+
+Final Deployment'ı ve Service'i uygula.
+
+```bash
+kubectl apply -n private-app -f deployment-final.local.yaml
+kubectl apply -n private-app -f starter/service.yaml
+```
+
+Deployment'ın hazır olmasını bekle, sonra kaynakları listele.
+
+```bash
 kubectl -n private-app rollout status deployment/devops-app
 kubectl -n private-app get pods,service
 ```

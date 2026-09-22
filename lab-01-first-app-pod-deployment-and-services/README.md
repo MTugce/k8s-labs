@@ -22,8 +22,15 @@ kubectl get nodes
 
 `kubectl run`, hızlı test için tek bir Pod oluşturur. Bu Pod'u yöneten bir Deployment yoktur.
 
+Önce Pod'u oluştur.
+
 ```bash
 kubectl run first-web --image=nginx:1.27-alpine --labels='app=first-web'
+```
+
+Sonra Pod'un durumunu ve etiketini gör.
+
+```bash
 kubectl get pod first-web --show-labels
 ```
 
@@ -43,6 +50,11 @@ Pod'u sil ve tekrar listele.
 
 ```bash
 kubectl delete pod first-web
+```
+
+Silme işleminden sonra listeyi yenile.
+
+```bash
 kubectl get pods
 ```
 
@@ -52,9 +64,21 @@ Beklenen sonuç: `first-web` geri gelmez. Kubernetes yalnızca istenen durumu y�
 
 Deployment iki Nginx Pod'unun her zaman çalışmasını ister. Kubernetes bunun için otomatik olarak ReplicaSet oluşturur.
 
+Önce uygulama kaynakları için ayrı bir namespace oluştur.
+
 ```bash
 kubectl create namespace first-app
+```
+
+İki Pod isteyen Deployment'ı oluştur.
+
+```bash
 kubectl -n first-app create deployment web --image=nginx:1.27-alpine --replicas=2
+```
+
+Deployment'ın oluşturduğu kaynakları incele.
+
+```bash
 kubectl -n first-app get deployment,replicaset,pods
 ```
 
@@ -64,6 +88,11 @@ Beklenen sonuç: bir Deployment, bir ReplicaSet ve iki `web-...` Pod'u görünü
 
 ```bash
 kubectl -n first-app scale deployment/web --replicas=3
+```
+
+Yeni Pod sayısını kontrol et.
+
+```bash
 kubectl -n first-app get pods -l app=web
 ```
 
@@ -73,9 +102,21 @@ Beklenen sonuç: üç Pod `Running` olur.
 
 Listeden bir Pod adı kopyala ve yalnızca o Pod'u sil.
 
+Önce silmek istediğin Pod'un adını bul.
+
 ```bash
 kubectl -n first-app get pods -l app=web
+```
+
+Listeden kopyaladığın gerçek Pod adıyla yalnızca o Pod'u sil.
+
+```bash
 kubectl -n first-app delete pod POD_ADI
+```
+
+Deployment'ın yerine yeni Pod açmasını canlı izle. `-w`, listede değişiklik olduğunda yeni satır göstermesini sağlar.
+
+```bash
 kubectl -n first-app get pods -l app=web -w
 ```
 
@@ -85,14 +126,46 @@ Beklenen sonuç: silinen Pod yerine farklı isimli yeni bir Pod oluşur; toplam 
 
 Pod IP'leri değişebilir. ClusterIP Service, Pod'lara sabit bir DNS adı verir ve yalnızca cluster içinden erişilir.
 
+Deployment'ın Pod'larını `web-clusterip` adlı Service arkasına al.
+
 ```bash
 kubectl -n first-app expose deployment web --name=web-clusterip --port=80
-kubectl -n first-app get service web-clusterip
-kubectl -n first-app run curl-inside --rm -it --restart=Never \
-  --image=curlimages/curl:8.12.1 -- curl -I http://web-clusterip
 ```
 
-Beklenen sonuç: son komut `HTTP/1.1 200 OK` döndürür. `web-clusterip`, Pod IP'si yerine Service adını kullanır.
+Oluşan Service'i kontrol et.
+
+```bash
+kubectl -n first-app get service web-clusterip
+```
+
+Cluster içinden test yapabilmek için `curl-inside` adlı geçici Pod oluştur. `sleep 3600`, Pod'un bir saat açık kalmasını sağlar.
+
+```bash
+kubectl -n first-app run curl-inside \
+  --image=curlimages/curl:8.12.1 \
+  --restart=Never \
+  -- sleep 3600
+```
+
+Pod'un çalışır duruma gelmesini bekle.
+
+```bash
+kubectl -n first-app wait --for=condition=Ready pod/curl-inside --timeout=90s
+```
+
+Sonra test Pod'unun içinden Service adına HTTP isteği gönder.
+
+```bash
+kubectl -n first-app exec curl-inside -- curl -I http://web-clusterip
+```
+
+Test bitince geçici Pod'u sil.
+
+```bash
+kubectl -n first-app delete pod curl-inside
+```
+
+Beklenen sonuç: HTTP isteği `HTTP/1.1 200 OK` döndürür. `web-clusterip`, Pod IP'si yerine Service adını kullanır.
 
 ## 6. NodePort, ExternalName ve LoadBalancer türlerini dene
 

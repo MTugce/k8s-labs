@@ -27,7 +27,7 @@ Gerçek kullanıcı adı veya parola repoda tutulmaz. `stringData` kullanan şab
 
 ```bash
 cp ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/grafana-admin-secret.example.yaml grafana-admin.local.yaml
-${EDITOR:-vi} grafana-admin.local.yaml
+nano grafana-admin.local.yaml
 kubectl create namespace monitoring
 kubectl apply -n monitoring -f grafana-admin.local.yaml
 kubectl -n monitoring get secret grafana-admin

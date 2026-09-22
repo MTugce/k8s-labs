@@ -31,11 +31,23 @@ Beklenen sonuç: `gateways.gateway.networking.k8s.io` ve `httproutes.gateway.net
 
 `starter/traefik-preview-values.yaml`, Traefik'i yalnızca ayrılmış `30088` NodePort'unda açar. NGINX Ingress çalışmaya devam eder; henüz DNS trafiği değişmez.
 
+Önce Traefik chart repository'sini ekle.
+
 ```bash
 helm repo add traefik https://traefik.github.io/charts
+```
+
+Traefik'i preview ayarlarıyla kur. `upgrade --install`, release yoksa kurar; varsa günceller.
+
+```bash
 helm upgrade --install traefik traefik/traefik --version 37.0.0 \
   --namespace traefik --create-namespace \
-  --values ~/k8s-labs/lab-04-ingress-to-gateway-api/starter/traefik-preview-values.yaml --wait
+  --values starter/traefik-preview-values.yaml --wait
+```
+
+Kurulan Pod, Service ve GatewayClass kaynaklarını kontrol et.
+
+```bash
 kubectl -n traefik get pods,service
 kubectl get gatewayclass
 ```
@@ -49,7 +61,24 @@ Beklenen sonuç: Traefik Pod'u `Running`, Service'i `30088` NodePort ile görün
 ```bash
 export STUDENT_ID="student01"
 export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
-sed "s/__APP_HOST__/${APP_HOST}/g" ~/k8s-labs/lab-04-ingress-to-gateway-api/starter/gateway-route.yaml | kubectl apply -n private-app -f -
+```
+
+Starter manifestinin yerel kopyasını oluştur.
+
+```bash
+cp starter/gateway-route.yaml gateway-route.local.yaml
+```
+
+`gateway-route.local.yaml` dosyasını aç. `__APP_HOST__` değerini kendi DNS adınla değiştir ve kaydet.
+
+```bash
+nano gateway-route.local.yaml
+```
+
+Gateway ve HTTPRoute kaynaklarını uygula, sonra route durumunu incele.
+
+```bash
+kubectl apply -n private-app -f gateway-route.local.yaml
 kubectl -n private-app get gateway,httproute
 kubectl -n private-app describe httproute devops-app-route
 ```
@@ -70,11 +99,28 @@ Beklenen sonuç: `status: UP`. NGINX Ingress üzerinden çalışan `https://${AP
 
 Preview başarılıysa yalnızca Kind içindeki NGINX Ingress controller'ı kaldır. Hosttaki Edge Nginx ve Cloudflare ayarlarını değiştirme.
 
+Önce yalnızca uygulamanın Ingress kaynağını sil.
+
 ```bash
 kubectl delete ingress -n private-app devops-app
+```
+
+NGINX Ingress controller'a artık ihtiyaç olmadığı için namespace'ini sil.
+
+```bash
 kubectl delete namespace ingress-nginx
+```
+
+Traefik'i cutover ayarlarıyla güncelle. Bu ayar Traefik'in Kind içindeki `80` portunu dinlemesini sağlar.
+
+```bash
 helm upgrade traefik traefik/traefik --version 37.0.0 \
-  --namespace traefik --values ~/k8s-labs/lab-04-ingress-to-gateway-api/starter/traefik-cutover-values.yaml --wait
+  --namespace traefik --values starter/traefik-cutover-values.yaml --wait
+```
+
+Pod'un çalıştığını ve DNS yolunun yanıt verdiğini doğrula.
+
+```bash
 kubectl -n traefik get pods -o wide
 curl -k "https://${APP_HOST}/healthz"
 ```

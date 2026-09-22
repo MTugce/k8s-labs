@@ -61,10 +61,22 @@ Beklenen sonuç: `student01-app1.devopsatolyesi.com` görünür.
 
 ## 4. Ingress manifestini uygula
 
-Manifestteki `__APP_HOST__` alanı terminaldeki DNS adıyla değiştirilir. Dosyanın kendisi değiştirilmez; her öğrenci aynı starter dosyasını kullanır.
+Starter dosyasının yerel kopyasını oluştur. Böylece ortak starter dosyası değişmeden yalnızca kendi DNS adını yazarsın.
 
 ```bash
-sed "s/__APP_HOST__/${APP_HOST}/g" ~/k8s-labs/lab-03-nginx-ingress-routing/starter/ingress.yaml | kubectl apply -n private-app -f -
+cp starter/ingress.yaml ingress.local.yaml
+```
+
+`ingress.local.yaml` dosyasını aç. `host: __APP_HOST__` satırını `echo "$APP_HOST"` komutunun gösterdiği DNS adıyla değiştir ve kaydet.
+
+```bash
+nano ingress.local.yaml
+```
+
+Yerel Ingress manifestini uygula ve oluşan kuralı kontrol et.
+
+```bash
+kubectl apply -n private-app -f ingress.local.yaml
 kubectl -n private-app get ingress
 kubectl -n private-app describe ingress devops-app
 ```
