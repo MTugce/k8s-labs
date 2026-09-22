@@ -4,6 +4,13 @@
 
 Mevcut Ingress yönlendirmesini, DNS ve host Nginx ayarlarını değiştirmeden Gateway API'ye taşımak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **GatewayClass:** Gateway controller türünü tanımlar.
+- **Gateway:** Cluster'daki trafik giriş noktasını tanımlar.
+- **HTTPRoute:** Host/path trafiğini Service'e yönlendiren Gateway API kuralıdır.
+- **Service:** HTTPRoute'un uygulama backend'idir.
+
 ## Çalışma dizini
 
 ```bash

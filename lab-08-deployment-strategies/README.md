@@ -4,6 +4,12 @@
 
 Recreate, RollingUpdate, Blue-Green ve Canary yayın stratejilerini uygulamalı karşılaştırmak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **Deployment:** Recreate ve RollingUpdate sürüm geçişini yönetir.
+- **Service:** Blue-Green geçişinde seçici etiketiyle aktif sürümü belirler.
+- **HTTPRoute:** Canary geçişinde trafiği sürümlere ağırlıklı dağıtır.
+
 ## Çalışma dizini
 
 ```bash

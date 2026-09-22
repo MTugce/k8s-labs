@@ -4,6 +4,12 @@
 
 LimitRange ve ResourceQuota ile bir namespace'in kaynak tüketimini sınırlandırmak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **LimitRange:** Pod/container için varsayılan ve en az/en çok kaynak değerini tanımlar.
+- **ResourceQuota:** Namespace'in toplam kaynak ve nesne sayısı bütçesini sınırlar.
+- **Namespace:** Bu sınırların uygulandığı çalışma alanıdır.
+
 ## Çalışma dizini
 
 ```bash

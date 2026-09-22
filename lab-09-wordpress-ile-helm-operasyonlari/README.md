@@ -1,14 +1,43 @@
-# WordPress ile Helm Operasyonlarını Öğren
+# * WordPress ile Helm Operasyonlarını Öğren
 
 ## Amaç
 
 Helm repository, install, values, upgrade, rollback ve uninstall işlemlerini öğrenmek.
+
+## Kullanılan Kubernetes nesneleri
+
+- **Namespace:** WordPress kaynaklarını diğer lablardan ayırır.
+- **Deployment ve StatefulSet:** Sırasıyla WordPress ve MariaDB Pod'larını yönetir.
+- **Service ve PVC:** Uygulama iletişimini ve kalıcı veriyi sağlar.
 
 ## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari
 ```
+
+## Helm kısa bilgi
+
+Helm, Kubernetes uygulamalarını paketleyip yönetmek için kullanılan araçtır.
+Bir **chart**, Kubernetes manifest şablonlarıdır; **repository**, chart'ların
+bulunduğu kaynaktır; **release** ise cluster'a kurulmuş chart örneğidir.
+
+```text
+Repository → Chart → helm install → Release
+```
+
+Resmî kaynaklar:
+
+- [Helm dokümantasyonu](https://helm.sh/docs/)
+- [Helm kullanımı: install, upgrade, rollback](https://helm.sh/docs/intro/using_helm/)
+- [Chart repository rehberi](https://helm.sh/docs/topics/chart_repository/)
+- [Helm komutları](https://helm.sh/docs/helm/)
+
+## * Doğrulanan senaryo
+
+WordPress ve MariaDB PVC'lerle kuruldu; port-forward üzerinden HTTP 200 alındı.
+Helm upgrade ile blog değeri `v2` oldu, rollback sonrası `v1` değerine döndü.
+Release ve `wordpress-lab` namespace'i lab sonunda kaldırıldı.
 
 ## 1. Helm repository kavramını gör
 

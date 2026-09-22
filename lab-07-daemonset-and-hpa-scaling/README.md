@@ -4,6 +4,12 @@
 
 DaemonSet'in node başına Pod oluşturmasını ve HPA'nın yük altında ölçeklemesini görmek.
 
+## Kullanılan Kubernetes nesneleri
+
+- **DaemonSet:** Her uygun node üzerinde bir Pod çalıştırır.
+- **HPA:** CPU veya bellek ölçümüne göre Deployment replica sayısını değiştirir.
+- **Deployment:** HPA'nın ölçeklediği uygulama kaynağıdır.
+
 ## Çalışma dizini
 
 ```bash

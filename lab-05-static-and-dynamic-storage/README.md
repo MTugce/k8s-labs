@@ -4,6 +4,13 @@
 
 Static ve dynamic PV/PVC akışlarını aynı cluster üzerinde karşılaştırmak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **PV:** Cluster'ın sunduğu disk kaynağıdır.
+- **PVC:** Uygulamanın talep ettiği disk alanıdır.
+- **StorageClass:** Dynamic PV'yi oluşturacak provisioner'ı seçer.
+- **Pod:** PVC'ye bağlanıp veriyi okur veya yazar.
+
 ## Çalışma dizini
 
 ```bash

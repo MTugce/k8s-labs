@@ -4,6 +4,13 @@
 
 Cluster ve uygulama metriklerini Prometheus ile toplamak, Grafana'da izlemek ve alert üretmek.
 
+## Kullanılan Kubernetes nesneleri
+
+- **ServiceMonitor:** Prometheus'a hangi Service'ten metrik toplayacağını söyler.
+- **PrometheusRule:** PromQL ifadesiyle alert koşulunu tanımlar.
+- **ConfigMap:** Grafana dashboard JSON dosyasını taşır.
+- **Secret:** Grafana yönetici giriş bilgisini saklar.
+
 ## Çalışma dizini
 
 ```bash
@@ -53,6 +60,7 @@ Beklenen sonuç: `kube-prometheus-stack` chart adı ve sürümü görünür.
 
 ```bash
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+  --version 91.5.0 \
   --namespace monitoring \
   --values ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/monitoring-values.yaml \
   --wait
@@ -78,24 +86,31 @@ curl http://SUNUCU_IP:30087/metrics | head
 
 Beklenen sonuç: son komutta `devops_app_http_requests_total` ve `process_` ile başlayan metrik adları görünür.
 
-## 6. Prometheus'a uygulamayı tanıt
+## 6. Dashboard, rapor ve alert kaynaklarını ekle
 
-ServiceMonitor, Prometheus'a hangi Service'in hangi path'inden metrik toplayacağını söyler. Dashboard ConfigMap'i Grafana tarafından otomatik içeri alınır; PrometheusRule ise alert kuralını tanımlar.
+Bu script ServiceMonitor'u, iki Grafana dashboard'unu ve üç alert kuralını ekler.
+Grafana sidecar'ı, `grafana_dashboard=1` etiketli ConfigMap'leri otomatik yükler.
 
 ```bash
-kubectl apply -f ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/devops-app-servicemonitor.yaml
-kubectl apply -f ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/devops-app-dashboard.yaml
-kubectl apply -f ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/devops-app-alert.yaml
-kubectl -n private-app get servicemonitor,prometheusrule
+bash ~/k8s-labs/lab-10-prometheus-grafana-monitoring/scripts/apply-observability-assets.sh
 ```
 
-Beklenen sonuç: ServiceMonitor ve PrometheusRule kaynakları listelenir. Prometheus'un target'ı bulması birkaç dakika sürebilir.
+Beklenen sonuç: `devops-app` ServiceMonitor'u, `devops-app-alerts` PrometheusRule'u
+ve iki dashboard ConfigMap'i görünür. Prometheus'un hedefi bulması kısa sürebilir.
 
-## 7. Grafana'ya gir ve dashboard'u kontrol et
+## 7. Grafana dashboard'larını aç ve manuel import yap
 
 Tarayıcıda `http://SUNUCU_IP:30089` adresini aç. İkinci adımda yazdığın Grafana kullanıcı bilgileriyle giriş yap. Sol menüden **Dashboards** altında `Devops App Lab` dashboard'unu aç.
 
-Beklenen sonuç: HTTP istek hızı ve istek süresi panelleri görünür. Cluster metrikleri için hazır Kubernetes dashboard'ları da Grafana'da bulunur.
+Beklenen sonuç: `Devops App Lab` ve `Devops App Operations` dashboard'larında istek
+hızı, p95 süre, HPA replica sayısı ve hedef durumu görünür. Kube Prometheus Stack'in
+hazır Kubernetes dashboard'ları da listelenir.
+
+Başka bir dashboard'u manuel eklemek için **Dashboards → New → Import** yolunu aç.
+Grafana.com dashboard URL/ID'sini veya JSON dosyasını gir, veri kaynağı olarak
+`Prometheus` seç ve **Import** düğmesine bas. Dashboard seçmek için
+[Grafana dashboard kataloğunu](https://grafana.com/grafana/dashboards/) kullan;
+adımların resmî karşılığı [Grafana import rehberinde](https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/import-dashboards/) bulunur.
 
 ## 8. Kontrollü yük üret ve alert oluştur
 
@@ -115,9 +130,17 @@ kubectl -n monitoring get pods
 
 Yaklaşık iki dakika sonra Grafana dashboard'unda istek süresi yükselir. PrometheusRule'daki `DevopsAppSlowRequests` alert'i `Firing` durumuna geçer; Grafana Alerting ekranında veya Prometheus Alerts ekranında görünür.
 
-## 9. Yükü durdur; monitoring platformunu bırak
+Bu yük ayrıca HPA üst sınıra uzun süre ulaşırsa `DevopsAppHpaAtMaximum` alert'ini
+de üretir. `DevopsAppTargetDown` ise Prometheus uygulama hedefinden veri alamazsa
+çalışır.
+
+## 9. Metin raporunu al, yükü durdur; monitoring platformunu bırak
+
+Bu script Prometheus API'den hedef durumu, istek hızı, p95 süre, HPA replica
+sayısı ve firing alertleri yazdırır. Rapor için geçici yerel `19090` portu kullanır.
 
 ```bash
+bash ~/k8s-labs/lab-10-prometheus-grafana-monitoring/scripts/monitoring-report.sh
 bash ~/k8s-labs/lab-10-prometheus-grafana-monitoring/scripts/stop-load-test.sh
 kubectl -n private-app get hpa
 helm status monitoring -n monitoring

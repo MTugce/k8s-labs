@@ -4,6 +4,12 @@
 
 NFS üzerinde RWX dynamic storage ile StatefulSet'in kalıcı veri davranışını görmek.
 
+## Kullanılan Kubernetes nesneleri
+
+- **StatefulSet:** Sabit Pod adı ve her Pod için ayrı kalıcı disk sağlar.
+- **Headless Service:** StatefulSet Pod'larına tek tek DNS adı verir.
+- **StorageClass/PVC:** NFS üzerinde dynamic ve RWX disk alanı oluşturur.
+
 ## Çalışma dizini
 
 ```bash

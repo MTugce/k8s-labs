@@ -4,6 +4,12 @@
 
 ServiceAccount, Role ve RoleBinding ile namespace kapsamlı en az yetkili erişim tanımlamak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **ServiceAccount:** Pod veya uygulamanın Kubernetes API kimliğidir.
+- **Role:** Namespace içindeki izinleri tanımlar.
+- **RoleBinding:** Role'ü ServiceAccount'a bağlar.
+
 ## Çalışma dizini
 
 ```bash

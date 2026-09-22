@@ -4,6 +4,13 @@
 
 Private Docker Hub imajını ConfigMap, Secret ve `imagePullSecrets` ile Kubernetes'te çalıştırmak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **Deployment:** Private imajdan uygulama Pod'larını çalıştırır.
+- **ConfigMap:** Gizli olmayan uygulama ayarlarını taşır.
+- **Secret:** Gizli değerleri ve registry giriş bilgisini taşır.
+- **Service:** Uygulama Pod'larına cluster içinden erişim sağlar.
+
 ## Çalışma dizini
 
 ```bash

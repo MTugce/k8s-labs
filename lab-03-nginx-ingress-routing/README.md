@@ -4,6 +4,12 @@
 
 Uygulamayı NGINX Ingress ile öğrenci DNS adı üzerinden erişilebilir yapmak.
 
+## Kullanılan Kubernetes nesneleri
+
+- **Ingress:** Hostname ve path isteğini bir Service'e yönlendiren kuraldır.
+- **Ingress Controller:** Ingress kurallarını okuyup trafiği gerçekten ileten Pod'lardır.
+- **Service:** Ingress'in eriştiği uygulama hedefidir.
+
 ## Çalışma dizini
 
 ```bash

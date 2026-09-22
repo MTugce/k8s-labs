@@ -4,6 +4,12 @@
 
 Pod, Deployment ve dört Service türünün davranışını aynı uygulama üzerinde görmek.
 
+## Kullanılan Kubernetes nesneleri
+
+- **Pod:** Tek çalışan container örneğidir.
+- **Deployment:** İstenen Pod sayısını korur ve sürüm güncellemesini yönetir.
+- **Service:** Pod'lara sabit bir ağ adresi sağlar.
+
 ## Çalışma dizini
 
 ```bash

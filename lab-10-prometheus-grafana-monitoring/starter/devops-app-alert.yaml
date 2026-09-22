@@ -9,6 +9,14 @@ spec:
   groups:
     - name: devops-app.rules
       rules:
+        - alert: DevopsAppTargetDown
+          expr: up{namespace="private-app",service="devops-app"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "devops-app Prometheus hedefi erişilemez"
+            description: "Prometheus, devops-app metrik endpoint'inden bir dakikadır veri alamıyor."
         - alert: DevopsAppSlowRequests
           expr: histogram_quantile(0.95, sum(rate(devops_app_http_request_duration_seconds_bucket{route="/work"}[1m])) by (le)) > 0.4
           for: 2m
@@ -17,3 +25,11 @@ spec:
           annotations:
             summary: "devops-app /work istekleri yavaş"
             description: "Son iki dakikada p95 istek süresi 400ms üstündedir."
+        - alert: DevopsAppHpaAtMaximum
+          expr: kube_horizontalpodautoscaler_status_current_replicas{namespace="private-app",horizontalpodautoscaler="devops-app"} >= kube_horizontalpodautoscaler_spec_max_replicas{namespace="private-app",horizontalpodautoscaler="devops-app"}
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "devops-app HPA üst sınıra ulaştı"
+            description: "HPA iki dakikadır izin verilen en yüksek replica sayısında çalışıyor."
