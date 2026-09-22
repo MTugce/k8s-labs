@@ -37,6 +37,8 @@ Bu dosyada WordPress, MariaDB, Service ve persistence ayarları bulunur. `q` ile
 ## 3. Lab değerlerini kullanarak WordPress'i kur
 
 Starter values dosyası WordPress Service'ini ClusterIP olarak bırakır. Böylece yeni bir host portu açılmaz; erişim için sonraki adımda kontrollü port-forward kullanılır.
+MariaDB kalıcılığı için starter dosyası Kind kümesinin varsayılan `standard`
+StorageClass'ını kullanır.
 
 ```bash
 kubectl create namespace wordpress-lab

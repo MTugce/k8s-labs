@@ -5,4 +5,6 @@ mariadb:
   primary:
     persistence:
       enabled: true
-      storageClass: local-path
+      # Kind'in bu kurulumunda local-path provisioner'ın StorageClass adı
+      # "standard" olarak gelir.
+      storageClass: standard
