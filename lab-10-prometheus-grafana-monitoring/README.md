@@ -30,6 +30,22 @@ kullanıcı adı ve parolanla giriş yap.
 
 Bu labın sonunda **Prometheus ve Grafana silinmez**. Sonraki monitoring dersinde aynı kurulum kullanılacaktır.
 
+## Monitoring mimarisi
+
+```text
+devops-app /metrics → Service → ServiceMonitor → Prometheus Operator → Prometheus
+                                                                    ├→ Grafana dashboard
+                                                                    └→ PrometheusRule → Alertmanager
+```
+
+Uygulama `/metrics` endpoint'inde sayı serileri üretir. **ServiceMonitor**, bu
+endpoint'in hangi Service üzerinden ve ne sıklıkla toplanacağını bildirir.
+Prometheus Operator ServiceMonitor'u Prometheus yapılandırmasına ekler;
+Prometheus metrikleri toplar ve saklar. Grafana metrikleri Prometheus'tan sorgular.
+**PrometheusRule** koşulları sürekli değerlendirir, koşul sağlanırsa alert'i
+Alertmanager'a gönderir. `grafana_dashboard=1` etiketli ConfigMap'ler ise
+Grafana sidecar tarafından otomatik dashboard olarak içeri alınır.
+
 ## 1. Uygulamanın ve HPA'nın hazır olduğunu doğrula
 
 ```bash

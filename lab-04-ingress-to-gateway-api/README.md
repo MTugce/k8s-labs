@@ -43,6 +43,19 @@ Beklenen sonuç: Üç kaynak da bulunur; Deployment'ın `AVAILABLE` değeri sıf
 
 Kaynaklardan biri bulunamazsa bu labda ilerleme. Önce Lab 2 ve Lab 3'ü tamamla.
 
+## Gateway API mimarisi
+
+```text
+İstemci → DNS / Edge Nginx → 19001 → Kind control-plane :80
+        → Traefik Gateway controller → Gateway → HTTPRoute → Service → Pod
+```
+
+**GatewayClass**, kullanılacak controller türünü seçer. **Gateway**, dinleyici
+ve giriş noktasını tanımlar. **HTTPRoute** ise hostname/path isteğini Service'e
+yönlendirir. Bu ayrımda platform ekibi Gateway'i, uygulama ekibi HTTPRoute'u
+yönetebilir. Traefik yalnız Kind control-plane içindeki portu kullanır; host
+Nginx'in `80/443` portlarına bağlanmaz.
+
 ## Ingress ve Gateway API farkı
 
 - Ingress, host/path ve backend bilgisini tek nesnede tutar.

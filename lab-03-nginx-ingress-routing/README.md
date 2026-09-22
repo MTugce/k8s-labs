@@ -58,6 +58,18 @@ student01-app1.devopsatolyesi.com
 
 `student01-app1...` doğru ad biçimidir. `student01.app1...` kullanma.
 
+## Ingress mimarisi
+
+```text
+İstemci → DNS / Edge Nginx → 19001 → Kind control-plane :80
+        → ingress-nginx Controller → Ingress kuralı → Service → Pod
+```
+
+**Ingress**, hostname ve path eşleştirmesini tanımlayan Kubernetes kaynağıdır.
+Tek başına trafik iletmez. **ingress-nginx Controller** bu kuralı okuyup isteği
+doğru Service'e gönderir. Edge Nginx ve Cloudflare bu labın dışında kalır;
+değiştirilmez.
+
 ## 1. NGINX Ingress controller kur
 
 Ingress manifesti tek başına trafik taşımaz; onu okuyan bir controller gerekir. Bu controller yalnızca Kind cluster içinde çalışır, hosttaki Edge Nginx'e dokunmaz.
