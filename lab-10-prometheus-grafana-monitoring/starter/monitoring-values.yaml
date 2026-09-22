@@ -8,7 +8,7 @@ grafana:
     nodePort: 30089
   persistence:
     enabled: true
-    storageClassName: local-path
+    storageClassName: standard
   sidecar:
     dashboards:
       enabled: true
@@ -23,7 +23,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: local-path
+          storageClassName: standard
           accessModes: [ReadWriteOnce]
           resources:
             requests:
