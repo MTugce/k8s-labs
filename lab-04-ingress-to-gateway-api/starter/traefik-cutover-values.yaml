@@ -7,6 +7,7 @@ updateStrategy:
   type: RollingUpdate
   rollingUpdate:
     maxUnavailable: 2
+    maxSurge: null
 service:
   enabled: false
 ingressClass:
