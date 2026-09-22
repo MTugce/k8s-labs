@@ -10,6 +10,20 @@ cd ~/k8s-labs/lab-04-ingress-to-gateway-api
 
 NGINX Ingress ile çalışan aynı `devops-app` Service'ini Gateway API ile yayınlayacaksın. Önce `30088` portunda güvenli preview yapacak, sonra mevcut app1 DNS yolunu Gateway API'ye taşıyacaksın.
 
+## Başlamadan önce Lab 3 kontrolü
+
+Bu lab, Lab 3'teki `devops-app` Service ve Ingress kaynağını Gateway API'ye taşır.
+
+```bash
+kubectl -n private-app get deployment devops-app
+kubectl -n private-app get service devops-app
+kubectl -n private-app get ingress devops-app
+```
+
+Beklenen sonuç: Üç kaynak da bulunur; Deployment'ın `AVAILABLE` değeri sıfırdan büyük olur.
+
+Kaynaklardan biri bulunamazsa bu labda ilerleme. Önce Lab 2 ve Lab 3'ü tamamla.
+
 ## Ingress ve Gateway API farkı
 
 - Ingress, host/path ve backend bilgisini tek nesnede tutar.

@@ -10,6 +10,18 @@ cd ~/k8s-labs/lab-08-deployment-strategies
 
 `devops-app:1.0` ve `devops-app:2.0` sürümlerini kullanarak dört yayın yaklaşımını karşılaştıracaksın. Her yaklaşımda hangi Pod'un trafik aldığını ve gerektiğinde rollback işlemini göreceksin.
 
+## Başlamadan önce Lab 2 ve Lab 4 kontrolü
+
+Bu labın ilk üç stratejisi Docker Hub'daki Lab 2 image'ini kullanır. Canary adımı ise Lab 4'te oluşturulan Gateway'i kullanır.
+
+```bash
+kubectl -n private-app get gateway devops-app-gateway
+```
+
+Beklenen sonuç: `devops-app-gateway` görünür.
+
+Gateway bulunamazsa veya Lab 2'de `devops-app:1.0` image'ini Docker Hub'a göndermediysen bu labda ilerleme. Önce ilgili labı tamamla.
+
 ## 1. İkinci image sürümünü üret
 
 İlk private image labında `1.0` image'ini gönderdin. Aynı uygulamayı `APP_VERSION=2.0` build argümanıyla yeniden üret.

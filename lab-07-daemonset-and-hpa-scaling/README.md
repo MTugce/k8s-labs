@@ -10,6 +10,18 @@ cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling
 
 DaemonSet ile her node'a bir ajan Pod'u koyacak, sonra `devops-app` için HPA oluşturacaksın. Yük üreterek replica sayısının arttığını, yük kesilince tekrar azaldığını izleyeceksin.
 
+## Başlamadan önce Lab 2 kontrolü
+
+HPA, Lab 2'de oluşturduğun `devops-app` Deployment'ını ölçekler. Önce kaynağın bulunduğunu doğrula.
+
+```bash
+kubectl -n private-app get deployment devops-app
+```
+
+Beklenen sonuç: `devops-app` görünür ve `AVAILABLE` değeri sıfırdan büyüktür.
+
+`NotFound` veya `No resources found` görürsen bu labda ilerleme; önce Lab 2'nin final Deployment adımını tamamla.
+
 ## 1. Metrics Server kur
 
 HPA, CPU bilgisini Metrics Server'dan alır. Kind node'larının sertifika ayarı nedeniyle bu labda `--kubelet-insecure-tls` parametresi eklenir.

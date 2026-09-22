@@ -21,6 +21,8 @@ kubectl top pods -n private-app
 
 Beklenen sonuç: `devops-app` Pod'ları çalışır ve Metrics Server CPU değerleri gösterir.
 
+`private-app` namespace'i, `devops-app` Deployment'ı veya HPA görünmüyorsa bu labda ilerleme. Önce Lab 2'yi ve HPA için Lab 7'yi tamamla.
+
 ## 2. Grafana yönetici Secret'ını yerelde oluştur
 
 Gerçek kullanıcı adı veya parola repoda tutulmaz. `stringData` kullanan şablonu yerel dosyaya kopyala ve kendi lab değerlerini yaz.

@@ -10,6 +10,24 @@ cd ~/k8s-labs/lab-03-nginx-ingress-routing
 
 Önceki labdaki `devops-app` Service'ini, mevcut öğrenci DNS adıyla erişilebilir yapacaksın. Edge Nginx, Cloudflare veya host Nginx yapılandırmasına hiçbir değişiklik yapmayacaksın.
 
+## Başlamadan önce Lab 2 kontrolü
+
+Bu lab yeni uygulama oluşturmaz; Lab 2'de çalıştırdığın `devops-app` Deployment ve Service'ini kullanır. Önce namespace'in var olduğunu kontrol et.
+
+```bash
+kubectl get namespace private-app
+```
+
+Sonra uygulamanın Deployment, Pod ve Service kaynaklarını kontrol et.
+
+```bash
+kubectl -n private-app get deployment,pods,service
+```
+
+Beklenen sonuç: `devops-app` Deployment'ı, en az bir `Running` Pod ve `devops-app` Service'i görünür.
+
+`private-app` bulunamazsa veya `No resources found` görürsen bu labda ilerleme. Lab 2'ye dön, final Deployment adımını tamamla ve Pod'ların `Running` olduğunu gör. `kubectl ns` diye bir komut yoktur; namespace'leri listelemek için `kubectl get namespace` kullanılır.
+
 ## Trafik nasıl gelir?
 
 ```text
@@ -37,17 +55,7 @@ kubectl get pods -n ingress-nginx
 
 Beklenen sonuç: `ingress-nginx-controller` Pod'u `Running` görünür.
 
-## 2. Uygulamanın hazır olduğunu doğrula
-
-Ingress Pod'a değil Service'e yönlendirir. Bu nedenle önce Service ve Pod'lar çalışıyor olmalı.
-
-```bash
-kubectl -n private-app get deployment,pods,service
-```
-
-Beklenen sonuç: `devops-app` Deployment'ında iki hazır Pod ve `devops-app` Service'i görünür.
-
-## 3. Kendi DNS adını değişkene yaz
+## 2. Kendi DNS adını değişkene yaz
 
 `student01` yerine sana verilen öğrenci kodunu kullan.
 
@@ -59,7 +67,7 @@ echo "$APP_HOST"
 
 Beklenen sonuç: `student01-app1.devopsatolyesi.com` görünür.
 
-## 4. Ingress manifestini uygula
+## 3. Ingress manifestini uygula
 
 Starter dosyasının yerel kopyasını oluştur. Böylece ortak starter dosyası değişmeden yalnızca kendi DNS adını yazarsın.
 
@@ -83,7 +91,7 @@ kubectl -n private-app describe ingress devops-app
 
 Beklenen sonuç: Ingress kurallarında kendi hostname'in ve backend olarak `devops-app:80` görünür.
 
-## 5. Önce doğrudan Kind girişini test et
+## 4. Önce doğrudan Kind girişini test et
 
 Bu test DNS veya TLS katmanı olmadan yalnızca host header ile Ingress kuralını doğrular.
 
@@ -93,7 +101,7 @@ curl -H "Host: ${APP_HOST}" http://SUNUCU_IP:19001/healthz
 
 Beklenen sonuç: JSON yanıtta `status: UP` görünür.
 
-## 6. Öğrenci DNS adıyla test et
+## 5. Öğrenci DNS adıyla test et
 
 Bu test tüm akışı kullanır: DNS → Edge Nginx → Kind → Ingress → Service → Pod.
 
