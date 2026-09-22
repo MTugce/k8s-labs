@@ -1,4 +1,4 @@
-# Paylaşımlı Depolama ve StatefulSet ile MySQL
+# * Paylaşımlı Depolama ve StatefulSet ile MySQL
 
 Bu labı şu klasörde uygulayacaksın:
 
@@ -9,6 +9,11 @@ cd ~/k8s-labs/lab-06-nfs-storage-and-statefulset
 ## Bu labda ne yapacaksın?
 
 Cluster içinde bir NFS server çalıştıracak, NFS Subdir External Provisioner ile `ReadWriteMany` dynamic PVC oluşturacaksın. Sonra MySQL'i StatefulSet olarak çalıştırıp sabit Pod adı, headless Service ve kalıcı disk ilişkisini göreceksin.
+
+## * Doğrulanan senaryo
+
+NFS provisioner ile `lab-nfs` StorageClass oluştu. İki writer Pod'u aynı RWX
+PVC'ye yazdı; MySQL `mysql-0` Pod'u ve kendi PVC'si `Bound` duruma geldi.
 
 ## 1. NFS server'ı başlat
 

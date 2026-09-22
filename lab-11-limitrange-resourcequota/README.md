@@ -1,4 +1,4 @@
-# Namespace Kaynak Sınırı Koy: LimitRange ve ResourceQuota
+# * Namespace Kaynak Sınırı Koy: LimitRange ve ResourceQuota
 
 Bu labı şu klasörde uygulayacaksın:
 
@@ -9,6 +9,11 @@ cd ~/k8s-labs/lab-11-limitrange-resourcequota
 ## Bu labda ne yapacaksın?
 
 Bir namespace için kaynak bütçesi tanımlayacaksın. LimitRange'in Pod'a varsayılan CPU/memory eklediğini, ResourceQuota'nın ise toplam Pod sayısı ve CPU sınırını aştığında yeni Pod'u reddettiğini göreceksin.
+
+## * Doğrulanan senaryo
+
+LimitRange varsayılan kaynak değerlerini ekledi. Quota altında normal Deployment
+çalıştı; beş replica isteyen Deployment ise Pod/CPU kotası nedeniyle tamamlanamadı.
 
 ## 1. Namespace, LimitRange ve ResourceQuota uygula
 

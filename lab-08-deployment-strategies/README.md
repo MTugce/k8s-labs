@@ -1,4 +1,4 @@
-# Sürümü Güvenle Yayınla: Recreate, Rolling, Blue-Green ve Canary
+# * Sürümü Güvenle Yayınla: Recreate, Rolling, Blue-Green ve Canary
 
 Bu labı şu klasörde uygulayacaksın:
 
@@ -9,6 +9,12 @@ cd ~/k8s-labs/lab-08-deployment-strategies
 ## Bu labda ne yapacaksın?
 
 `devops-app:1.0` ve `devops-app:2.0` sürümlerini kullanarak dört yayın yaklaşımını karşılaştıracaksın. Her yaklaşımda hangi Pod'un trafik aldığını ve gerektiğinde rollback işlemini göreceksin.
+
+## * Doğrulanan senaryo
+
+Private Docker Hub image'leri ile Recreate, RollingUpdate ve rollback,
+Blue-Green Service geçişi ve Gateway API üzerinden Canary ağırlıklı yönlendirme
+çalıştırıldı. `1.0` ve `2.0` sürümleri Pod'lardan yanıt verdi.
 
 ## Başlamadan önce Lab 2 ve Lab 4 kontrolü
 
