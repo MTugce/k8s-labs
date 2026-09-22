@@ -43,6 +43,7 @@ StorageClass'ını kullanır.
 ```bash
 kubectl create namespace wordpress-lab
 helm install wordpress bitnami/wordpress \
+  --version 34.0.4 \
   --namespace wordpress-lab \
   --values ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari/starter/values.yaml \
   --wait
@@ -74,15 +75,17 @@ Helm, release'e yeni revision ekler. Burada WordPress blog adını değiştiriyo
 
 ```bash
 helm upgrade wordpress bitnami/wordpress \
+  --version 34.0.4 \
   --namespace wordpress-lab \
   --values ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari/starter/values.yaml \
-  --set wordpressBlogName="Kubernetes Helm Lab" \
+  --set wordpressBlogName="Kubernetes Helm Lab v2" \
   --wait
 helm history wordpress -n wordpress-lab
 helm get values wordpress -n wordpress-lab
 ```
 
-Beklenen sonuç: `helm history` içinde revision `1` ve `2` görünür. Not: komutta namespace her zaman `wordpress-lab` olmalıdır; yanlış namespace ile çalıştırma.
+Beklenen sonuç: `helm history` içinde revision `1` ve `2` görünür. `helm get values`
+çıktısında blog adı `Kubernetes Helm Lab v2` olur.
 
 ## 6. Önceki revision'a geri dön
 
@@ -91,7 +94,9 @@ helm rollback wordpress 1 --namespace wordpress-lab --wait
 helm status wordpress -n wordpress-lab
 ```
 
-Beklenen sonuç: release `deployed`, revision tekrar `1` olur.
+Beklenen sonuç: release `deployed` olur ve `helm get values` çıktısındaki blog adı
+yeniden `Kubernetes Helm Lab v1` görünür. Helm rollback yeni bir revision
+oluşturur; bu nedenle revision numarası genellikle `3` olur.
 
 ## 7. Yalnızca geçici WordPress release'ini kaldır
 

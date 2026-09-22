@@ -1,6 +1,6 @@
 service:
   type: ClusterIP
-wordpressBlogName: "Kubernetes Helm Lab"
+wordpressBlogName: "Kubernetes Helm Lab v1"
 mariadb:
   primary:
     persistence:

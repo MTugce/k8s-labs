@@ -4,3 +4,4 @@ secrets.local.yaml
 .DS_Store
 node_modules/
 coverage/
+k8s.pptx
