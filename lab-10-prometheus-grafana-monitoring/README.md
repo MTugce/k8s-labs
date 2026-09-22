@@ -17,6 +17,17 @@ Cluster ve uygulama metriklerini Prometheus ile toplamak, Grafana'da izlemek ve 
 cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
 ```
 
+## Erişim
+
+- Grafana URL: `http://SUNUCU_IP:30089`
+- Grafana kullanıcı adı: `admin`
+- Grafana parola: `student-lab-monitor`
+- Prometheus URL: dışarı açılmaz. Sunucuda rapor scripti çalışırken
+  `http://127.0.0.1:19090` kullanılır.
+
+Kendi ortamında ikinci adımda farklı Grafana Secret değeri oluşturduysan kendi
+kullanıcı adı ve parolanla giriş yap.
+
 Bu labın sonunda **Prometheus ve Grafana silinmez**. Sonraki monitoring dersinde aynı kurulum kullanılacaktır.
 
 ## 1. Uygulamanın ve HPA'nın hazır olduğunu doğrula

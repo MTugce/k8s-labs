@@ -16,6 +16,11 @@ Uygulamayı NGINX Ingress ile öğrenci DNS adı üzerinden erişilebilir yapmak
 cd ~/k8s-labs/lab-03-nginx-ingress-routing
 ```
 
+## Erişim
+
+- URL: `https://${APP_HOST}/healthz` (`APP_HOST` kendi öğrenci DNS adındır.)
+- Kimlik doğrulaması: yok
+
 ## * Doğrulanan senaryo
 
 `19001` portuna doğru Host header ile ve öğrenci DNS adı üzerinden HTTPS ile

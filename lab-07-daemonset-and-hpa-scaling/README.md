@@ -16,6 +16,11 @@ DaemonSet'in node başına Pod oluşturmasını ve HPA'nın yük altında ölçe
 cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling
 ```
 
+## Erişim
+
+- URL: `http://SUNUCU_IP:30087/healthz`
+- Kimlik doğrulaması: yok
+
 ## * Doğrulanan senaryo
 
 DaemonSet üç node'da üç Pod oluşturdu. `/work?ms=500` yükü HPA'yı 1

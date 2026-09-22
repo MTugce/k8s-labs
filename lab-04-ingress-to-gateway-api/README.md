@@ -17,6 +17,12 @@ Mevcut Ingress yönlendirmesini, DNS ve host Nginx ayarlarını değiştirmeden 
 cd ~/k8s-labs/lab-04-ingress-to-gateway-api
 ```
 
+## Erişim
+
+- Preview URL: `http://SUNUCU_IP:30088/healthz` (doğru `Host` header ile)
+- Cutover sonrası URL: `https://${APP_HOST}/healthz`
+- Kimlik doğrulaması: yok
+
 ## * Doğrulanan senaryo
 
 Traefik Gateway controller control-plane üzerinde tek Pod olarak çalıştı.

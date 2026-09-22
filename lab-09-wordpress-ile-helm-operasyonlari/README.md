@@ -16,6 +16,17 @@ Helm repository, install, values, upgrade, rollback ve uninstall işlemlerini ö
 cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari
 ```
 
+## Erişim
+
+- URL: Port-forward açıkken `http://127.0.0.1:8088`
+- Kullanıcı adı: `user`
+- Parola: her kurulumda üretilir. Görmek için:
+
+```bash
+kubectl -n wordpress-lab get secret wordpress \
+  -o jsonpath='{.data.wordpress-password}' | base64 -d; echo
+```
+
 ## Helm kısa bilgi
 
 Helm, Kubernetes uygulamalarını paketleyip yönetmek için kullanılan araçtır.

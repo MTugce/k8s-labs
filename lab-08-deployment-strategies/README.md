@@ -16,6 +16,11 @@ Recreate, RollingUpdate, Blue-Green ve Canary yayın stratejilerini uygulamalı 
 cd ~/k8s-labs/lab-08-deployment-strategies
 ```
 
+## Erişim
+
+- Canary URL: `https://${APP_HOST}/healthz`
+- Kimlik doğrulaması: yok
+
 ## * Doğrulanan senaryo
 
 Private Docker Hub image'leri ile Recreate, RollingUpdate ve rollback,

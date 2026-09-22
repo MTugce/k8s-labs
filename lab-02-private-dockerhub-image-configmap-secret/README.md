@@ -17,6 +17,11 @@ Private Docker Hub imajını ConfigMap, Secret ve `imagePullSecrets` ile Kuberne
 cd ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret
 ```
 
+## Erişim
+
+- URL: `http://SUNUCU_IP:30087/healthz` ve `http://SUNUCU_IP:30087/config`
+- Kimlik doğrulaması: yok
+
 ## * Doğrulanan senaryo
 
 Private Docker Hub imajı `imagePullSecrets` ile çekildi. `/healthz` isteği

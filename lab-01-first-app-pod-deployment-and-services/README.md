@@ -16,6 +16,11 @@ Pod, Deployment ve dört Service türünün davranışını aynı uygulama üzer
 cd ~/k8s-labs/lab-01-first-app-pod-deployment-and-services
 ```
 
+## Erişim
+
+- URL: `http://SUNUCU_IP:30086`
+- Kimlik doğrulaması: yok
+
 ## Başlamadan önce
 
 ## * Doğrulanan senaryo
