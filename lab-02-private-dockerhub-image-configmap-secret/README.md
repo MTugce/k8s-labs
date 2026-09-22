@@ -28,10 +28,10 @@ Beklenen sonuç: `docker.io/kullanici/devops-app:1.0` biçiminde image adı gör
 
 ## 2. Uygulamayı Docker image yap
 
-`app/devops-app/Dockerfile`, Node.js uygulamasını `8080` portunda çalıştırır. Önce image'i yerelde üret.
+Uygulama kaynakları lab klasöründe değil, repo kökündeki `~/k8s-labs/app/devops-app` dizinindedir. `Dockerfile`, Node.js uygulamasını `8080` portunda çalıştırır. Önce image'i yerelde üret.
 
 ```bash
-docker build -t "$IMAGE" app/devops-app
+docker build -t "$IMAGE" ~/k8s-labs/app/devops-app
 docker images "$IMAGE"
 ```
 

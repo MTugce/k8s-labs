@@ -65,8 +65,9 @@ Beklenen sonuç: Prometheus, Grafana ve Alertmanager Pod'ları `Running` olur. G
 Bu repodaki `devops-app` artık HTTP istek sayısı, istek süresi ve Node.js process metrikleri üretir. Image'i yeni tag ile üretip private registry'ye gönder.
 
 ```bash
+export DOCKERHUB_USER="KENDI_DOCKERHUB_KULLANICI_ADIN"
 export METRICS_IMAGE="docker.io/${DOCKERHUB_USER}/devops-app:1.1"
-docker build -t "$METRICS_IMAGE" app/devops-app
+docker build -t "$METRICS_IMAGE" ~/k8s-labs/app/devops-app
 docker push "$METRICS_IMAGE"
 kubectl -n private-app set image deployment/devops-app devops-app="$METRICS_IMAGE"
 kubectl -n private-app rollout status deployment/devops-app

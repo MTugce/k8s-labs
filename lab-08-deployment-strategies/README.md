@@ -14,9 +14,10 @@ cd ~/k8s-labs/lab-08-deployment-strategies
 
 İlk private image labında `1.0` image'ini gönderdin. Aynı uygulamayı `APP_VERSION=2.0` build argümanıyla yeniden üret.
 
-Önce iki image sürümünün adını ve kendi DNS adını değişkenlere yaz.
+Önce Docker Hub kullanıcı adını, iki image sürümünün adını ve kendi DNS adını değişkenlere yaz.
 
 ```bash
+export DOCKERHUB_USER="KENDI_DOCKERHUB_KULLANICI_ADIN"
 export IMAGE_V1="docker.io/${DOCKERHUB_USER}/devops-app:1.0"
 export IMAGE_V2="docker.io/${DOCKERHUB_USER}/devops-app:2.0"
 export APP_HOST="student01-app1.devopsatolyesi.com"
@@ -25,7 +26,7 @@ export APP_HOST="student01-app1.devopsatolyesi.com"
 İkinci image'i üret ve Docker Hub'a gönder.
 
 ```bash
-docker build --build-arg APP_VERSION=2.0 -t "$IMAGE_V2" app/devops-app
+docker build --build-arg APP_VERSION=2.0 -t "$IMAGE_V2" ~/k8s-labs/app/devops-app
 docker push "$IMAGE_V2"
 ```
 
