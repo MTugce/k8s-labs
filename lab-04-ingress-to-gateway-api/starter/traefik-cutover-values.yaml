@@ -3,6 +3,8 @@ deployment:
   kind: DaemonSet
 hostNetwork: true
 dnsPolicy: ClusterFirstWithHostNet
+tolerations:
+  - operator: Exists
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:
