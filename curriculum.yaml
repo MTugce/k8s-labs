@@ -9,8 +9,10 @@ course:
     - Static ve dynamic storage
     - StatefulSet, DaemonSet ve HPA
     - Deployment stratejileri
+    - Helm release yönetimi
+    - Prometheus, Grafana ve alerting
+    - ResourceQuota, LimitRange ve RBAC
   lab_ids:
-    - LAB-K8S-01
     - LAB-K8S-02
     - LAB-K8S-03
     - LAB-K8S-04
@@ -19,21 +21,11 @@ course:
     - LAB-K8S-07
     - LAB-K8S-08
     - LAB-K8S-09
+    - LAB-K8S-10
+    - LAB-K8S-11
+    - LAB-K8S-12
+    - LAB-K8S-13
 labs:
-  - id: LAB-K8S-01
-    slug: kind-cluster-and-kubectl-basics
-    title: Kind Kümeni Kur ve Kubectl ile Başla
-    topic: kubernetes
-    difficulty: başlangıç
-    estimated_minutes: 35
-    prerequisites: [platform-ready]
-    profiles: [kubectl]
-    ports: []
-    guide: labs/lab-01-kind-cluster-and-kubectl-basics/README.md
-    assets: [labs/lab-01-kind-cluster-and-kubectl-basics/starter]
-    validation_mode: kubectl
-    learning_paths: [k8s-foundations-to-intermediate]
-    access_tags: [student]
   - id: LAB-K8S-02
     slug: first-app-pod-deployment-and-services
     title: İlk Uygulaman: Pod, Deployment ve Service
@@ -144,5 +136,61 @@ labs:
     guide: labs/lab-09-deployment-strategies/README.md
     assets: [labs/lab-09-deployment-strategies/starter]
     validation_mode: traffic-and-rollout
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-10
+    slug: wordpress-ile-helm-operasyonlari
+    title: WordPress ile Helm Operasyonlarını Öğren
+    topic: helm-gitops
+    difficulty: orta
+    estimated_minutes: 55
+    prerequisites: [LAB-K8S-09]
+    profiles: [helm, kubectl]
+    ports: []
+    guide: labs/lab-10-wordpress-ile-helm-operasyonlari/README.md
+    assets: [labs/lab-10-wordpress-ile-helm-operasyonlari/starter]
+    validation_mode: helm-release-lifecycle
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-11
+    slug: prometheus-grafana-monitoring
+    title: Prometheus ve Grafana ile Cluster ve Uygulama Metriklerini İzle
+    topic: monitoring
+    difficulty: orta
+    estimated_minutes: 75
+    prerequisites: [LAB-K8S-08, LAB-K8S-10]
+    profiles: [helm, kubectl, docker]
+    ports: [30089]
+    guide: labs/lab-11-prometheus-grafana-monitoring/README.md
+    assets: [app/devops-app, labs/lab-11-prometheus-grafana-monitoring/starter, labs/lab-11-prometheus-grafana-monitoring/scripts]
+    validation_mode: metrics-dashboard-and-alert
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-12
+    slug: limitrange-resourcequota
+    title: Namespace Kaynak Sınırı Koy: LimitRange ve ResourceQuota
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 40
+    prerequisites: [LAB-K8S-08]
+    profiles: [kubectl]
+    ports: []
+    guide: labs/lab-12-limitrange-resourcequota/README.md
+    assets: [labs/lab-12-limitrange-resourcequota/starter]
+    validation_mode: rejected-workload-evidence
+    learning_paths: [k8s-foundations-to-intermediate]
+    access_tags: [student]
+  - id: LAB-K8S-13
+    slug: basit-rbac
+    title: Kubernetes'te Basit RBAC: ServiceAccount, Role ve RoleBinding
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 40
+    prerequisites: [LAB-K8S-12]
+    profiles: [kubectl]
+    ports: []
+    guide: labs/lab-13-basit-rbac/README.md
+    assets: [labs/lab-13-basit-rbac/starter]
+    validation_mode: kubectl-auth-can-i
     learning_paths: [k8s-foundations-to-intermediate]
     access_tags: [student]

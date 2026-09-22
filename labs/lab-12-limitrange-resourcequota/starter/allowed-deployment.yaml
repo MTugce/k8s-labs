@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allowed-app
+  namespace: governance-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: allowed-app }
+  template:
+    metadata:
+      labels: { app: allowed-app }
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine

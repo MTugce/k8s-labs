@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: governance-lab
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: lab-defaults
+  namespace: governance-lab
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 64Mi
+      default:
+        cpu: 300m
+        memory: 128Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: lab-quota
+  namespace: governance-lab
+spec:
+  hard:
+    pods: "4"
+    requests.cpu: "500m"
+    limits.cpu: "1"

@@ -104,6 +104,44 @@ kubectl top pods -n NAME_SPACE
 kubectl get hpa,pods -n NAME_SPACE -w
 ```
 
+## Helm release işlemleri
+
+```bash
+helm repo add NAME URL
+helm repo list
+helm repo update
+helm search repo KEYWORD
+helm show values REPOSITORY/CHART
+helm install RELEASE REPOSITORY/CHART -n NAME_SPACE --create-namespace -f values.yaml
+helm list -n NAME_SPACE
+helm status RELEASE -n NAME_SPACE
+helm get values RELEASE -n NAME_SPACE
+helm upgrade RELEASE REPOSITORY/CHART -n NAME_SPACE -f values.yaml --set KEY=VALUE
+helm history RELEASE -n NAME_SPACE
+helm rollback RELEASE REVISION -n NAME_SPACE
+helm uninstall RELEASE -n NAME_SPACE
+helm repo remove NAME
+```
+
+## Monitoring
+
+```bash
+kubectl -n monitoring get pods,service,pvc
+kubectl -n private-app get servicemonitor,prometheusrule
+kubectl -n private-app describe prometheusrule devops-app-alerts
+helm status monitoring -n monitoring
+curl http://SUNUCU_IP:30087/metrics
+```
+
+## Kaynak yönetimi ve RBAC
+
+```bash
+kubectl -n NAME_SPACE describe limitrange NAME
+kubectl -n NAME_SPACE describe resourcequota NAME
+kubectl auth can-i list pods --as=system:serviceaccount:NAME_SPACE:SERVICE_ACCOUNT -n NAME_SPACE
+kubectl auth can-i delete pods --as=system:serviceaccount:NAME_SPACE:SERVICE_ACCOUNT -n NAME_SPACE
+```
+
 ## Manifest uygulama ve geri alma
 
 ```bash

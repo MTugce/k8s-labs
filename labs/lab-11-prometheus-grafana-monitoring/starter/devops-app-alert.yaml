@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: devops-app-alerts
+  namespace: private-app
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: devops-app.rules
+      rules:
+        - alert: DevopsAppSlowRequests
+          expr: histogram_quantile(0.95, sum(rate(devops_app_http_request_duration_seconds_bucket{route="/work"}[1m])) by (le)) > 0.4
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "devops-app /work istekleri yavaş"
+            description: "Son iki dakikada p95 istek süresi 400ms üstündedir."

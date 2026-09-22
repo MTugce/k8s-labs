@@ -13,5 +13,9 @@ Her bölüm aynı ritimle ilerler: 15-20 dakika konu anlatımı, 35-60 dakika la
 | 7 | NFS ve StatefulSet | RWX NFS PVC, MySQL kimliği ve kalıcılık |
 | 8 | DaemonSet ve HPA | Her node'da ajan, CPU yüküyle scale-out/scale-in |
 | 9 | Deployment stratejileri | Recreate, Rolling, Blue-Green, Canary ve rollback |
+| 10 | Helm release yönetimi | WordPress ile repository, install, upgrade, rollback ve uninstall |
+| 11 | Prometheus ve Grafana | Cluster/Pod/uygulama metrikleri, dashboard, alert ve kontrollü yük |
+| 12 | Kaynak yönetimi | LimitRange varsayılanı ve ResourceQuota reddi |
+| 13 | RBAC | ServiceAccount, Role, RoleBinding ve izin doğrulama |
 
-Tekrarlayan lab yoktur: her yeni bölüm önceki labdaki `devops-app` uygulamasına bir Kubernetes yeteneği ekler. `cheat-sheets/` klasörü ders sırasında komut hatırlatıcı olarak kullanılır; lab dosyaları ise yalnızca gerekli adımları içerir.
+Tekrarlayan lab yoktur: her yeni bölüm önceki labdaki `devops-app` uygulamasına bir Kubernetes yeteneği ekler. WordPress yalnızca geçici Helm release örneğidir; Prometheus ve Grafana monitoring dersi için cluster'da bırakılır. `cheat-sheets/` klasörü ders sırasında komut hatırlatıcı olarak kullanılır; lab dosyaları ise yalnızca gerekli adımları içerir.

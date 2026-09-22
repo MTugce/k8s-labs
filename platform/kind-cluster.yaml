@@ -25,7 +25,7 @@ nodes:
         hostPort: 19003
         listenAddress: "0.0.0.0"
         protocol: TCP
-      # NovaShop alanından ayrılmış, doğrudan NodePort laboratuvar portları.
+      # NovaShop alanından ayrılmış NodePort alanı; 30089 Grafana içindir.
       - containerPort: 30086
         hostPort: 30086
         listenAddress: "0.0.0.0"

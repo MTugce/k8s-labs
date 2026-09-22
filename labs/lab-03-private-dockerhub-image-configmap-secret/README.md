@@ -2,72 +2,118 @@
 
 | Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
 | --- | --- | --- | --- |
-| Temel-Orta | 55 dk | Docker, kubectl | `30087` |
+| Temel-Orta | 60 dk | Docker, Docker Hub, kubectl | `30087` |
 
-## Amaç
+## Bu labda ne yapacaksın?
 
-- `devops-app:1.0` imajını kendi private Docker Hub repository'nize göndermek.
-- ConfigMap ve Secret'ı Deployment'a enjekte etmek.
-- `imagePullSecret` ile private imajı kubelet'in çekmesini sağlamak.
+`devops-app` uygulamasını image yapacak, kendi private Docker Hub repository'ne göndereceksin. Ardından ConfigMap, Secret ve `imagePullSecrets` kullanarak bu image'i Deployment içinde çalıştıracaksın.
 
-## Adım Adım Uygulama Rehberi
+## 1. Private Docker Hub repository oluştur
+
+Tarayıcıda Docker Hub hesabını aç. **Create repository** seç, adını `devops-app` yaz ve görünürlüğü **Private** yap.
+
+Terminalde image adını oluştur.
 
 ```bash
-export DOCKERHUB_USER="kendi_kullanici_adin"
+export DOCKERHUB_USER="KENDI_DOCKERHUB_KULLANICI_ADIN"
 export IMAGE_REPOSITORY="devops-app"
 export IMAGE_TAG="1.0"
 export IMAGE="docker.io/${DOCKERHUB_USER}/${IMAGE_REPOSITORY}:${IMAGE_TAG}"
-
-docker build -t "$IMAGE" app/devops-app
-docker login
-docker push "$IMAGE"
-kubectl create namespace private-app
+echo "$IMAGE"
 ```
 
-Önce `imagePullSecret` olmadan deneyin. Private repository nedeniyle Pod'un `ImagePullBackOff` olduğunu inceleyin:
+Beklenen sonuç: `docker.io/kullanici/devops-app:1.0` biçiminde image adı görünür. Yeni bir uygulama için yeni repository açılır; farklı uygulamalar aynı repository içinde karıştırılmaz.
+
+## 2. Uygulamayı Docker image yap
+
+`app/devops-app/Dockerfile`, Node.js uygulamasını `8080` portunda çalıştırır. Önce image'i yerelde üret.
 
 ```bash
-kubectl apply -f labs/lab-03-private-dockerhub-image-configmap-secret/starter/configmap.yaml -n private-app
+docker build -t "$IMAGE" app/devops-app
+docker images "$IMAGE"
+```
+
+Beklenen sonuç: image listede `1.0` tag'iyle görünür.
+
+Docker Hub'a giriş yap ve image'i private repository'ye gönder.
+
+```bash
+docker login
+docker push "$IMAGE"
+```
+
+Beklenen sonuç: push sonunda `1.0` tag'i görünür. Docker Hub sayfasını yenilediğinde image repository içinde listelenir.
+
+## 3. Private image'i Secret olmadan dene
+
+Bu adım bilerek başarısız olur. Kubernetes, private repository'den image çekmek için Docker Hub giriş bilgisine ihtiyaç duyar.
+
+```bash
+kubectl create namespace private-app
+kubectl apply -n private-app -f labs/lab-03-private-dockerhub-image-configmap-secret/starter/configmap.yaml
 sed "s|__IMAGE__|${IMAGE}|g" labs/lab-03-private-dockerhub-image-configmap-secret/starter/deployment.yaml | kubectl apply -n private-app -f -
+kubectl -n private-app get pods
 kubectl -n private-app describe pod -l app=devops-app
 ```
 
-Docker Hub access token ile registry Secret oluşturun:
+Beklenen sonuç: Pod `ErrImagePull` veya `ImagePullBackOff` olur. `describe` çıktısındaki Events bölümü image çekme yetkisinin olmadığını gösterir.
+
+## 4. Docker Hub girişini registry Secret olarak oluştur
+
+Docker Hub → Account Settings → Personal access tokens alanından bir token oluştur. Token'ı ekrana, Git'e veya manifest dosyasına yazma.
 
 ```bash
-read -rsp "Docker Hub access token: " DOCKERHUB_TOKEN; echo
 read -rp "Docker Hub e-posta adresi: " DOCKERHUB_EMAIL
+read -rsp "Docker Hub access token: " DOCKERHUB_TOKEN; echo
 kubectl -n private-app create secret docker-registry dockerhub-creds \
   --docker-server=https://index.docker.io/v1/ \
   --docker-username="$DOCKERHUB_USER" \
   --docker-password="$DOCKERHUB_TOKEN" \
   --docker-email="$DOCKERHUB_EMAIL"
+kubectl -n private-app get secret dockerhub-creds
 ```
 
-`create secret docker-registry`, Docker yapılandırmasını Kubernetes'in `.data` alanına Base64 kodlayarak yazar. Genel uygulama Secret'ında ise `stringData` kullanılır; API sunucusu bunu `.data` içinde Base64'e çevirir. Base64 şifreleme değildir:
+Beklenen sonuç: `dockerhub-creds` görünür. Kubernetes bu Secret'ı Pod başlamadan önce image çekmek için kullanacaktır.
+
+## 5. Uygulama Secret'ını `stringData` ile hazırla
+
+`stringData`, Secret değerini yerel YAML dosyasında okunabilir olarak yazmanı sağlar. Kubernetes kaydederken değeri `.data` alanında Base64'e çevirir. Base64 şifreleme değildir.
+
+```bash
+cp labs/lab-03-private-dockerhub-image-configmap-secret/starter/secret.example.yaml secrets.local.yaml
+${EDITOR:-vi} secrets.local.yaml
+```
+
+Yalnızca `APP_API_KEY` alanındaki şablon metnini kendi geçici değerinle değiştir ve kaydet. `secrets.local.yaml` Git'e eklenmez.
+
+İstersen Base64 dönüşümünü kendi terminalinde gör:
 
 ```bash
 read -rsp "Uygulama API anahtarı: " APP_API_KEY; echo
 printf '%s' "$APP_API_KEY" | base64
 ```
 
-`secrets.local.yaml` dosyasını şablondan oluşturun, `stringData` alanına yalnızca kendi yerel değerinizi yazın. Bu dosya Git'e girmez.
+Bu çıktı bir örnek parola değildir; `stringData` arkasındaki dönüşümü göstermek içindir.
+
+## 6. Uygulamayı ConfigMap, Secret ve imagePullSecret ile çalıştır
+
+Final Deployment, ayarları ConfigMap'ten, hassas değeri Secret'tan ve registry girişini `dockerhub-creds` Secret'ından alır.
 
 ```bash
-cp labs/lab-03-private-dockerhub-image-configmap-secret/starter/secret.example.yaml secrets.local.yaml
-${EDITOR:-vi} secrets.local.yaml
-kubectl apply -f secrets.local.yaml -n private-app
+kubectl apply -n private-app -f secrets.local.yaml
 sed "s|__IMAGE__|${IMAGE}|g" labs/lab-03-private-dockerhub-image-configmap-secret/starter/deployment-with-pull-secret.yaml | kubectl apply -n private-app -f -
-kubectl apply -f labs/lab-03-private-dockerhub-image-configmap-secret/starter/service.yaml -n private-app
+kubectl apply -n private-app -f labs/lab-03-private-dockerhub-image-configmap-secret/starter/service.yaml
 kubectl -n private-app rollout status deployment/devops-app
-curl http://SUNUCU_IP:30087/config
+kubectl -n private-app get pods,service
 ```
 
-## Doğal Doğrulama ve Beklenen Sonuç
+Beklenen sonuç: iki Pod `Running` olur ve Service'te `30087` NodePort görünür.
+
+## 7. Uygulamayı doğrula
 
 ```bash
-kubectl -n private-app get pod,secret
+curl http://SUNUCU_IP:30087/config
 curl http://SUNUCU_IP:30087/healthz
 ```
 
-Pod `Running` olmalı; `/config` yanıtı `secretLoaded: true` göstermeli, Secret değeri ise hiç gösterilmemelidir.
+İlk yanıtta ConfigMap mesajı ve `secretLoaded: true` görünür. Secret'ın gerçek değeri hiçbir yanıtta görünmez. İkinci yanıtta `status: UP` görünür.

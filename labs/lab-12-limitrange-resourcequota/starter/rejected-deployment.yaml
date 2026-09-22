@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rejected-app
+  namespace: governance-lab
+spec:
+  replicas: 5
+  selector:
+    matchLabels: { app: rejected-app }
+  template:
+    metadata:
+      labels: { app: rejected-app }
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine

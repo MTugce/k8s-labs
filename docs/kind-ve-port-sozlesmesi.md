@@ -28,7 +28,7 @@ DNS adı `student01-app1.devopsatolyesi.com` biçimindedir. `student01.app1...` 
 | `30086` | Kubernetes labs | Service türleri NodePort testi. |
 | `30087` | Kubernetes labs | Private `devops-app` NodePort testi. |
 | `30088` | Kubernetes labs | Gateway API preview NodePort testi. |
-| `30089` | Kubernetes labs | Ayrılmış boş ileri kullanım alanı. |
+| `30089` | Kubernetes labs | Kalıcı Grafana NodePort erişimi. |
 | `30090` | Traefik/dashboard | Kullanılmaz. |
 
 `18443` temel-orta seviye akışta gerekli değildir. Dış HTTPS Edge Nginx'te sonlanır; cluster içi TLS ileri seviye bir konudur.
@@ -42,11 +42,10 @@ DNS adı `student01-app1.devopsatolyesi.com` biçimindedir. `student01.app1...` 
 ```bash
 git clone https://gitlab.com/devops-practitioner-labs/k8s-labs.git
 cd k8s-labs
-./platform/setup-kind-cluster.sh
-kubectl get nodes -o wide
+kind create cluster --name k8s-labs --config platform/kind-cluster.yaml
 ```
 
-Kurulum scripti yalnızca kendi port alanını kontrol eder. Çakışma görürse bir servisi durdurmaz, yapılandırma değiştirmez ve güvenli biçimde durur.
+Adım adım port kontrolü, eklenti kurulumu ve cluster doğrulaması için [Platform Hazırlığı](../platform/README.md) dokümanını kullanın. Hiçbir adım Edge Nginx veya Cloudflare yapılandırmasını değiştirmez.
 
 ## Ingress ve Gateway API tercihi
 
