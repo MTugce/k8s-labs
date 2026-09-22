@@ -1,16 +1,22 @@
-# İlk Uygulaman: Pod, Deployment ve Service
+# * İlk Uygulaman: Pod, Deployment ve Service
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Pod, Deployment ve dört Service türünün davranışını aynı uygulama üzerinde görmek.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-01-first-app-pod-deployment-and-services
 ```
 
-## Bu labda ne yapacaksın?
-
-Tek Pod ile başlayacak, sonra aynı uygulamayı Deployment ile yöneteceksin. Deployment'ın silinen Pod'u yeniden oluşturduğunu görecek ve aynı uygulamaya dört farklı Service türüyle erişeceksin.
-
 ## Başlamadan önce
+
+## * Doğrulanan senaryo
+
+Tek Pod silinince geri gelmedi. Deployment üç replica'ya çıktı ve silinen Pod'u
+yeniden oluşturdu. ClusterIP içinden ve `30086` NodePort'undan HTTP 200 alındı;
+Kind ortamında LoadBalancer dış IP'si `pending` kaldı.
 
 Platform Hazırlığı tamamlanmış olmalıdır. Üç node `Ready` değilse önce eğitmene haber ver.
 

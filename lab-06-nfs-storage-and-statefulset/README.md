@@ -1,14 +1,14 @@
 # * Paylaşımlı Depolama ve StatefulSet ile MySQL
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+NFS üzerinde RWX dynamic storage ile StatefulSet'in kalıcı veri davranışını görmek.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-06-nfs-storage-and-statefulset
 ```
-
-## Bu labda ne yapacaksın?
-
-Cluster içinde bir NFS server çalıştıracak, NFS Subdir External Provisioner ile `ReadWriteMany` dynamic PVC oluşturacaksın. Sonra MySQL'i StatefulSet olarak çalıştırıp sabit Pod adı, headless Service ve kalıcı disk ilişkisini göreceksin.
 
 ## * Doğrulanan senaryo
 

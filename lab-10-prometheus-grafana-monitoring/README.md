@@ -1,14 +1,14 @@
 # Prometheus ve Grafana ile Cluster ve Uygulama Metriklerini İzle
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Cluster ve uygulama metriklerini Prometheus ile toplamak, Grafana'da izlemek ve alert üretmek.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
 ```
-
-## Bu labda ne yapacaksın?
-
-Helm ile Prometheus ve Grafana'yı kuracaksın. Grafana `30089` portunda kalıcı olarak erişilebilir olacak. `devops-app` uygulamasına `/metrics` endpoint'i ekleyip Prometheus'un metrik topladığını görecek, hazır dashboard ve alert kuralını uygulayacak, kontrollü yük ile alert üreteceksin.
 
 Bu labın sonunda **Prometheus ve Grafana silinmez**. Sonraki monitoring dersinde aynı kurulum kullanılacaktır.
 

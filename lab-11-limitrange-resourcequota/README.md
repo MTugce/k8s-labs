@@ -1,14 +1,14 @@
 # * Namespace Kaynak Sınırı Koy: LimitRange ve ResourceQuota
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+LimitRange ve ResourceQuota ile bir namespace'in kaynak tüketimini sınırlandırmak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-11-limitrange-resourcequota
 ```
-
-## Bu labda ne yapacaksın?
-
-Bir namespace için kaynak bütçesi tanımlayacaksın. LimitRange'in Pod'a varsayılan CPU/memory eklediğini, ResourceQuota'nın ise toplam Pod sayısı ve CPU sınırını aştığında yeni Pod'u reddettiğini göreceksin.
 
 ## * Doğrulanan senaryo
 

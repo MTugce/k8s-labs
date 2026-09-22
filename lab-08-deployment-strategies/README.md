@@ -1,14 +1,14 @@
 # * Sürümü Güvenle Yayınla: Recreate, Rolling, Blue-Green ve Canary
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Recreate, RollingUpdate, Blue-Green ve Canary yayın stratejilerini uygulamalı karşılaştırmak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-08-deployment-strategies
 ```
-
-## Bu labda ne yapacaksın?
-
-`devops-app:1.0` ve `devops-app:2.0` sürümlerini kullanarak dört yayın yaklaşımını karşılaştıracaksın. Her yaklaşımda hangi Pod'un trafik aldığını ve gerektiğinde rollback işlemini göreceksin.
 
 ## * Doğrulanan senaryo
 

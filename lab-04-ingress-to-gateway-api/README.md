@@ -1,14 +1,14 @@
 # Ingress Kurallarını Gateway API'ye Taşı
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Mevcut Ingress yönlendirmesini, DNS ve host Nginx ayarlarını değiştirmeden Gateway API'ye taşımak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-04-ingress-to-gateway-api
 ```
-
-## Bu labda ne yapacaksın?
-
-NGINX Ingress ile çalışan aynı `devops-app` Service'ini Gateway API ile yayınlayacaksın. Önce `30088` portunda güvenli preview yapacak, sonra mevcut app1 DNS yolunu Gateway API'ye taşıyacaksın.
 
 ## Başlamadan önce Lab 3 kontrolü
 
@@ -127,7 +127,9 @@ NGINX Ingress controller'a artık ihtiyaç olmadığı için namespace'ini sil.
 kubectl delete namespace ingress-nginx
 ```
 
-Traefik'i cutover ayarlarıyla güncelle. Bu ayar Traefik'in Kind içindeki `80` portunu dinlemesini sağlar.
+Traefik'i cutover ayarlarıyla güncelle. Bu ayar yalnızca Kind control-plane
+container'ındaki `80` portunu kullanır; host Nginx `80/443` portlarının sahibi
+olmaya devam eder.
 
 ```bash
 helm upgrade traefik traefik/traefik --version 37.0.0 \

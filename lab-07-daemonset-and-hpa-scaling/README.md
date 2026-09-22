@@ -1,14 +1,14 @@
 # * Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+DaemonSet'in node başına Pod oluşturmasını ve HPA'nın yük altında ölçeklemesini görmek.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling
 ```
-
-## Bu labda ne yapacaksın?
-
-DaemonSet ile her node'a bir ajan Pod'u koyacak, sonra `devops-app` için HPA oluşturacaksın. Yük üreterek replica sayısının arttığını, yük kesilince tekrar azaldığını izleyeceksin.
 
 ## * Doğrulanan senaryo
 

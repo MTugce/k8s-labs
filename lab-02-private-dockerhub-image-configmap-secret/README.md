@@ -1,14 +1,20 @@
-# Kendi Docker İmajını Private Docker Hub'dan Çalıştır
+# * Kendi Docker İmajını Private Docker Hub'dan Çalıştır
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Private Docker Hub imajını ConfigMap, Secret ve `imagePullSecrets` ile Kubernetes'te çalıştırmak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret
 ```
 
-## Bu labda ne yapacaksın?
+## * Doğrulanan senaryo
 
-`devops-app` uygulamasını image yapacak, kendi private Docker Hub repository'ne göndereceksin. Ardından ConfigMap, Secret ve `imagePullSecrets` kullanarak bu image'i Deployment içinde çalıştıracaksın.
+Private Docker Hub imajı `imagePullSecrets` ile çekildi. `/healthz` isteği
+`status: UP`, `/config` isteği ise ConfigMap mesajı ve `secretLoaded: true`
+değeri döndürdü.
 
 ## 1. Private Docker Hub repository oluştur
 

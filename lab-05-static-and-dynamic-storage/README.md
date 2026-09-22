@@ -1,14 +1,14 @@
 # * Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Static ve dynamic PV/PVC akışlarını aynı cluster üzerinde karşılaştırmak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-05-static-and-dynamic-storage
 ```
-
-## Bu labda ne yapacaksın?
-
-Önce önceden hazırlanmış bir HostPath alanına elle bağlanan static PV/PVC oluşturacaksın. Sonra `local-path` StorageClass kullanarak yalnızca PVC yazarak dynamic PV oluşturacaksın.
 
 ## * Doğrulanan senaryo
 

@@ -1,14 +1,14 @@
 # WordPress ile Helm Operasyonlarını Öğren
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Helm repository, install, values, upgrade, rollback ve uninstall işlemlerini öğrenmek.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari
 ```
-
-## Bu labda ne yapacaksın?
-
-WordPress'i Helm chart ile kuracak, release değerlerini inceleyecek, upgrade ve rollback yapacaksın. Bu uygulama Helm operasyonlarını öğrenmek içindir; lab sonunda yalnızca WordPress release'i kaldırılacaktır. Prometheus ve Grafana sonraki labda kurulacak ve kurs boyunca kalacaktır.
 
 ## 1. Helm repository kavramını gör
 

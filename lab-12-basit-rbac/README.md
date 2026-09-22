@@ -1,14 +1,14 @@
 # * Kubernetes'te Basit RBAC: ServiceAccount, Role ve RoleBinding
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+ServiceAccount, Role ve RoleBinding ile namespace kapsamlı en az yetkili erişim tanımlamak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-12-basit-rbac
 ```
-
-## Bu labda ne yapacaksın?
-
-Bir ServiceAccount oluşturacak, yalnızca kendi namespace'indeki Pod'ları listeleme izni veren Role yazacak ve RoleBinding ile bu izni bağlayacaksın. Sonra izinli ve izinsiz işlemleri `kubectl auth can-i` ile kanıtlayacaksın.
 
 ## * Doğrulanan senaryo
 

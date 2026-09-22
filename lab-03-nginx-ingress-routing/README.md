@@ -1,14 +1,19 @@
-# Uygulamanı NGINX Ingress ile İnternete Aç
+# * Uygulamanı NGINX Ingress ile İnternete Aç
 
-Bu labı şu klasörde uygulayacaksın:
+## Amaç
+
+Uygulamayı NGINX Ingress ile öğrenci DNS adı üzerinden erişilebilir yapmak.
+
+## Çalışma dizini
 
 ```bash
 cd ~/k8s-labs/lab-03-nginx-ingress-routing
 ```
 
-## Bu labda ne yapacaksın?
+## * Doğrulanan senaryo
 
-Önceki labdaki `devops-app` Service'ini, mevcut öğrenci DNS adıyla erişilebilir yapacaksın. Edge Nginx, Cloudflare veya host Nginx yapılandırmasına hiçbir değişiklik yapmayacaksın.
+`19001` portuna doğru Host header ile ve öğrenci DNS adı üzerinden HTTPS ile
+`devops-app` uygulamasından `status: UP` yanıtı alındı.
 
 ## Başlamadan önce Lab 2 kontrolü
 
@@ -50,10 +55,14 @@ Ingress manifesti tek başına trafik taşımaz; onu okuyan bir controller gerek
 kubectl apply -f https://github.com/kubernetes/ingress-nginx/raw/controller-v1.12.0/deploy/static/provider/kind/deploy.yaml
 kubectl wait --namespace ingress-nginx --for=condition=Ready pod \
   --selector=app.kubernetes.io/component=controller --timeout=180s
+kubectl wait --namespace ingress-nginx \
+  --for=condition=Complete job/ingress-nginx-admission-patch --timeout=180s
 kubectl get pods -n ingress-nginx
 ```
 
-Beklenen sonuç: `ingress-nginx-controller` Pod'u `Running` görünür.
+Beklenen sonuç: `ingress-nginx-controller` Pod'u `Running` görünür. İkinci
+bekleme komutu Ingress doğrulama webhook'unu hazırlar; tamamlanmadan Ingress
+manifesti uygulanırsa bağlantı hatası alınabilir.
 
 ## 2. Kendi DNS adını değişkene yaz
 
