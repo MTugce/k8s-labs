@@ -1,4 +1,4 @@
-# Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage
+# * Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage
 
 Bu labı şu klasörde uygulayacaksın:
 
@@ -9,6 +9,11 @@ cd ~/k8s-labs/lab-05-static-and-dynamic-storage
 ## Bu labda ne yapacaksın?
 
 Önce önceden hazırlanmış bir HostPath alanına elle bağlanan static PV/PVC oluşturacaksın. Sonra `local-path` StorageClass kullanarak yalnızca PVC yazarak dynamic PV oluşturacaksın.
+
+## * Doğrulanan senaryo
+
+Static PV/PVC `Bound` oldu. Writer Pod'unun yazdığı veri, Pod silindikten sonra
+Reader tarafından okundu. Dynamic PVC ise otomatik olarak yeni bir PV oluşturdu.
 
 ## Kavramlar
 

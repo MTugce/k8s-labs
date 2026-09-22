@@ -1,4 +1,4 @@
-# Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle
+# * Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle
 
 Bu labı şu klasörde uygulayacaksın:
 
@@ -9,6 +9,11 @@ cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling
 ## Bu labda ne yapacaksın?
 
 DaemonSet ile her node'a bir ajan Pod'u koyacak, sonra `devops-app` için HPA oluşturacaksın. Yük üreterek replica sayısının arttığını, yük kesilince tekrar azaldığını izleyeceksin.
+
+## * Doğrulanan senaryo
+
+DaemonSet üç node'da üç Pod oluşturdu. `/work?ms=500` yükü HPA'yı 1
+replica'dan 6 replica'ya çıkardı; yük kesilince CPU düştü ve HPA scale-in yaptı.
 
 ## Başlamadan önce Lab 2 kontrolü
 
@@ -135,6 +140,6 @@ kubectl -n private-app delete pod load-generator
 kubectl -n private-app get hpa,pods -w
 ```
 
-Beklenen sonuç: HPA, Kubernetes'in soğuma süresi sonunda Pod sayısını minimum replica değerine indirir. Bu hemen olmaz; birkaç dakika beklemek normaldir.
+Beklenen sonuç: HPA, 30 saniyelik soğuma penceresinin ardından Pod sayısını minimum replica değerine indirir.
 
 Bu labda DaemonSet'in node bazlı, HPA'nın ise metrik bazlı çalıştığını gerçek yük altında gördün.
