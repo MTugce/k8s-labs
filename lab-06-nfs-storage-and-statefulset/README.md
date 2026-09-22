@@ -54,6 +54,7 @@ Beklenen sonuç: `lab-nfs` StorageClass'ı listelenir.
 
 ```bash
 kubectl apply -f ~/k8s-labs/lab-06-nfs-storage-and-statefulset/starter/rwx-writers.yaml
+kubectl -n nfs-lab wait --for=condition=Ready pod/writer-a pod/writer-b --timeout=180s
 kubectl -n nfs-lab get pvc,pods
 kubectl -n nfs-lab exec writer-b -- cat /data/shared.txt
 ```
