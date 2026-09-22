@@ -1,196 +1,181 @@
 course:
-  id: k8s-foundations-to-intermediate
-  title: Kubernetes: Başlangıçtan Orta Seviyeye Uygulamalı Laboratuvarlar
+  id: k8s-labs
+  title: Kubernetes Labs
   topic_headings:
-    - Kind ve kubectl
-    - Pod, Deployment ve Service
-    - Private image, ConfigMap ve Secret
+    - Workloads ve servisler
+    - Konfigürasyon ve private image
     - Ingress ve Gateway API
-    - Static ve dynamic storage
-    - StatefulSet, DaemonSet ve HPA
-    - Deployment stratejileri
-    - Helm release yönetimi
-    - Prometheus, Grafana ve alerting
-    - ResourceQuota, LimitRange ve RBAC
-  lab_ids:
-    - LAB-K8S-02
-    - LAB-K8S-03
-    - LAB-K8S-04
-    - LAB-K8S-05
-    - LAB-K8S-06
-    - LAB-K8S-07
-    - LAB-K8S-08
-    - LAB-K8S-09
-    - LAB-K8S-10
-    - LAB-K8S-11
-    - LAB-K8S-12
-    - LAB-K8S-13
+    - Storage ve StatefulSet
+    - Ölçekleme ve yayın
+    - Helm ve monitoring
+    - Kaynak yönetimi ve RBAC
+  lab_ids: [LAB-K8S-01, LAB-K8S-02, LAB-K8S-03, LAB-K8S-04, LAB-K8S-05, LAB-K8S-06, LAB-K8S-07, LAB-K8S-08, LAB-K8S-09, LAB-K8S-10, LAB-K8S-11, LAB-K8S-12]
 labs:
-  - id: LAB-K8S-02
+  - id: LAB-K8S-01
     slug: first-app-pod-deployment-and-services
     title: İlk Uygulaman: Pod, Deployment ve Service
     topic: kubernetes
-    difficulty: temel
-    estimated_minutes: 45
-    prerequisites: [LAB-K8S-01]
+    difficulty: başlangıç
+    estimated_minutes: 50
+    prerequisites: [platform-ready]
     profiles: [kubectl]
     ports: [30086]
-    guide: labs/lab-02-first-app-pod-deployment-and-services/README.md
-    assets: [labs/lab-02-first-app-pod-deployment-and-services/starter]
+    guide: lab-01-first-app-pod-deployment-and-services/README.md
+    assets: [lab-01-first-app-pod-deployment-and-services/starter]
     validation_mode: kubectl-and-curl
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-03
+  - id: LAB-K8S-02
     slug: private-dockerhub-image-configmap-secret
     title: Kendi Docker İmajını Private Docker Hub'dan Çalıştır
     topic: kubernetes
-    difficulty: temel-orta
-    estimated_minutes: 55
-    prerequisites: [LAB-K8S-02]
+    difficulty: temel
+    estimated_minutes: 60
+    prerequisites: [LAB-K8S-01]
     profiles: [docker, kubectl]
     ports: [30087]
-    guide: labs/lab-03-private-dockerhub-image-configmap-secret/README.md
-    assets: [app/devops-app, labs/lab-03-private-dockerhub-image-configmap-secret/starter]
+    guide: lab-02-private-dockerhub-image-configmap-secret/README.md
+    assets: [app/devops-app, lab-02-private-dockerhub-image-configmap-secret/starter]
     validation_mode: docker-kubectl-and-curl
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-04
+  - id: LAB-K8S-03
     slug: nginx-ingress-routing
     title: Uygulamanı NGINX Ingress ile İnternete Aç
     topic: kubernetes
     difficulty: orta
-    estimated_minutes: 40
-    prerequisites: [LAB-K8S-03]
-    profiles: [kubectl, nginx-ingress]
+    estimated_minutes: 45
+    prerequisites: [LAB-K8S-02]
+    profiles: [kubectl]
     ports: [19001]
-    guide: labs/lab-04-nginx-ingress-routing/README.md
-    assets: [labs/lab-04-nginx-ingress-routing/starter]
+    guide: lab-03-nginx-ingress-routing/README.md
+    assets: [lab-03-nginx-ingress-routing/starter]
     validation_mode: external-dns-and-curl
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-05
+  - id: LAB-K8S-04
     slug: ingress-to-gateway-api
     title: Ingress Kurallarını Gateway API'ye Taşı
     topic: kubernetes
     difficulty: orta
-    estimated_minutes: 45
-    prerequisites: [LAB-K8S-04]
-    profiles: [kubectl, gateway-api]
+    estimated_minutes: 50
+    prerequisites: [LAB-K8S-03]
+    profiles: [helm, kubectl]
     ports: [19001, 30088]
-    guide: labs/lab-05-ingress-to-gateway-api/README.md
-    assets: [labs/lab-05-ingress-to-gateway-api/starter]
-    validation_mode: external-dns-and-curl
-    learning_paths: [k8s-foundations-to-intermediate]
+    guide: lab-04-ingress-to-gateway-api/README.md
+    assets: [lab-04-ingress-to-gateway-api/starter]
+    validation_mode: traffic-and-curl
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-06
+  - id: LAB-K8S-05
     slug: static-and-dynamic-storage
     title: Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage
     topic: kubernetes
     difficulty: orta
-    estimated_minutes: 50
-    prerequisites: [LAB-K8S-02]
+    estimated_minutes: 55
+    prerequisites: [LAB-K8S-01]
     profiles: [kubectl]
     ports: []
-    guide: labs/lab-06-static-and-dynamic-storage/README.md
-    assets: [labs/lab-06-static-and-dynamic-storage/starter]
+    guide: lab-05-static-and-dynamic-storage/README.md
+    assets: [lab-05-static-and-dynamic-storage/starter]
     validation_mode: pv-pvc-and-data
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-07
+  - id: LAB-K8S-06
     slug: nfs-storage-and-statefulset
     title: Paylaşımlı Depolama ve StatefulSet ile MySQL
     topic: kubernetes
     difficulty: orta
-    estimated_minutes: 60
-    prerequisites: [LAB-K8S-06]
-    profiles: [kubectl, helm]
+    estimated_minutes: 65
+    prerequisites: [LAB-K8S-05]
+    profiles: [helm, kubectl]
     ports: []
-    guide: labs/lab-07-nfs-storage-and-statefulset/README.md
-    assets: [labs/lab-07-nfs-storage-and-statefulset/starter]
+    guide: lab-06-nfs-storage-and-statefulset/README.md
+    assets: [lab-06-nfs-storage-and-statefulset/starter]
     validation_mode: pvc-and-stateful-data
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-08
+  - id: LAB-K8S-07
     slug: daemonset-and-hpa-scaling
     title: Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle
     topic: kubernetes
     difficulty: orta
-    estimated_minutes: 45
-    prerequisites: [LAB-K8S-03]
-    profiles: [kubectl, metrics-server]
+    estimated_minutes: 55
+    prerequisites: [LAB-K8S-02]
+    profiles: [kubectl]
     ports: [30087]
-    guide: labs/lab-08-daemonset-and-hpa-scaling/README.md
-    assets: [labs/lab-08-daemonset-and-hpa-scaling/starter]
+    guide: lab-07-daemonset-and-hpa-scaling/README.md
+    assets: [lab-07-daemonset-and-hpa-scaling/starter]
     validation_mode: pods-and-hpa
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
+    access_tags: [student]
+  - id: LAB-K8S-08
+    slug: deployment-strategies
+    title: Sürümü Güvenle Yayınla
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 65
+    prerequisites: [LAB-K8S-04]
+    profiles: [docker, kubectl]
+    ports: [19001]
+    guide: lab-08-deployment-strategies/README.md
+    assets: [lab-08-deployment-strategies/starter]
+    validation_mode: traffic-and-rollout
+    learning_paths: [k8s-labs]
     access_tags: [student]
   - id: LAB-K8S-09
-    slug: deployment-strategies
-    title: Sürümü Güvenle Yayınla: Recreate, Rolling, Blue-Green ve Canary
-    topic: kubernetes
-    difficulty: orta
-    estimated_minutes: 60
-    prerequisites: [LAB-K8S-05]
-    profiles: [kubectl, ingress-nginx, gateway-api]
-    ports: [19001, 19002, 19003]
-    guide: labs/lab-09-deployment-strategies/README.md
-    assets: [labs/lab-09-deployment-strategies/starter]
-    validation_mode: traffic-and-rollout
-    learning_paths: [k8s-foundations-to-intermediate]
-    access_tags: [student]
-  - id: LAB-K8S-10
     slug: wordpress-ile-helm-operasyonlari
     title: WordPress ile Helm Operasyonlarını Öğren
-    topic: helm-gitops
+    topic: kubernetes
     difficulty: orta
     estimated_minutes: 55
-    prerequisites: [LAB-K8S-09]
+    prerequisites: [LAB-K8S-08]
     profiles: [helm, kubectl]
     ports: []
-    guide: labs/lab-10-wordpress-ile-helm-operasyonlari/README.md
-    assets: [labs/lab-10-wordpress-ile-helm-operasyonlari/starter]
+    guide: lab-09-wordpress-ile-helm-operasyonlari/README.md
+    assets: [lab-09-wordpress-ile-helm-operasyonlari/starter]
     validation_mode: helm-release-lifecycle
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]
-  - id: LAB-K8S-11
+  - id: LAB-K8S-10
     slug: prometheus-grafana-monitoring
-    title: Prometheus ve Grafana ile Cluster ve Uygulama Metriklerini İzle
-    topic: monitoring
+    title: Prometheus ve Grafana ile Metrikleri İzle
+    topic: kubernetes
     difficulty: orta
     estimated_minutes: 75
-    prerequisites: [LAB-K8S-08, LAB-K8S-10]
-    profiles: [helm, kubectl, docker]
+    prerequisites: [LAB-K8S-07, LAB-K8S-09]
+    profiles: [docker, helm, kubectl]
     ports: [30089]
-    guide: labs/lab-11-prometheus-grafana-monitoring/README.md
-    assets: [app/devops-app, labs/lab-11-prometheus-grafana-monitoring/starter, labs/lab-11-prometheus-grafana-monitoring/scripts]
+    guide: lab-10-prometheus-grafana-monitoring/README.md
+    assets: [lab-10-prometheus-grafana-monitoring/starter, lab-10-prometheus-grafana-monitoring/scripts]
     validation_mode: metrics-dashboard-and-alert
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
+    access_tags: [student]
+  - id: LAB-K8S-11
+    slug: limitrange-resourcequota
+    title: LimitRange ve ResourceQuota
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 40
+    prerequisites: [LAB-K8S-07]
+    profiles: [kubectl]
+    ports: []
+    guide: lab-11-limitrange-resourcequota/README.md
+    assets: [lab-11-limitrange-resourcequota/starter]
+    validation_mode: rejected-workload-evidence
+    learning_paths: [k8s-labs]
     access_tags: [student]
   - id: LAB-K8S-12
-    slug: limitrange-resourcequota
-    title: Namespace Kaynak Sınırı Koy: LimitRange ve ResourceQuota
-    topic: kubernetes
-    difficulty: orta
-    estimated_minutes: 40
-    prerequisites: [LAB-K8S-08]
-    profiles: [kubectl]
-    ports: []
-    guide: labs/lab-12-limitrange-resourcequota/README.md
-    assets: [labs/lab-12-limitrange-resourcequota/starter]
-    validation_mode: rejected-workload-evidence
-    learning_paths: [k8s-foundations-to-intermediate]
-    access_tags: [student]
-  - id: LAB-K8S-13
     slug: basit-rbac
-    title: Kubernetes'te Basit RBAC: ServiceAccount, Role ve RoleBinding
+    title: Basit RBAC
     topic: kubernetes
     difficulty: orta
     estimated_minutes: 40
-    prerequisites: [LAB-K8S-12]
+    prerequisites: [LAB-K8S-11]
     profiles: [kubectl]
     ports: []
-    guide: labs/lab-13-basit-rbac/README.md
-    assets: [labs/lab-13-basit-rbac/starter]
+    guide: lab-12-basit-rbac/README.md
+    assets: [lab-12-basit-rbac/starter]
     validation_mode: kubectl-auth-can-i
-    learning_paths: [k8s-foundations-to-intermediate]
+    learning_paths: [k8s-labs]
     access_tags: [student]

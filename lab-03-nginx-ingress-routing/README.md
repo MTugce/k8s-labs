@@ -1,8 +1,10 @@
 # Uygulamanı NGINX Ingress ile İnternete Aç
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 45 dk | kubectl, ingress-nginx | `19001` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-03-nginx-ingress-routing
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -22,7 +24,20 @@ student01-app1.devopsatolyesi.com
 
 `student01-app1...` doğru ad biçimidir. `student01.app1...` kullanma.
 
-## 1. Uygulamanın hazır olduğunu doğrula
+## 1. NGINX Ingress controller kur
+
+Ingress manifesti tek başına trafik taşımaz; onu okuyan bir controller gerekir. Bu controller yalnızca Kind cluster içinde çalışır, hosttaki Edge Nginx'e dokunmaz.
+
+```bash
+kubectl apply -f https://github.com/kubernetes/ingress-nginx/raw/controller-v1.12.0/deploy/static/provider/kind/deploy.yaml
+kubectl wait --namespace ingress-nginx --for=condition=Ready pod \
+  --selector=app.kubernetes.io/component=controller --timeout=180s
+kubectl get pods -n ingress-nginx
+```
+
+Beklenen sonuç: `ingress-nginx-controller` Pod'u `Running` görünür.
+
+## 2. Uygulamanın hazır olduğunu doğrula
 
 Ingress Pod'a değil Service'e yönlendirir. Bu nedenle önce Service ve Pod'lar çalışıyor olmalı.
 
@@ -32,7 +47,7 @@ kubectl -n private-app get deployment,pods,service
 
 Beklenen sonuç: `devops-app` Deployment'ında iki hazır Pod ve `devops-app` Service'i görünür.
 
-## 2. Kendi DNS adını değişkene yaz
+## 3. Kendi DNS adını değişkene yaz
 
 `student01` yerine sana verilen öğrenci kodunu kullan.
 
@@ -44,19 +59,19 @@ echo "$APP_HOST"
 
 Beklenen sonuç: `student01-app1.devopsatolyesi.com` görünür.
 
-## 3. Ingress manifestini uygula
+## 4. Ingress manifestini uygula
 
 Manifestteki `__APP_HOST__` alanı terminaldeki DNS adıyla değiştirilir. Dosyanın kendisi değiştirilmez; her öğrenci aynı starter dosyasını kullanır.
 
 ```bash
-sed "s/__APP_HOST__/${APP_HOST}/g" labs/lab-04-nginx-ingress-routing/starter/ingress.yaml | kubectl apply -n private-app -f -
+sed "s/__APP_HOST__/${APP_HOST}/g" ~/k8s-labs/lab-03-nginx-ingress-routing/starter/ingress.yaml | kubectl apply -n private-app -f -
 kubectl -n private-app get ingress
 kubectl -n private-app describe ingress devops-app
 ```
 
 Beklenen sonuç: Ingress kurallarında kendi hostname'in ve backend olarak `devops-app:80` görünür.
 
-## 4. Önce doğrudan Kind girişini test et
+## 5. Önce doğrudan Kind girişini test et
 
 Bu test DNS veya TLS katmanı olmadan yalnızca host header ile Ingress kuralını doğrular.
 
@@ -66,7 +81,7 @@ curl -H "Host: ${APP_HOST}" http://SUNUCU_IP:19001/healthz
 
 Beklenen sonuç: JSON yanıtta `status: UP` görünür.
 
-## 5. Öğrenci DNS adıyla test et
+## 6. Öğrenci DNS adıyla test et
 
 Bu test tüm akışı kullanır: DNS → Edge Nginx → Kind → Ingress → Service → Pod.
 

@@ -1,4 +1,9 @@
-# LAB 5 preview: yalnızca ayrılmış NodePort 30088 kullanılır.
+# Gateway API cutover: mevcut 19001 -> Kind :80 eşlemesi kullanılır.
+deployment:
+  kind: DaemonSet
+hostNetwork: true
+service:
+  enabled: false
 ingressClass:
   enabled: false
 providers:
@@ -14,8 +19,3 @@ ports:
   web:
     port: 80
     exposedPort: 80
-    nodePort: 30088
-    expose:
-      default: true
-service:
-  type: NodePort

@@ -1,9 +1,4 @@
-# LAB 5 cutover: Edge Nginx değişmeden 19001 -> Kind control-plane:80 akışı sürer.
-deployment:
-  kind: DaemonSet
-hostNetwork: true
-service:
-  enabled: false
+# Gateway API preview: yalnızca 30088 NodePort'u kullanılır.
 ingressClass:
   enabled: false
 providers:
@@ -19,3 +14,8 @@ ports:
   web:
     port: 80
     exposedPort: 80
+    nodePort: 30088
+    expose:
+      default: true
+service:
+  type: NodePort

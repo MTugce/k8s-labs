@@ -1,8 +1,10 @@
 # Ingress Kurallarını Gateway API'ye Taşı
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 50 dk | kubectl, Helm | `19001`, `30088` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-04-ingress-to-gateway-api
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -27,13 +29,13 @@ Beklenen sonuç: `gateways.gateway.networking.k8s.io` ve `httproutes.gateway.net
 
 ## 2. Traefik'i preview modunda kur
 
-`platform/traefik-preview-values.yaml`, Traefik'i yalnızca ayrılmış `30088` NodePort'unda açar. NGINX Ingress çalışmaya devam eder; henüz DNS trafiği değişmez.
+`starter/traefik-preview-values.yaml`, Traefik'i yalnızca ayrılmış `30088` NodePort'unda açar. NGINX Ingress çalışmaya devam eder; henüz DNS trafiği değişmez.
 
 ```bash
 helm repo add traefik https://traefik.github.io/charts
 helm upgrade --install traefik traefik/traefik --version 37.0.0 \
   --namespace traefik --create-namespace \
-  --values platform/traefik-preview-values.yaml --wait
+  --values ~/k8s-labs/lab-04-ingress-to-gateway-api/starter/traefik-preview-values.yaml --wait
 kubectl -n traefik get pods,service
 kubectl get gatewayclass
 ```
@@ -47,7 +49,7 @@ Beklenen sonuç: Traefik Pod'u `Running`, Service'i `30088` NodePort ile görün
 ```bash
 export STUDENT_ID="student01"
 export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
-sed "s/__APP_HOST__/${APP_HOST}/g" labs/lab-05-ingress-to-gateway-api/starter/gateway-route.yaml | kubectl apply -n private-app -f -
+sed "s/__APP_HOST__/${APP_HOST}/g" ~/k8s-labs/lab-04-ingress-to-gateway-api/starter/gateway-route.yaml | kubectl apply -n private-app -f -
 kubectl -n private-app get gateway,httproute
 kubectl -n private-app describe httproute devops-app-route
 ```
@@ -72,7 +74,7 @@ Preview başarılıysa yalnızca Kind içindeki NGINX Ingress controller'ı kald
 kubectl delete ingress -n private-app devops-app
 kubectl delete namespace ingress-nginx
 helm upgrade traefik traefik/traefik --version 37.0.0 \
-  --namespace traefik --values platform/traefik-cutover-values.yaml --wait
+  --namespace traefik --values ~/k8s-labs/lab-04-ingress-to-gateway-api/starter/traefik-cutover-values.yaml --wait
 kubectl -n traefik get pods -o wide
 curl -k "https://${APP_HOST}/healthz"
 ```

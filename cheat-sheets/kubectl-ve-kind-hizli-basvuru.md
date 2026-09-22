@@ -1,152 +1,245 @@
 # Kubectl ve Kind Hızlı Başvuru
 
-Bu sayfa açıklama yerine komut hatırlatıcıdır. Komutu çalıştırmadan önce doğru namespace'i ve nesne adını kontrol edin.
+Bu sayfa labdaki komutların kısa anlamını hatırlatır. `NAME`, `NAME_SPACE`, `IMAGE` ve `POD_ADI` alanlarını kendi değerlerinle değiştir.
 
-## Kind kümesi
+## Cluster
+
+### Cluster listesini gör
+
+Bilgisayarında Kind ile oluşturulmuş cluster adlarını listeler.
 
 ```bash
 kind get clusters
-kind create cluster --config platform/kind-cluster.yaml
-kubectl config use-context kind-k8s-labs
-kind get nodes --name k8s-labs
-kind delete cluster --name k8s-labs
 ```
 
-## Küme ve namespace
+### Lab cluster'ını oluştur
+
+Bu repodaki port ve disk ayarlarıyla `k8s-labs` adlı cluster oluşturur. Bu komut cluster henüz yoksa bir kez çalıştırılır.
+
+```bash
+kind create cluster --name k8s-labs --config ~/k8s-labs/platform/kind-cluster.yaml
+```
+
+### Aktif Kubernetes hedefini seç
+
+Sonraki `kubectl` komutlarının `k8s-labs` cluster'ına gitmesini sağlar.
+
+```bash
+kubectl config use-context kind-k8s-labs
+```
+
+### Node'ları kontrol et
+
+Control-plane ve worker node'ların hazır olup olmadığını gösterir.
 
 ```bash
 kubectl get nodes -o wide
-kubectl get namespaces
-kubectl create namespace NAME
-kubectl get all -n NAME
-kubectl delete namespace NAME
 ```
 
-## Pod işlemleri
+## Namespace
+
+### Yeni çalışma alanı oluştur
+
+Kaynakları birbirinden ayırmak için namespace oluşturur.
+
+```bash
+kubectl create namespace NAME_SPACE
+```
+
+### Namespace içindeki kaynakları listele
+
+Pod, Service, Deployment gibi temel kaynakları birlikte gösterir.
+
+```bash
+kubectl get all -n NAME_SPACE
+```
+
+## Pod
+
+### Tek Pod oluştur
+
+YAML yazmadan hızlı bir test Pod'u oluşturur.
 
 ```bash
 kubectl run NAME --image=IMAGE
-kubectl get pods -A
-kubectl describe pod NAME -n NAME_SPACE
-kubectl logs NAME -n NAME_SPACE
-kubectl logs -f NAME -n NAME_SPACE
-kubectl exec -it NAME -n NAME_SPACE -- sh
-kubectl delete pod NAME -n NAME_SPACE
 ```
 
-## Deployment ve rollout
+### Pod ayrıntısını incele
+
+Image çekme, başlatma ve hata olaylarını görürsün.
+
+```bash
+kubectl describe pod POD_ADI -n NAME_SPACE
+```
+
+### Pod loglarını gör
+
+Container'ın standart çıktısını gösterir.
+
+```bash
+kubectl logs POD_ADI -n NAME_SPACE
+```
+
+### Pod içine komut gönder
+
+Çalışan container içinde örneğin `sh` başlatır.
+
+```bash
+kubectl exec -it POD_ADI -n NAME_SPACE -- sh
+```
+
+## Deployment
+
+### Deployment oluştur
+
+Kubernetes'in belirli sayıda Pod'u sürekli çalıştırmasını sağlar.
 
 ```bash
 kubectl create deployment NAME --image=IMAGE -n NAME_SPACE
-kubectl scale deployment/NAME --replicas=3 -n NAME_SPACE
-kubectl set image deployment/NAME CONTAINER=IMAGE -n NAME_SPACE
-kubectl rollout status deployment/NAME -n NAME_SPACE
-kubectl rollout history deployment/NAME -n NAME_SPACE
-kubectl rollout undo deployment/NAME -n NAME_SPACE
-kubectl get deploy,rs,pods -n NAME_SPACE
 ```
 
-## Service ve erişim testi
+### Pod sayısını değiştir
+
+Deployment'ın istediği replica sayısını artırır veya azaltır.
+
+```bash
+kubectl scale deployment/NAME --replicas=3 -n NAME_SPACE
+```
+
+### Deployment image'ini değiştir
+
+Yeni image sürümüyle rollout başlatır.
+
+```bash
+kubectl set image deployment/NAME CONTAINER=IMAGE -n NAME_SPACE
+```
+
+### Rollout tamamlanana kadar bekle
+
+Yeni Pod'ların hazır olup olmadığını takip eder.
+
+```bash
+kubectl rollout status deployment/NAME -n NAME_SPACE
+```
+
+### Önceki sürüme dön
+
+Son rollout'u geri alır.
+
+```bash
+kubectl rollout undo deployment/NAME -n NAME_SPACE
+```
+
+## Service ve erişim
+
+### Deployment'ı Service yap
+
+Pod'lara sabit DNS adıyla erişmek için ClusterIP Service oluşturur.
 
 ```bash
 kubectl expose deployment NAME --name=NAME-svc --port=80 -n NAME_SPACE
-kubectl get svc -n NAME_SPACE
-kubectl get endpoints -n NAME_SPACE
-kubectl -n NAME_SPACE run curl --rm -it --restart=Never \
-  --image=curlimages/curl:8.12.1 -- curl -s SERVICE/healthz
+```
+
+### Cluster içinden HTTP isteği at
+
+Geçici curl Pod'u ile Service DNS adını test eder; iş bitince Pod silinir.
+
+```bash
+kubectl -n NAME_SPACE run curl --rm -it --restart=Never --image=curlimages/curl:8.12.1 -- curl -s SERVICE/healthz
+```
+
+### NodePort Service'i dışarıdan test et
+
+Sunucunun IP adresi ve NodePort üzerinden uygulamaya ulaşır.
+
+```bash
 curl http://SUNUCU_IP:30086
-curl -H 'Host: student01-app1.devopsatolyesi.com' http://SUNUCU_IP:19001/healthz
 ```
 
-## ConfigMap, Secret ve private image
+## Storage
+
+### PVC durumunu gör
+
+Uygulamanın istediği diskin bağlı olup olmadığını gösterir.
 
 ```bash
-kubectl create configmap NAME --from-literal=KEY=VALUE -n NAME_SPACE
-kubectl create secret generic NAME --from-literal=KEY="$VALUE" -n NAME_SPACE
-kubectl create secret docker-registry dockerhub-creds -n NAME_SPACE \
-  --docker-server=https://index.docker.io/v1/ \
-  --docker-username="$DOCKERHUB_USER" --docker-password="$DOCKERHUB_TOKEN" \
-  --docker-email="$DOCKERHUB_EMAIL"
-kubectl get secret -n NAME_SPACE
-kubectl describe pod POD -n NAME_SPACE
+kubectl get pvc -n NAME_SPACE
 ```
 
-`stringData` ile manifest yazıldığında Kubernetes onu `.data` içinde Base64'e çevirir. Base64 şifreleme değildir; gerçek değerleri Git'e koymayın.
+### Cluster disklerini gör
 
-## Ingress ve Gateway API
-
-```bash
-kubectl get ingress -A
-kubectl get gateway,httproute -A
-kubectl describe ingress NAME -n NAME_SPACE
-kubectl describe httproute NAME -n NAME_SPACE
-kubectl get gatewayclass
-```
-
-## Storage ve StatefulSet
+Static veya dynamic oluşan PersistentVolume kaynaklarını listeler.
 
 ```bash
-kubectl get storageclass
 kubectl get pv
-kubectl get pvc -A
-kubectl describe pvc NAME -n NAME_SPACE
-kubectl get statefulset -n NAME_SPACE
-kubectl get pod -n NAME_SPACE -o wide
 ```
 
-## DaemonSet ve HPA
+## HPA ve metrik
+
+### Anlık CPU ve memory kullanımını gör
+
+Metrics Server'ın node veya Pod verisi üretip üretmediğini kontrol eder.
 
 ```bash
-kubectl get daemonset -A
-kubectl get hpa -A
-kubectl top nodes
 kubectl top pods -n NAME_SPACE
+```
+
+### HPA ile Pod değişimini izle
+
+HPA replica sayısı ve Pod sayısı değiştikçe ekrana yeni satır basar. `Ctrl+C` ile durur.
+
+```bash
 kubectl get hpa,pods -n NAME_SPACE -w
 ```
 
-## Helm release işlemleri
+## Helm
+
+### Chart repository ekle
+
+Helm'in chart indireceği kaynağı yerel listeye ekler.
 
 ```bash
 helm repo add NAME URL
-helm repo list
-helm repo update
+```
+
+### Repository içindeki chart'ı ara
+
+Kurmak istediğin chart'ın adını ve sürümünü bulur.
+
+```bash
 helm search repo KEYWORD
-helm show values REPOSITORY/CHART
-helm install RELEASE REPOSITORY/CHART -n NAME_SPACE --create-namespace -f values.yaml
-helm list -n NAME_SPACE
-helm status RELEASE -n NAME_SPACE
-helm get values RELEASE -n NAME_SPACE
-helm upgrade RELEASE REPOSITORY/CHART -n NAME_SPACE -f values.yaml --set KEY=VALUE
+```
+
+### Release'i kur veya güncelle
+
+Release yoksa kurar; varsa values dosyasındaki yeni ayarlarla günceller.
+
+```bash
+helm upgrade --install RELEASE REPOSITORY/CHART -n NAME_SPACE -f values.yaml
+```
+
+### Release geçmişini gör
+
+Install ve upgrade revision'larını listeler.
+
+```bash
 helm history RELEASE -n NAME_SPACE
+```
+
+### Belirli revision'a geri dön
+
+Seçtiğin revision'ın değerleriyle release'i yeniden uygular.
+
+```bash
 helm rollback RELEASE REVISION -n NAME_SPACE
-helm uninstall RELEASE -n NAME_SPACE
-helm repo remove NAME
 ```
 
-## Monitoring
+## RBAC
+
+### Bir kimliğin işlem iznini test et
+
+ServiceAccount'ın verilen namespace'te belirtilen işlemi yapıp yapamayacağını söyler.
 
 ```bash
-kubectl -n monitoring get pods,service,pvc
-kubectl -n private-app get servicemonitor,prometheusrule
-kubectl -n private-app describe prometheusrule devops-app-alerts
-helm status monitoring -n monitoring
-curl http://SUNUCU_IP:30087/metrics
-```
-
-## Kaynak yönetimi ve RBAC
-
-```bash
-kubectl -n NAME_SPACE describe limitrange NAME
-kubectl -n NAME_SPACE describe resourcequota NAME
 kubectl auth can-i list pods --as=system:serviceaccount:NAME_SPACE:SERVICE_ACCOUNT -n NAME_SPACE
-kubectl auth can-i delete pods --as=system:serviceaccount:NAME_SPACE:SERVICE_ACCOUNT -n NAME_SPACE
-```
-
-## Manifest uygulama ve geri alma
-
-```bash
-kubectl apply -f DOSYA.yaml
-kubectl diff -f DOSYA.yaml
-kubectl delete -f DOSYA.yaml
-kubectl get events -n NAME_SPACE --sort-by=.lastTimestamp
 ```

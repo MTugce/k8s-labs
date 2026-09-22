@@ -1,8 +1,10 @@
 # Paylaşımlı Depolama ve StatefulSet ile MySQL
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 65 dk | kubectl, Helm | — |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-06-nfs-storage-and-statefulset
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -13,7 +15,7 @@ Cluster içinde bir NFS server çalıştıracak, NFS Subdir External Provisioner
 NFS server, bu eğitimde paylaşımlı dosya alanı sağlar. Production NFS sunucusu değildir; yalnızca lab içindir.
 
 ```bash
-kubectl apply -f labs/lab-07-nfs-storage-and-statefulset/starter/nfs-server.yaml
+kubectl apply -f ~/k8s-labs/lab-06-nfs-storage-and-statefulset/starter/nfs-server.yaml
 kubectl -n nfs-lab wait --for=condition=Ready pod -l app=nfs-server --timeout=180s
 kubectl -n nfs-lab get pods,service
 ```
@@ -49,7 +51,7 @@ Beklenen sonuç: `lab-nfs` StorageClass'ı listelenir.
 `ReadWriteMany`, birden fazla Pod'un aynı volume'u aynı anda bağlayabilmesini sağlar.
 
 ```bash
-kubectl apply -f labs/lab-07-nfs-storage-and-statefulset/starter/rwx-writers.yaml
+kubectl apply -f ~/k8s-labs/lab-06-nfs-storage-and-statefulset/starter/rwx-writers.yaml
 kubectl -n nfs-lab get pvc,pods
 kubectl -n nfs-lab exec writer-b -- cat /data/shared.txt
 ```
@@ -75,7 +77,7 @@ Beklenen sonuç: yalnızca Secret adı ve türü görünür; parola görüntüle
 StatefulSet, Pod'a sıralı ve sabit isim verir. `volumeClaimTemplates`, her replica için ayrı PVC oluşturur.
 
 ```bash
-kubectl apply -f labs/lab-07-nfs-storage-and-statefulset/starter/mysql-statefulset.yaml
+kubectl apply -f ~/k8s-labs/lab-06-nfs-storage-and-statefulset/starter/mysql-statefulset.yaml
 kubectl -n stateful-lab get statefulset,pods,pvc,service
 kubectl -n stateful-lab wait --for=condition=Ready pod/mysql-0 --timeout=180s
 ```

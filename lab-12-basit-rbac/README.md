@@ -1,8 +1,10 @@
 # Kubernetes'te Basit RBAC: ServiceAccount, Role ve RoleBinding
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 40 dk | kubectl | — |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-12-basit-rbac
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -21,7 +23,7 @@ ServiceAccount  →  Role  →  RoleBinding  →  İzinli işlem
 ## 1. ServiceAccount ve Role'ü oluştur
 
 ```bash
-kubectl apply -f labs/lab-13-basit-rbac/starter/rbac.yaml
+kubectl apply -f ~/k8s-labs/lab-12-basit-rbac/starter/rbac.yaml
 kubectl -n rbac-lab get serviceaccount,role,rolebinding
 kubectl -n rbac-lab describe role pod-reader
 ```

@@ -1,8 +1,10 @@
 # İlk Uygulaman: Pod, Deployment ve Service
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Başlangıç | 50 dk | kubectl | `30086` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-01-first-app-pod-deployment-and-services
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -97,7 +99,7 @@ Beklenen sonuç: son komut `HTTP/1.1 200 OK` döndürür. `web-clusterip`, Pod I
 Hazır manifest aynı Deployment için üç Service türü daha oluşturur.
 
 ```bash
-kubectl apply -f labs/lab-02-first-app-pod-deployment-and-services/starter/service-types.yaml
+kubectl apply -f ~/k8s-labs/lab-01-first-app-pod-deployment-and-services/starter/service-types.yaml
 kubectl -n first-app get services
 ```
 

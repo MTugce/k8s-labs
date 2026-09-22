@@ -1,14 +1,29 @@
 # Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 55 dk | kubectl, Metrics Server | `30087` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling
+```
 
 ## Bu labda ne yapacaksın?
 
 DaemonSet ile her node'a bir ajan Pod'u koyacak, sonra `devops-app` için HPA oluşturacaksın. Yük üreterek replica sayısının arttığını, yük kesilince tekrar azaldığını izleyeceksin.
 
-## 1. Metrics Server'ın veri verdiğini doğrula
+## 1. Metrics Server kur
+
+HPA, CPU bilgisini Metrics Server'dan alır. Kind node'larının sertifika ayarı nedeniyle bu labda `--kubelet-insecure-tls` parametresi eklenir.
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.7.2/components.yaml
+kubectl -n kube-system patch deployment metrics-server --type=json \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+kubectl wait -n kube-system --for=condition=Available deployment/metrics-server --timeout=180s
+```
+
+Beklenen sonuç: `metrics-server` Deployment'ı kullanılabilir olur.
+
+## 2. Metrics Server'ın veri verdiğini doğrula
 
 HPA, CPU yüzdesini Metrics Server'dan alır. Önce veri geldiğini kontrol et.
 
@@ -19,30 +34,30 @@ kubectl top pods -n private-app
 
 Beklenen sonuç: her node ve uygulama Pod'u için CPU/memory değerleri görünür. Değerler görünmüyorsa birkaç dakika bekle; sorun sürerse platform hazırlığını kontrol et.
 
-## 2. DaemonSet uygula
+## 3. DaemonSet uygula
 
 Deployment belirli sayıda Pod çalıştırır. DaemonSet ise her uygun node'da bir Pod çalıştırır. Bu labdaki toleration sayesinde control-plane de dahil edilir.
 
 ```bash
-kubectl apply -f labs/lab-08-daemonset-and-hpa-scaling/starter/daemonset.yaml
+kubectl apply -f ~/k8s-labs/lab-07-daemonset-and-hpa-scaling/starter/daemonset.yaml
 kubectl -n private-app get daemonset node-label-agent
 kubectl -n private-app get pods -l app=node-label-agent -o wide
 ```
 
 Beklenen sonuç: üç node olduğu için üç ajan Pod'u görünür. `NODE` sütununda her node için bir Pod vardır.
 
-## 3. HPA oluştur
+## 4. HPA oluştur
 
 HPA, Deployment'ın CPU kullanımını istek değerinin yüzdesiyle karşılaştırır. Bu uygulamada CPU request tanımlı olduğu için HPA hedefi hesaplanabilir.
 
 ```bash
-kubectl apply -n private-app -f labs/lab-08-daemonset-and-hpa-scaling/starter/hpa.yaml
+kubectl apply -n private-app -f ~/k8s-labs/lab-07-daemonset-and-hpa-scaling/starter/hpa.yaml
 kubectl -n private-app get hpa devops-app
 ```
 
 Beklenen sonuç: minimum replica `1`, maksimum replica `6`, CPU hedefi `%50` görünür. İlk değerin `unknown` olması kısa süreli normaldir.
 
-## 4. Yük üret
+## 5. Yük üret
 
 `/work?ms=500` endpoint'i isteği işlerken CPU kullanır. Aşağıdaki geçici Pod, bu endpoint'e sürekli istek gönderir.
 
@@ -54,7 +69,7 @@ kubectl -n private-app run load-generator --rm -it --restart=Never \
 
 Bu terminal açık kalır ve yük üretir.
 
-## 5. Başka terminalde scale-out'u izle
+## 6. Başka terminalde scale-out'u izle
 
 ```bash
 kubectl -n private-app get hpa,pods -w
@@ -62,7 +77,7 @@ kubectl -n private-app get hpa,pods -w
 
 Beklenen sonuç: CPU hedefin üstüne çıktığında HPA replica sayısını artırır; yeni `devops-app-...` Pod'ları oluşur. İzlemeyi `Ctrl+C` ile bitir.
 
-## 6. Yükü durdur ve scale-in'i izle
+## 7. Yükü durdur ve scale-in'i izle
 
 İlk terminalde `Ctrl+C` ile load generator'ı durdur. Sonra tekrar izle.
 

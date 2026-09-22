@@ -1,8 +1,10 @@
 # WordPress ile Helm Operasyonlarını Öğren
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 55 dk | Helm, kubectl | Yerel `8088` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -40,7 +42,7 @@ Starter values dosyası WordPress Service'ini ClusterIP olarak bırakır. Böyle
 kubectl create namespace wordpress-lab
 helm install wordpress bitnami/wordpress \
   --namespace wordpress-lab \
-  --values labs/lab-10-wordpress-ile-helm-operasyonlari/starter/values.yaml \
+  --values ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari/starter/values.yaml \
   --wait
 helm list -n wordpress-lab
 kubectl -n wordpress-lab get pods,service,pvc
@@ -71,7 +73,7 @@ Helm, release'e yeni revision ekler. Burada WordPress blog adını değiştiriyo
 ```bash
 helm upgrade wordpress bitnami/wordpress \
   --namespace wordpress-lab \
-  --values labs/lab-10-wordpress-ile-helm-operasyonlari/starter/values.yaml \
+  --values ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari/starter/values.yaml \
   --set wordpressBlogName="Kubernetes Helm Lab" \
   --wait
 helm history wordpress -n wordpress-lab

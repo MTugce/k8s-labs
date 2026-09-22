@@ -1,8 +1,10 @@
 # Sürümü Güvenle Yayınla: Recreate, Rolling, Blue-Green ve Canary
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 65 dk | Docker, kubectl, Gateway API | `19001` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-08-deployment-strategies
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -27,7 +29,7 @@ Beklenen sonuç: Docker Hub'daki aynı `devops-app` repository'sinde iki ayrı t
 Recreate, eski Pod'ları tamamen kapatır; yenileri ondan sonra açılır. Kısa kesinti riski vardır.
 
 ```bash
-sed "s|__IMAGE_V1__|${IMAGE_V1}|g" labs/lab-09-deployment-strategies/starter/recreate.yaml | kubectl apply -f -
+sed "s|__IMAGE_V1__|${IMAGE_V1}|g" ~/k8s-labs/lab-08-deployment-strategies/starter/recreate.yaml | kubectl apply -f -
 kubectl -n private-app rollout status deployment/devops-app-recreate
 kubectl -n private-app set image deployment/devops-app-recreate app="$IMAGE_V2"
 kubectl -n private-app get pods -l app=devops-app-recreate -w
@@ -40,7 +42,7 @@ Beklenen sonuç: eski Pod'lar sonlanır, sonra yeni Pod'lar oluşur. İzlemeyi `
 RollingUpdate, yeni Pod'ları eski Pod'lar tamamen kapanmadan başlatır. Bu manifestte `maxUnavailable: 0` olduğu için hazır Pod sayısı düşmez.
 
 ```bash
-sed "s|__IMAGE_V1__|${IMAGE_V1}|g" labs/lab-09-deployment-strategies/starter/rolling.yaml | kubectl apply -f -
+sed "s|__IMAGE_V1__|${IMAGE_V1}|g" ~/k8s-labs/lab-08-deployment-strategies/starter/rolling.yaml | kubectl apply -f -
 kubectl -n private-app rollout status deployment/devops-app-rolling
 kubectl -n private-app set image deployment/devops-app-rolling app="$IMAGE_V2"
 kubectl -n private-app rollout status deployment/devops-app-rolling
@@ -55,7 +57,7 @@ Blue ve green iki ayrı Deployment'tır. Service selector'ı hangi rengi seçers
 
 ```bash
 sed -e "s|__IMAGE_V1__|${IMAGE_V1}|g" -e "s|__IMAGE_V2__|${IMAGE_V2}|g" \
-  labs/lab-09-deployment-strategies/starter/blue-green.yaml | kubectl apply -f -
+  ~/k8s-labs/lab-08-deployment-strategies/starter/blue-green.yaml | kubectl apply -f -
 kubectl -n private-app get pods -l app=strategy-app --show-labels
 kubectl -n private-app run check-blue --rm -it --restart=Never \
   --image=curlimages/curl:8.12.1 -- curl -s strategy-app/healthz
@@ -83,7 +85,7 @@ kubectl -n private-app get gateway devops-app-gateway
 kubectl -n private-app delete httproute devops-app-route --ignore-not-found
 sed -e "s|__IMAGE_V1__|${IMAGE_V1}|g" -e "s|__IMAGE_V2__|${IMAGE_V2}|g" \
   -e "s|__APP_HOST__|${APP_HOST}|g" \
-  labs/lab-09-deployment-strategies/starter/canary-httproute.yaml | kubectl apply -f -
+  ~/k8s-labs/lab-08-deployment-strategies/starter/canary-httproute.yaml | kubectl apply -f -
 kubectl -n private-app get httproute devops-app-canary -o yaml
 ```
 

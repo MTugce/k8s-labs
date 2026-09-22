@@ -1,8 +1,10 @@
 # Prometheus ve Grafana ile Cluster ve Uygulama Metriklerini İzle
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 75 dk | Helm, kubectl, Docker | `30089` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -24,7 +26,7 @@ Beklenen sonuç: `devops-app` Pod'ları çalışır ve Metrics Server CPU değer
 Gerçek kullanıcı adı veya parola repoda tutulmaz. `stringData` kullanan şablonu yerel dosyaya kopyala ve kendi lab değerlerini yaz.
 
 ```bash
-cp labs/lab-11-prometheus-grafana-monitoring/starter/grafana-admin-secret.example.yaml grafana-admin.local.yaml
+cp ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/grafana-admin-secret.example.yaml grafana-admin.local.yaml
 ${EDITOR:-vi} grafana-admin.local.yaml
 kubectl create namespace monitoring
 kubectl apply -n monitoring -f grafana-admin.local.yaml
@@ -50,7 +52,7 @@ Beklenen sonuç: `kube-prometheus-stack` chart adı ve sürümü görünür.
 ```bash
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
-  --values labs/lab-11-prometheus-grafana-monitoring/starter/monitoring-values.yaml \
+  --values ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/monitoring-values.yaml \
   --wait
 helm list -n monitoring
 kubectl -n monitoring get pods,service,pvc
@@ -78,9 +80,9 @@ Beklenen sonuç: son komutta `devops_app_http_requests_total` ve `process_` ile 
 ServiceMonitor, Prometheus'a hangi Service'in hangi path'inden metrik toplayacağını söyler. Dashboard ConfigMap'i Grafana tarafından otomatik içeri alınır; PrometheusRule ise alert kuralını tanımlar.
 
 ```bash
-kubectl apply -f labs/lab-11-prometheus-grafana-monitoring/starter/devops-app-servicemonitor.yaml
-kubectl apply -f labs/lab-11-prometheus-grafana-monitoring/starter/devops-app-dashboard.yaml
-kubectl apply -f labs/lab-11-prometheus-grafana-monitoring/starter/devops-app-alert.yaml
+kubectl apply -f ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/devops-app-servicemonitor.yaml
+kubectl apply -f ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/devops-app-dashboard.yaml
+kubectl apply -f ~/k8s-labs/lab-10-prometheus-grafana-monitoring/starter/devops-app-alert.yaml
 kubectl -n private-app get servicemonitor,prometheusrule
 ```
 
@@ -97,8 +99,8 @@ Beklenen sonuç: HTTP istek hızı ve istek süresi panelleri görünür. Cluste
 Önce scriptin ne yaptığını oku: private-app namespace'inde geçici bir curl Pod'u oluşturur ve `/work?ms=500` endpoint'ine sürekli istek gönderir.
 
 ```bash
-sed -n '1,120p' labs/lab-11-prometheus-grafana-monitoring/scripts/run-load-test.sh
-bash labs/lab-11-prometheus-grafana-monitoring/scripts/run-load-test.sh
+sed -n '1,120p' ~/k8s-labs/lab-10-prometheus-grafana-monitoring/scripts/run-load-test.sh
+bash ~/k8s-labs/lab-10-prometheus-grafana-monitoring/scripts/run-load-test.sh
 ```
 
 Başka terminalde aşağıdakileri izle.
@@ -113,7 +115,7 @@ Yaklaşık iki dakika sonra Grafana dashboard'unda istek süresi yükselir. Prom
 ## 9. Yükü durdur; monitoring platformunu bırak
 
 ```bash
-bash labs/lab-11-prometheus-grafana-monitoring/scripts/stop-load-test.sh
+bash ~/k8s-labs/lab-10-prometheus-grafana-monitoring/scripts/stop-load-test.sh
 kubectl -n private-app get hpa
 helm status monitoring -n monitoring
 ```

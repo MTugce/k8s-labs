@@ -1,8 +1,10 @@
 # Kendi Docker İmajını Private Docker Hub'dan Çalıştır
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Temel-Orta | 60 dk | Docker, Docker Hub, kubectl | `30087` |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -50,8 +52,8 @@ Bu adım bilerek başarısız olur. Kubernetes, private repository'den image çe
 
 ```bash
 kubectl create namespace private-app
-kubectl apply -n private-app -f labs/lab-03-private-dockerhub-image-configmap-secret/starter/configmap.yaml
-sed "s|__IMAGE__|${IMAGE}|g" labs/lab-03-private-dockerhub-image-configmap-secret/starter/deployment.yaml | kubectl apply -n private-app -f -
+kubectl apply -n private-app -f ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/configmap.yaml
+sed "s|__IMAGE__|${IMAGE}|g" ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/deployment.yaml | kubectl apply -n private-app -f -
 kubectl -n private-app get pods
 kubectl -n private-app describe pod -l app=devops-app
 ```
@@ -80,7 +82,7 @@ Beklenen sonuç: `dockerhub-creds` görünür. Kubernetes bu Secret'ı Pod başl
 `stringData`, Secret değerini yerel YAML dosyasında okunabilir olarak yazmanı sağlar. Kubernetes kaydederken değeri `.data` alanında Base64'e çevirir. Base64 şifreleme değildir.
 
 ```bash
-cp labs/lab-03-private-dockerhub-image-configmap-secret/starter/secret.example.yaml secrets.local.yaml
+cp ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/secret.example.yaml secrets.local.yaml
 ${EDITOR:-vi} secrets.local.yaml
 ```
 
@@ -101,8 +103,8 @@ Final Deployment, ayarları ConfigMap'ten, hassas değeri Secret'tan ve registry
 
 ```bash
 kubectl apply -n private-app -f secrets.local.yaml
-sed "s|__IMAGE__|${IMAGE}|g" labs/lab-03-private-dockerhub-image-configmap-secret/starter/deployment-with-pull-secret.yaml | kubectl apply -n private-app -f -
-kubectl apply -n private-app -f labs/lab-03-private-dockerhub-image-configmap-secret/starter/service.yaml
+sed "s|__IMAGE__|${IMAGE}|g" ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/deployment-with-pull-secret.yaml | kubectl apply -n private-app -f -
+kubectl apply -n private-app -f ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret/starter/service.yaml
 kubectl -n private-app rollout status deployment/devops-app
 kubectl -n private-app get pods,service
 ```

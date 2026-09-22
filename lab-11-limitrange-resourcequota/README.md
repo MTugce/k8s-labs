@@ -1,8 +1,10 @@
 # Namespace Kaynak Sınırı Koy: LimitRange ve ResourceQuota
 
-| Seviye | Tahmini Süre | Profil / Araçlar | Açık Portlar |
-| --- | --- | --- | --- |
-| Orta | 40 dk | kubectl | — |
+Bu labı şu klasörde uygulayacaksın:
+
+```bash
+cd ~/k8s-labs/lab-11-limitrange-resourcequota
+```
 
 ## Bu labda ne yapacaksın?
 
@@ -11,7 +13,7 @@ Bir namespace için kaynak bütçesi tanımlayacaksın. LimitRange'in Pod'a vars
 ## 1. Namespace, LimitRange ve ResourceQuota uygula
 
 ```bash
-kubectl apply -f labs/lab-12-limitrange-resourcequota/starter/governance.yaml
+kubectl apply -f ~/k8s-labs/lab-11-limitrange-resourcequota/starter/governance.yaml
 kubectl -n governance-lab get limitrange,resourcequota
 kubectl -n governance-lab describe limitrange lab-defaults
 kubectl -n governance-lab describe resourcequota lab-quota
@@ -24,7 +26,7 @@ Beklenen sonuç: LimitRange varsayılan request/limit değerlerini, ResourceQuot
 Bu manifestte container resources alanı yoktur. LimitRange otomatik değer ekler.
 
 ```bash
-kubectl apply -f labs/lab-12-limitrange-resourcequota/starter/allowed-deployment.yaml
+kubectl apply -f ~/k8s-labs/lab-11-limitrange-resourcequota/starter/allowed-deployment.yaml
 kubectl -n governance-lab rollout status deployment/allowed-app
 kubectl -n governance-lab get pods
 kubectl -n governance-lab describe pod -l app=allowed-app
@@ -37,7 +39,7 @@ Beklenen sonuç: Pod çalışır. `describe` çıktısında Resources bölümün
 Bu manifest beş replica ister; namespace için izin verilen Pod sayısı dörttür.
 
 ```bash
-kubectl apply -f labs/lab-12-limitrange-resourcequota/starter/rejected-deployment.yaml
+kubectl apply -f ~/k8s-labs/lab-11-limitrange-resourcequota/starter/rejected-deployment.yaml
 kubectl -n governance-lab get deployment,replicaset,pods
 kubectl -n governance-lab describe replicaset -l app=rejected-app
 ```
