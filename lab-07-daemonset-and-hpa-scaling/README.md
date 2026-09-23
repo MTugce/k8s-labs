@@ -16,10 +16,6 @@ DaemonSet ile her node üzerinde zorunlu ajan Pod'u çalıştırmayı ve Horizon
 cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling
 ```
 
-## * Doğrulanan senaryo
-
-DaemonSet kümedeki 3 node'un her birine birer Pod yerleştirdi. Üretilen suni CPU yükü ile HPA hedef eşiği aşıldı ve `devops-app` replica sayısı 1'den 6'ya çıktı. Yük kesildiğinde HPA pod sayısını tekrar 1'e indirdi.
-
 ---
 
 ## 1. Metrics Server Kurulumu

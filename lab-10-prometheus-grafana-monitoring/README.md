@@ -17,10 +17,6 @@ Cluster ve uygulama metriklerini Prometheus ile toplamak, Grafana üzerinde gör
 cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
 ```
 
-## * Doğrulanan senaryo
-
-Kube Prometheus Stack kuruldu. `devops-app` metrikleri ServiceMonitor ile Prometheus'a aktarıldı. Grafana panellerinde istek hızı ve p95 süreleri izlendi; üretilen suni yük ile `DevopsAppSlowRequests` alert'i tetiklendi.
-
 ## Monitoring mimarisi
 
 ```text

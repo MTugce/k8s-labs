@@ -16,10 +16,6 @@ LimitRange ile container'lara varsayılan kaynak değerleri atamayı ve Resource
 cd ~/k8s-labs/lab-11-limitrange-resourcequota
 ```
 
-## * Doğrulanan senaryo
-
-LimitRange, kaynak belirtmeyen bir pod'a otomatik olarak 100m CPU ve 64Mi bellek request'i ekledi. ResourceQuota toplam pod sayısını 4 ile sınırladığı için, 5 replica isteyen ikinci bir Deployment'ın kotayı aşan pod'ları Kubernetes tarafından reddedildi (`exceeded quota: lab-quota`).
-
 ---
 
 ## 1. Namespace, LimitRange ve ResourceQuota Politikalarını İncele ve Uygula

@@ -16,10 +16,6 @@ NFS üzerinde `ReadWriteMany` (RWX) dinamik depolama ile StatefulSet'in sıralı
 cd ~/k8s-labs/lab-06-nfs-storage-and-statefulset
 ```
 
-## * Doğrulanan senaryo
-
-NFS provisioner ile `lab-nfs` StorageClass'ı oluşturuldu. İki bağımsız Pod (`writer-a` ve `writer-b`) aynı RWX diske eşzamanlı yazdı. StatefulSet ile kurulan `mysql-0` Pod'u kendi özel PVC'sini dinamik olarak bağlayarak `Ready` oldu.
-
 ---
 
 ## 1. NFS Sunucusunu Başlat

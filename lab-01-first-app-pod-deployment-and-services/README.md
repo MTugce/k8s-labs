@@ -23,12 +23,6 @@ cd ~/k8s-labs/lab-01-first-app-pod-deployment-and-services
 
 ## Başlamadan önce
 
-## * Doğrulanan senaryo
-
-Tek Pod silinince geri gelmedi. Deployment üç replica'ya çıktı ve silinen Pod'u
-yeniden oluşturdu. ClusterIP içinden ve `30086` NodePort'undan HTTP 200 alındı;
-Kind ortamında LoadBalancer dış IP'si `pending` kaldı.
-
 Platform Hazırlığı tamamlanmış olmalıdır. Üç node `Ready` değilse önce eğitmene haber ver.
 
 ```bash

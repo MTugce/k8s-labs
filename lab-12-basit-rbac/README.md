@@ -16,10 +16,6 @@ Kubernetes Rol Tabanlı Erişim Kontrolü (RBAC) mekanizmasını kullanarak; `Se
 cd ~/k8s-labs/lab-12-basit-rbac
 ```
 
-## * Doğrulanan senaryo
-
-Oluşturulan `pod-reader` kimliği kendi namespace'inde Pod listeleme iznine sahip oldu (`yes`). Farklı bir namespace'te listeleme ve kendi namespace'inde Pod silme girişimleri ise API tarafından reddedildi (`no` / `Forbidden`).
-
 ## RBAC mimarisi
 
 ```text

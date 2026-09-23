@@ -17,10 +17,6 @@ Static ve dynamic PV/PVC kalıcı depolama akışlarını aynı cluster üzerind
 cd ~/k8s-labs/lab-05-static-and-dynamic-storage
 ```
 
-## * Doğrulanan senaryo
-
-Static PV/PVC `Bound` oldu. Writer Pod'unun diske yazdığı veri, Pod silindikten sonra yeni açılan Reader Pod'u tarafından okundu. Dynamic PVC ise talep geldiğinde otomatik olarak yeni bir PV üretti.
-
 ---
 
 ## 1. Dynamic storage provisioner'ını kur

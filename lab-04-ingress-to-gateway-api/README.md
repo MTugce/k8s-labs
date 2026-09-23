@@ -17,12 +17,6 @@ Mevcut Ingress yönlendirmesini, DNS ve host Nginx ayarlarını değiştirmeden 
 cd ~/k8s-labs/lab-04-ingress-to-gateway-api
 ```
 
-## * Doğrulanan senaryo
-
-Traefik Gateway controller control-plane üzerinde tek Pod olarak çalıştı.
-Gateway ve HTTPRoute `True` durumuna ulaştı; `19001` Host-header testi ile
-öğrenci DNS adı üzerinden HTTPS isteği `status: UP` döndürdü.
-
 ## Gateway API mimarisi
 
 ```text

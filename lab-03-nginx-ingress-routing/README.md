@@ -17,11 +17,6 @@ Uygulamayı NGINX Ingress Controller kullanarak öğrenci DNS adı üzerinden in
 cd ~/k8s-labs/lab-03-nginx-ingress-routing
 ```
 
-## * Doğrulanan senaryo
-
-`19001` portuna doğru Host header ile ve öğrenci DNS adı üzerinden HTTPS ile
-`devops-app` uygulamasından `{"status": "UP", "application": "devops-app"}` yanıtı alındı.
-
 ## Trafik mimarisi nasıl çalışır?
 
 ```text

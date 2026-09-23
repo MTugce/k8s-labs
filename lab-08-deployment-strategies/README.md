@@ -16,14 +16,6 @@ Modern yazılım dağıtım stratejileri olan Recreate, RollingUpdate, Blue-Gree
 cd ~/k8s-labs/lab-08-deployment-strategies
 ```
 
-## * Doğrulanan senaryo
-
-İki farklı Docker imaj sürümü (`1.0` ve `2.0`) ile:
-1. Recreate stratejisinde pod'ların önce sıfırlanıp sonra açılması,
-2. RollingUpdate stratejisinde kesintisiz ve sırayla güncellenip `rollout undo` ile geri alınması,
-3. Blue-Green stratejisinde Service selector yaması ile anında sürüm değişimi,
-4. Gateway API Canary ile trafiğin ağırlıklı (%90/%10 ve %50/%50) paylaştırılması başarıyla doğrulandı.
-
 ---
 
 ## 1. İkinci İmaj Sürümünü Derle ve Değişkenleri Tanımla
@@ -43,6 +35,13 @@ export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
 ```bash
 docker build --build-arg APP_VERSION=2.0 -t "$IMAGE_V2" ~/k8s-labs/app/devops-app
 docker push "$IMAGE_V2"
+```
+
+Kubernetes'in private Docker Hub imajını sorunsuz çekebilmesi için ServiceAccount'a yetki ekle ve imajı yerel Kind kümesine yükle (bu sayede imaj çekme beklemesi olmadan anında çalışır):
+
+```bash
+kubectl -n private-app patch serviceaccount default -p '{"imagePullSecrets": [{"name": "dockerhub-creds"}]}' 2>/dev/null || true
+kind load docker-image "$IMAGE_V2" --name k8s-labs
 ```
 
 ---

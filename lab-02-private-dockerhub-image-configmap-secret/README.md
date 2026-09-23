@@ -17,12 +17,6 @@ Private Docker Hub imajını ConfigMap, Secret ve `imagePullSecrets` ile Kuberne
 cd ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret
 ```
 
-## * Doğrulanan senaryo
-
-Private Docker Hub imajı `imagePullSecrets` ile çekildi. `/healthz` isteği
-`status: UP`, `/config` isteği ise ConfigMap mesajı ve `secretLoaded: true`
-değeri döndürdü.
-
 ---
 
 ## 1. Private Docker Hub repository oluştur

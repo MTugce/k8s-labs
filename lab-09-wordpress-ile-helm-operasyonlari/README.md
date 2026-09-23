@@ -16,11 +16,6 @@ Helm ile paket yönetiminin mantığını; repository ekleme, chart anatomisini 
 cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari
 ```
 
-## * Doğrulanan senaryo
-
-WordPress ve MariaDB kalıcı disklerle (PVC) kuruldu. Port-forward üzerinden HTTP 200 alındı.
-`helm upgrade` ile blog başlığı `v2` yapıldı, `helm rollback` sonrası `v1` değerine dönüldü.
-
 ---
 
 ## 1. Helm Repository Ekle ve Ara
