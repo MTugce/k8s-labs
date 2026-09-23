@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V1__
+          image: __IMAGE__:1.0
           ports:
             - containerPort: 8080
               name: http

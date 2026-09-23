@@ -2,7 +2,7 @@
 
 ## Amaç
 
-Modern yazılım dağıtım stratejileri olan Recreate, RollingUpdate, Blue-Green ve Canary (Gateway API ağırlıklı yönlendirme) mimarilerini uygulamalı olarak karşılaştırmak.
+Modern yazılım dağıtım stratejileri olan Recreate, RollingUpdate, Blue-Green ve Canary mimarilerini; **uygulamaya içeriden `curl` istekleri göndererek canlı trafik davranışını (kesinti anı, sıfır kesinti, anlık geçiş ve yüzdelik dağılım)** uygulamalı olarak öğrenmek.
 
 ## Kullanılan Kubernetes nesneleri
 
@@ -18,14 +18,15 @@ cd ~/k8s-labs/lab-08-deployment-strategies
 
 ---
 
-## 1. İkinci İmaj Sürümünü Derle ve Değişkenleri Tanımla
+## 1. İkinci İmaj Sürümünü Derle ve Test İstemcisini Hazırla
 
-Canlı güncelleme stratejilerini deneyebilmek için iki farklı sürüme (`1.0` ve `2.0`) ihtiyacımız var:
+Canlı güncelleme stratejilerini deneyebilmek için iki farklı sürüme (`1.0` ve `2.0`) ihtiyacımız var.
+
+Değişkenleri tanımla:
 
 ```bash
 export DOCKERHUB_USER="KENDI_DOCKERHUB_KULLANICI_ADIN"
-export IMAGE_V1="docker.io/${DOCKERHUB_USER}/devops-app:1.0"
-export IMAGE_V2="docker.io/${DOCKERHUB_USER}/devops-app:2.0"
+export IMAGE="docker.io/${DOCKERHUB_USER}/devops-app"
 export STUDENT_ID="${STUDENT_ID:-$(hostname)}"
 export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
 ```
@@ -33,22 +34,27 @@ export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
 İkinci imajı (`2.0`) derleyip Docker Hub'a gönder:
 
 ```bash
-docker build --build-arg APP_VERSION=2.0 -t "$IMAGE_V2" ~/k8s-labs/app/devops-app
-docker push "$IMAGE_V2"
+docker build --build-arg APP_VERSION=2.0 -t "${IMAGE}:2.0" ~/k8s-labs/app/devops-app
+docker push "${IMAGE}:2.0"
 ```
 
-Kubernetes'in private Docker Hub imajını sorunsuz çekebilmesi için ServiceAccount'a yetki ekle ve imajı yerel Kind kümesine yükle (bu sayede imaj çekme beklemesi olmadan anında çalışır):
+Kubernetes'in private Docker Hub imajlarını çekebilmesi için ServiceAccount yetkisini tanımla ve cluster içinden canlı istek gönderecek `test-client` Pod'unu başlat:
 
 ```bash
+kubectl create namespace private-app --dry-run=client -o yaml | kubectl apply -f -
 kubectl -n private-app patch serviceaccount default -p '{"imagePullSecrets": [{"name": "dockerhub-creds"}]}' 2>/dev/null || true
-kind load docker-image "$IMAGE_V2" --name k8s-labs
+
+kubectl -n private-app run test-client --image=curlimages/curl:8.12.1 --restart=Never -- sleep 3600
+kubectl -n private-app wait --for=condition=Ready pod/test-client --timeout=60s
 ```
 
 ---
 
-## 2. Recreate Stratejisi (Kesintili Geçiş)
+## 2. Recreate Stratejisi — Kesinti Anını (Downtime) Canlı Gör
 
-Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce mevcut tüm eski pod'ları sonlandırır. Bu durum kısa süreli bir servis kesintisine yol açar:
+Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce mevcut tüm eski pod'ları sonlandırır. Bu durum servis kesintisine yol açar.
+
+Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
 
 ```yaml
 apiVersion: apps/v1
@@ -70,7 +76,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V1__
+          image: __IMAGE__:1.0
           ports:
             - containerPort: 8080
               name: http
@@ -89,28 +95,49 @@ spec:
       targetPort: 8080
 ```
 
-Manifesti kopyala, `sed` ile imaj adını yerleştir ve ilk sürümü (`1.0`) başlat:
+Manifesti imaj adınla cluster'a uygula:
 
 ```bash
-cp starter/recreate.yaml recreate.local.yaml
-sed -i "s|__IMAGE_V1__|${IMAGE_V1}|g" recreate.local.yaml
-kubectl apply -f recreate.local.yaml
+sed "s|__IMAGE__|${IMAGE}|g" starter/recreate.yaml | kubectl apply -f -
 kubectl -n private-app rollout status deployment/devops-app-recreate
 ```
 
-Şimdi imajı ikinci sürüme (`2.0`) güncelle ve pod'ların önce `Terminating` olduğunu, ardından sıfırdan açıldığını izle:
+Uygulamanın `1.0` sürümünde çalıştığını doğrula:
 
 ```bash
-kubectl -n private-app set image deployment/devops-app-recreate app="$IMAGE_V2"
-kubectl -n private-app get pods -l app=devops-app-recreate -w
+kubectl -n private-app exec test-client -- curl -s http://strategy-recreate/
 ```
-*(İzlemeyi `Ctrl+C` ile durdurun).*
+
+Beklenen sonuç: `{"application":"devops-app","version":"1.0","pod":"devops-app-recreate-..."}` döner.
+
+Şimdi imajı `2.0` sürümüne güncelle:
+
+```bash
+kubectl -n private-app set image deployment/devops-app-recreate app="${IMAGE}:2.0"
+```
+
+Güncelleme devam ederken istek döngüsünü başlat ve kesintiyi (downtime) gör:
+
+```bash
+kubectl -n private-app exec test-client -- sh -c 'for i in $(seq 1 15); do curl -s --connect-timeout 1 http://strategy-recreate/ | grep -o "\"version\":\"[^\"]*\"" || echo "KESİNTİ (Downtime): Servis kapandı!"; sleep 0.5; done'
+```
+
+Beklenen sonuç: Eski pod'lar silinirken istekler başarısız olur (`KESİNTİ (Downtime): Servis kapandı!`), yeni sürüm pod'ları hazır olduğunda ise istekler `"version":"2.0"` olarak geri döner.
+
+Temizlik:
+
+```bash
+kubectl -n private-app delete deployment devops-app-recreate
+kubectl -n private-app delete service strategy-recreate
+```
 
 ---
 
-## 3. RollingUpdate Stratejisi ve Geri Alma (Rollback)
+## 3. RollingUpdate Stratejisi — Sıfır Kesintiyi (Zero Downtime) Canlı Gör
 
-RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olmadan eski pod'lar kapatılmaz; böylece sıfır kesinti sağlanır:
+RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olmadan eski pod'lar kapatılmaz; böylece sıfır kesinti sağlanır.
+
+Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
 
 ```yaml
 apiVersion: apps/v1
@@ -135,7 +162,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V1__
+          image: __IMAGE__:1.0
           ports:
             - containerPort: 8080
               name: http
@@ -154,33 +181,56 @@ spec:
       targetPort: 8080
 ```
 
-Manifesti hazırla ve `1.0` sürümünü kur:
+Manifesti uygula ve `1.0` sürümünü başlat:
 
 ```bash
-cp starter/rolling.yaml rolling.local.yaml
-sed -i "s|__IMAGE_V1__|${IMAGE_V1}|g" rolling.local.yaml
-kubectl apply -f rolling.local.yaml
+sed "s|__IMAGE__|${IMAGE}|g" starter/rolling.yaml | kubectl apply -f -
 kubectl -n private-app rollout status deployment/devops-app-rolling
 ```
 
-İmajı `2.0` sürümüne güncelle, ardından yapılan güncellemeyi tek komutla geri al (rollback):
+Şimdi imajı `2.0` sürümüne güncelle:
 
 ```bash
-kubectl -n private-app set image deployment/devops-app-rolling app="$IMAGE_V2"
-kubectl -n private-app rollout status deployment/devops-app-rolling
+kubectl -n private-app set image deployment/devops-app-rolling app="${IMAGE}:2.0"
+```
 
-# Geri alma işlemi (Rollback):
+Güncelleme sırasında hemen istek döngüsünü çalıştır:
+
+```bash
+kubectl -n private-app exec test-client -- sh -c 'for i in $(seq 1 15); do curl -s --connect-timeout 1 http://strategy-rolling/ | grep -o "\"version\":\"[^\"]*\""; sleep 0.5; done'
+```
+
+Beklenen sonuç:
+- Hiçbir istek hata vermez (sıfır kesinti).
+- Ekranda önce `"version":"1.0"`, geçiş anında pod bazında karışık `1.0` ve `2.0`, güncelleme tamamlandığında ise tamamen `"version":"2.0"` akar.
+
+Yapılan güncellemeyi tek komutla geri al (Rollback):
+
+```bash
 kubectl -n private-app rollout undo deployment/devops-app-rolling
 kubectl -n private-app rollout status deployment/devops-app-rolling
+kubectl -n private-app exec test-client -- curl -s http://strategy-rolling/
 ```
 
-Beklenen sonuç: Pod'lar kesintisiz sırayla güncellenir ve `rollout undo` ile sorunsuz biçimde önceki `1.0` sürümüne geri dönülür.
+Beklenen sonuç: Uygulama kesintisiz biçimde yeniden `1.0` sürümüne döner.
+
+Temizlik:
+
+```bash
+kubectl -n private-app delete deployment devops-app-rolling
+kubectl -n private-app delete service strategy-rolling
+```
 
 ---
 
-## 4. Blue-Green Dağıtımı
+## 4. Blue-Green Dağıtımı — Anlık Geçişi (Instant Switch) Canlı Gör
 
-Blue-Green stratejisinde iki bağımsız Deployment (`blue` ve `green`) aynı anda kümede yaşar. Servis selector'ı hangi rengi işaret ederse tüm canlı trafik anında o renge yönlenir:
+Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2.0) aynı anda kümede yaşar. Servis selector'ı hangi rengi işaret ederse tüm canlı trafik anında o sürüme yönlenir.
+
+Aşağıdaki manifestte (`starter/blue-green.yaml`):
+- Blue deployment'ı doğrudan `1.0` sürümünü çalıştırır.
+- Green deployment'ı doğrudan `2.0` sürümünü çalıştırır.
+- `strategy-app` servisi başlangıçta `version: blue` etiketini seçer:
 
 ```yaml
 apiVersion: apps/v1
@@ -202,7 +252,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V1__
+          image: __IMAGE__:1.0
           ports:
             - containerPort: 8080
               name: http
@@ -226,7 +276,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V2__
+          image: __IMAGE__:2.0
           ports:
             - containerPort: 8080
               name: http
@@ -239,50 +289,145 @@ metadata:
 spec:
   selector:
     app: strategy-app
-    version: blue                    # Başlangıçta trafiği Blue (v1.0) karşılar
+    version: blue                    # Başlangıçta trafiği Blue (1.0) karşılar
   ports:
     - name: http
       port: 80
       targetPort: 8080
 ```
 
-Manifesti `sed` ile hazırla ve uygula:
+Manifesti cluster'a uygula:
 
 ```bash
-cp starter/blue-green.yaml blue-green.local.yaml
-sed -i "s|__IMAGE_V1__|${IMAGE_V1}|g; s|__IMAGE_V2__|${IMAGE_V2}|g" blue-green.local.yaml
-kubectl apply -f blue-green.local.yaml
-kubectl -n private-app get pods -l app=strategy-app --show-labels
+sed "s|__IMAGE__|${IMAGE}|g" starter/blue-green.yaml | kubectl apply -f -
+kubectl -n private-app rollout status deployment/devops-app-blue
+kubectl -n private-app rollout status deployment/devops-app-green
 ```
 
-Canlı trafiğin Blue (`1.0`) sürümüne gittiğini doğrula:
+Mevcut canlı trafiğin Blue (`1.0`) sürümüne gittiğini doğrula:
 
 ```bash
-kubectl -n private-app run strategy-check --image=curlimages/curl:8.12.1 --restart=Never -- sleep 3600
-kubectl -n private-app wait --for=condition=Ready pod/strategy-check --timeout=90s
-kubectl -n private-app exec strategy-check -- curl -s http://strategy-app/healthz
+kubectl -n private-app exec test-client -- curl -s http://strategy-app/
 ```
 
-Şimdi tek bir `patch` komutu ile Service selector'ını `green` rengine çevir ve trafiğin anında `2.0` sürümüne geçtiğini gör:
+Beklenen sonuç: `{"application":"devops-app","version":"1.0","pod":"devops-app-blue-..."}` döner.
+
+Şimdi tek bir `patch` komutu ile Service selector'ını `green` rengine çevir:
 
 ```bash
 kubectl -n private-app patch service strategy-app \
   -p '{"spec":{"selector":{"app":"strategy-app","version":"green"}}}'
-
-kubectl -n private-app exec strategy-check -- curl -s http://strategy-app/healthz
-kubectl -n private-app delete pod strategy-check
 ```
 
-Beklenen sonuç: İkinci curl yanıtında hiçbir pod yeniden başlamadan anında `version: 2.0` döner.
+Hemen yeni istek gönder ve geçişi canlı gör:
+
+```bash
+kubectl -n private-app exec test-client -- curl -s http://strategy-app/
+```
+
+Beklenen sonuç: Hiçbir pod yeniden başlatılmadan veya beklemeden saniyeler içinde doğrudan `{"application":"devops-app","version":"2.0","pod":"devops-app-green-..."}` yanıtı alınır!
+
+Geri alma (Rollback): Eğer Green sürümünde bir hata fark edilirse, tek bir satırla anında Blue'ya geri dönülür:
+
+```bash
+kubectl -n private-app patch service strategy-app \
+  -p '{"spec":{"selector":{"app":"strategy-app","version":"blue"}}}'
+
+kubectl -n private-app exec test-client -- curl -s http://strategy-app/
+```
+
+Temizlik:
+
+```bash
+kubectl -n private-app delete deployment devops-app-blue devops-app-green
+kubectl -n private-app delete service strategy-app
+```
 
 ---
 
 ## 5. Gateway API ile Canary Dağıtımı (Ağırlıklı Yönlendirme)
 
-Canary stratejisinde canlı kullanıcı trafiğinin ufak bir kısmı (%10) yeni sürüme, kalanı (%90) eski sürüme gönderilir. Testler başarılı oldukça oran %50/%50 ve nihayet %100'e çıkarılır:
+Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir.
+
+Aşağıdaki manifest (`starter/canary-httproute.yaml`), iki sürümün servislerini ve Gateway API ağırlıklı yönlendirme kuralını tanımlar:
 
 ```yaml
-# starter/canary-httproute.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strategy-app-v1
+  namespace: private-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: strategy-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: strategy-app
+        version: v1
+    spec:
+      containers:
+        - name: app
+          image: __IMAGE__:1.0
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strategy-app-v2
+  namespace: private-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strategy-app
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: strategy-app
+        version: v2
+    spec:
+      containers:
+        - name: app
+          image: __IMAGE__:2.0
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-app-v1
+  namespace: private-app
+spec:
+  selector:
+    app: strategy-app
+    version: v1
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-app-v2
+  namespace: private-app
+spec:
+  selector:
+    app: strategy-app
+    version: v2
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -303,26 +448,41 @@ spec:
           weight: 10                  # Trafiğin %10'u yeni Canary v2 sürümüne
 ```
 
-Manifesti `sed` ile hazırla ve cluster'a uygula:
+Manifesti cluster'a uygula:
 
 ```bash
-cp starter/canary-httproute.yaml canary.local.yaml
-sed -i "s|__IMAGE_V1__|${IMAGE_V1}|g; s|__IMAGE_V2__|${IMAGE_V2}|g; s|__APP_HOST__|${APP_HOST}|g" canary.local.yaml
-kubectl apply -f canary.local.yaml
-kubectl -n private-app get httproute devops-app-canary
+sed "s|__IMAGE__|${IMAGE}|g; s|__APP_HOST__|${APP_HOST}|g" starter/canary-httproute.yaml | kubectl apply -f -
+kubectl -n private-app rollout status deployment/strategy-app-v1
+kubectl -n private-app rollout status deployment/strategy-app-v2
 ```
 
-Şimdi `sed` komutuyla Canary ağırlıklarını %50 / %50 olarak güncelle ve kuralı tazele:
+10 adet HTTP isteği göndererek %90 / %10 dağılımını gözlemle:
 
 ```bash
-sed -i "s/weight: 90/weight: 50/; s/weight: 10/weight: 50/" canary.local.yaml
-kubectl apply -f canary.local.yaml
+for i in {1..10}; do curl -s -k "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'; done
 ```
 
-Canary trafiğini test et:
+Beklenen sonuç: İsteklerin neredeyse tamamı `"version":"1.0"` dönerken, araya tek tük `"version":"2.0"` yanıtı düşer.
+
+Şimdi ağırlıkları %50 / %50 olarak güncelle:
 
 ```bash
-for i in {1..10}; do curl -s -k "https://${APP_HOST}/healthz"; echo ""; done
+kubectl -n private-app patch httproute devops-app-canary --type=json \
+  -p '[{"op":"replace","path":"/spec/rules/0/backendRefs/0/weight","value":50},{"op":"replace","path":"/spec/rules/0/backendRefs/1/weight","value":50}]'
 ```
 
-Beklenen sonuç: Gönderilen 10 istek arasında hem `v1` hem de `v2` yanıtlarının dengeli biçimde döndüğü gözlemlenir.
+Tekrar 10 adet HTTP isteği gönder:
+
+```bash
+for i in {1..10}; do curl -s -k "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'; done
+```
+
+Beklenen sonuç: Yanıtlar yarı yarıya `"version":"1.0"` ve `"version":"2.0"` olarak dengeli dağılır.
+
+---
+
+## 6. Temizlik
+
+```bash
+kubectl delete namespace private-app
+```

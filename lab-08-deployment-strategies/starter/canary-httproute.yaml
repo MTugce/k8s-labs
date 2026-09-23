@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V1__
+          image: __IMAGE__:1.0
           ports:
             - containerPort: 8080
               name: http
@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: __IMAGE_V2__
+          image: __IMAGE__:2.0
           ports:
             - containerPort: 8080
               name: http
