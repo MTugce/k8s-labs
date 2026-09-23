@@ -2,13 +2,13 @@
 
 ## Amaç
 
-Helm repository, install, values, upgrade, rollback ve uninstall işlemlerini öğrenmek.
+Helm ile paket yönetiminin mantığını; repository ekleme, chart anatomisini inceleme, özel `values` ile kurulum, güncelleme (upgrade), geri alma (rollback) ve kaldırma (uninstall) adımlarını uygulamalı olarak öğrenmek.
 
 ## Kullanılan Kubernetes nesneleri
 
-- **Namespace:** WordPress kaynaklarını diğer lablardan ayırır.
-- **Deployment ve StatefulSet:** Sırasıyla WordPress ve MariaDB Pod'larını yönetir.
-- **Service ve PVC:** Uygulama iletişimini ve kalıcı veriyi sağlar.
+- **Namespace:** WordPress bileşenlerini izole eder (`wordpress-lab`).
+- **Deployment & StatefulSet:** WordPress ve MariaDB veritabanı Pod'larını yönetir.
+- **Service & PVC:** Pod'lar arası iletişimi ve disklerde kalıcı veri saklamayı sağlar.
 
 ## Çalışma dizini
 
@@ -16,134 +16,162 @@ Helm repository, install, values, upgrade, rollback ve uninstall işlemlerini ö
 cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari
 ```
 
-## Erişim
-
-- URL: Port-forward açıkken `http://127.0.0.1:8088`
-- Kullanıcı adı: `user`
-- Parola: her kurulumda üretilir. Görmek için:
-
-```bash
-kubectl -n wordpress-lab get secret wordpress \
-  -o jsonpath='{.data.wordpress-password}' | base64 -d; echo
-```
-
-## Helm kısa bilgi
-
-Helm, Kubernetes uygulamalarını paketleyip yönetmek için kullanılan araçtır.
-Bir **chart**, Kubernetes manifest şablonlarıdır; **repository**, chart'ların
-bulunduğu kaynaktır; **release** ise cluster'a kurulmuş chart örneğidir.
-
-```text
-Repository → Chart → helm install → Release
-```
-
-Resmî kaynaklar:
-
-- [Helm dokümantasyonu](https://helm.sh/docs/)
-- [Helm kullanımı: install, upgrade, rollback](https://helm.sh/docs/intro/using_helm/)
-- [Chart repository rehberi](https://helm.sh/docs/topics/chart_repository/)
-- [Helm komutları](https://helm.sh/docs/helm/)
-
 ## * Doğrulanan senaryo
 
-WordPress ve MariaDB PVC'lerle kuruldu; port-forward üzerinden HTTP 200 alındı.
-Helm upgrade ile blog değeri `v2` oldu, rollback sonrası `v1` değerine döndü.
-Release ve `wordpress-lab` namespace'i lab sonunda kaldırıldı.
+WordPress ve MariaDB kalıcı disklerle (PVC) kuruldu. Port-forward üzerinden HTTP 200 alındı.
+`helm upgrade` ile blog başlığı `v2` yapıldı, `helm rollback` sonrası `v1` değerine dönüldü.
 
-## 1. Helm repository kavramını gör
+---
 
-Repository, Helm chart paketlerinin indeksidir. Önce Bitnami repository'yi ekle ve içeriğini ara.
+## 1. Helm Repository Ekle ve Ara
+
+Helm repository, chart paketlerinin tutulduğu uzak depodur.
 
 ```bash
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm repo list
-helm search repo bitnami/wordpress
+helm search repo bitnami/wordpress --version 34.0.4
 ```
 
-Beklenen sonuç: `bitnami/wordpress` chart adı ve sürümü görünür.
+Beklenen sonuç: `bitnami/wordpress` chart'ı ve `34.0.4` sürüm bilgisi listelenir.
 
-## 2. Chart'ın ayarlarını incele
+---
 
-Helm chart'ı kurmadan önce hangi ayarların değiştirilebileceğini gör.
+## 2. Helm Chart'ı İndir ve Anatomisini İncele
+
+Bir Helm chart'ın içinde ne olduğunu görmek için paketi klasör olarak lokale indir:
 
 ```bash
-helm show values bitnami/wordpress > /tmp/wordpress-default-values.yaml
-less /tmp/wordpress-default-values.yaml
+helm pull bitnami/wordpress --version 34.0.4 --untar
+ls -la wordpress/
 ```
 
-Bu dosyada WordPress, MariaDB, Service ve persistence ayarları bulunur. `q` ile görüntüleyiciden çık.
+İndirilen klasör yapısında şunları görürsün:
+- **`Chart.yaml`:** Chart'ın adı, açıklaması ve sürüm metadata'sı.
+- **`values.yaml`:** Tüm varsayılan yapılandırma parametreleri.
+- **`templates/`:** Kubernetes manifest şablonları (`deployment.yaml`, `svc.yaml`, `pvc.yaml` vb.):
+  ```bash
+  ls -la wordpress/templates/
+  ```
+- **`charts/`:** Alt bağımlılıklar (bu chart için MariaDB veritabanı).
 
-## 3. Lab değerlerini kullanarak WordPress'i kur
+---
 
-Starter values dosyası WordPress Service'ini ClusterIP olarak bırakır. Böylece yeni bir host portu açılmaz; erişim için sonraki adımda kontrollü port-forward kullanılır.
-MariaDB kalıcılığı için starter dosyası Kind kümesinin varsayılan `standard`
-StorageClass'ını kullanır.
+## 3. Özel Değerler (`values.yaml`) ile WordPress'i Kur
+
+Tüm varsayılan değerleri değiştirmek yerine, sadece değiştirmek istediğimiz alanları `starter/values.yaml` dosyasında belirttik:
+
+```yaml
+service:
+  type: ClusterIP                       # Host portunu işgal etmemek için ClusterIP
+wordpressBlogName: "Kubernetes Helm Lab v1"  # Blog başlığı
+mariadb:
+  primary:
+    persistence:
+      enabled: true
+      storageClass: standard            # Kind kümesinin yerel depolama sınıfı
+```
+
+Bu değerleri kullanarak WordPress'i kur:
 
 ```bash
-kubectl create namespace wordpress-lab
+kubectl create namespace wordpress-lab --dry-run=client -o yaml | kubectl apply -f -
+
 helm install wordpress bitnami/wordpress \
   --version 34.0.4 \
   --namespace wordpress-lab \
-  --values ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari/starter/values.yaml \
-  --wait
-helm list -n wordpress-lab
-kubectl -n wordpress-lab get pods,service,pvc
+  --values starter/values.yaml \
+  --wait --timeout 5m
 ```
 
-Beklenen sonuç: `wordpress` release'i `deployed` görünür. WordPress ve MariaDB Pod'ları çalışır; MariaDB için PVC oluşur.
-
-## 4. Uygulamayı yerel port-forward ile aç
-
-Port-forward, yalnızca bu terminal açıkken bilgisayarındaki `8088` portunu Service'e bağlar. Kalıcı bir firewall veya Nginx değişikliği yapmaz.
+Kurulum durumunu kontrol et:
 
 ```bash
-kubectl -n wordpress-lab port-forward service/wordpress 8088:80
+helm list -n wordpress-lab
+kubectl -n wordpress-lab get pods,pvc,svc
 ```
 
-Yeni terminalde aşağıdaki adresi aç veya test et.
+Beklenen sonuç: `wordpress` ve `wordpress-mariadb-0` Pod'ları `Running` olur, PVC'ler `Bound` durumuna geçer.
+
+---
+
+## 4. Giriş Parolasını Al ve Uygulamaya Eriş
+
+WordPress yönetici parolası kurulum sırasında otomatik üretilerek Secret içine kaydedilmiştir.
+
+Parolayı Secret'tan çekip ekrana yazdır:
+
+```bash
+export WP_PASSWORD=$(kubectl -n wordpress-lab get secret wordpress -o jsonpath='{.data.wordpress-password}' | base64 -d)
+echo "Kullanıcı Adı: user"
+echo "WordPress Parolası: $WP_PASSWORD"
+```
+
+Uygulamaya erişmek için port-forward başlat (arka planda çalıştır):
+
+```bash
+kubectl -n wordpress-lab port-forward service/wordpress 8088:80 &
+```
+
+HTTP yanıtını doğrula:
 
 ```bash
 curl -I http://127.0.0.1:8088
 ```
 
-Beklenen sonuç: `HTTP/1.1 200 OK` veya yönlendirme yanıtı görünür. Port-forward terminalini açık bırak; işin bitince `Ctrl+C` ile kapat.
+Beklenen sonuç: `HTTP/1.1 200 OK` veya `302 Found` döner. Tarayıcınızdan `http://SUNUCU_IP:8088` (veya yerelde `http://localhost:8088`) adresine giderek `user` ve yukarıda aldığınız parola ile WordPress paneline giriş yapabilirsiniz.
 
-## 5. Release değerini değiştirerek upgrade yap
+---
 
-Helm, release'e yeni revision ekler. Burada WordPress blog adını değiştiriyoruz.
+## 5. Release Güncelleme (`helm upgrade`)
+
+Uygulamanın ayarlarını değiştirmek için YAML'ı elle düzenlemek yerine Helm upgrade kullanırız. Blog başlığını `v2` yapalım:
 
 ```bash
 helm upgrade wordpress bitnami/wordpress \
   --version 34.0.4 \
   --namespace wordpress-lab \
-  --values ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari/starter/values.yaml \
+  --values starter/values.yaml \
   --set wordpressBlogName="Kubernetes Helm Lab v2" \
   --wait
-helm history wordpress -n wordpress-lab
-helm get values wordpress -n wordpress-lab
 ```
 
-Beklenen sonuç: `helm history` içinde revision `1` ve `2` görünür. `helm get values`
-çıktısında blog adı `Kubernetes Helm Lab v2` olur.
+Revizyon geçmişini incele:
 
-## 6. Önceki revision'a geri dön
+```bash
+helm history wordpress -n wordpress-lab
+```
+
+Beklenen sonuç: `REVISION: 1` ve `REVISION: 2` listelenir.
+
+---
+
+## 6. Sürümü Geri Al (`helm rollback`)
+
+Yapılan değişiklikten vazgeçildiğinde bir önceki stabil revizyona saniyeler içinde dönülebilir:
 
 ```bash
 helm rollback wordpress 1 --namespace wordpress-lab --wait
-helm status wordpress -n wordpress-lab
+helm history wordpress -n wordpress-lab
 ```
 
-Beklenen sonuç: release `deployed` olur ve `helm get values` çıktısındaki blog adı
-yeniden `Kubernetes Helm Lab v1` görünür. Helm rollback yeni bir revision
-oluşturur; bu nedenle revision numarası genellikle `3` olur.
+Beklenen sonuç: Yeni bir revizyon oluşur (`REVISION: 3`) ve uygulamanın ayarları 1. revizyondaki durumuna (`v1`) döner.
 
-## 7. Yalnızca geçici WordPress release'ini kaldır
+---
+
+## 7. Temizlik (`helm uninstall`)
+
+Tüm WordPress ve veritabanı bileşenlerini tek bir komutla sil:
 
 ```bash
 helm uninstall wordpress --namespace wordpress-lab
 kubectl delete namespace wordpress-lab
-helm repo remove bitnami
 ```
 
-Beklenen sonuç: WordPress kaynakları silinir, Bitnami repository listeden kalkar. Bu işlem ileride kurulacak monitoring platformuna dokunmaz.
+Arka plandaki port-forward işlemini kapat:
+
+```bash
+killall kubectl 2>/dev/null || true
+```
+
+Beklenen sonuç: `release "wordpress" uninstalled` çıktısı alınır ve kaynaklar temizlenir.

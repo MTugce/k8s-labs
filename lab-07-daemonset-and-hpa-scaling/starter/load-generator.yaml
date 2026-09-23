@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: load-generator
+  namespace: private-app
 spec:
   restartPolicy: Never
   containers:
     - name: curl
       image: curlimages/curl:8.12.1
-      command: ["sh", "-c"]
+      command:
+        - sh
+        - -c
       args:
         - while true; do curl -s http://devops-app/work?ms=500 >/dev/null; done

@@ -7,27 +7,15 @@ Uygulamayı NGINX Ingress Controller kullanarak öğrenci DNS adı üzerinden in
 ## Kullanılan Kubernetes nesneleri
 
 - **Ingress:** HTTP/HTTPS isteklerini (host ve path) doğru Service'e yönlendiren kural kümesidir.
-- **Ingress Controller:** Ingress kurallarını okuyup trafiği yönlendiren ve yük dengeleyen Pod'lardır (NGINX tabanlı).
+- **Ingress Controller:** Ingress kurallarını okuyup trafiği gerçek zamanlı yönlendiren ve yük dengeleyen Pod'lardır (NGINX tabanlı).
 - **Service:** Ingress'in yönlendirdiği hedef uygulama servisidir.
 - **Deployment & ConfigMap:** Ingress arkasında çalışan örnek backend uygulamasıdır.
 
 ## Çalışma dizini
 
 ```bash
-cd ~/k8s-labs/lab-03-nginx-routing
+cd ~/k8s-labs/lab-03-nginx-ingress-routing
 ```
-
-> [!NOTE]
-> Klasör adı `lab-03-nginx-ingress-routing` dizinindedir:
-> ```bash
-> cd ~/k8s-labs/lab-03-nginx-ingress-routing
-> ```
-
-## Erişim
-
-- URL: `https://${APP_HOST}/healthz` (`APP_HOST` öğrenci DNS adındır)
-- Doğrudan port erişimi: `http://127.0.0.1:19001/healthz` (Host header ile)
-- Kimlik doğrulaması: yok
 
 ## * Doğrulanan senaryo
 
@@ -51,7 +39,84 @@ cd ~/k8s-labs/lab-03-nginx-routing
 
 ## 1. Uygulama ortamını ayağa kaldır
 
-Bu lab tamamen bağımsızdır; önceki lablara ihtiyaç duymaz. Hazır starter manifesti ile namespace, backend uygulaması ve servisi tek komutla oluşturabilirsin.
+Bu lab tamamen bağımsızdır; önceki lablara ihtiyaç duymaz.
+
+Aşağıdaki manifest (`starter/app.yaml`), `private-app` adında bir namespace, `/healthz` adresine `{"status":"UP"}` yanıtı veren bir NGINX Deployment'ı ve bu pod'ları 80 portundan açan bir Service tanımlar:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: private-app
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-app-config
+  namespace: private-app
+data:
+  default.conf: |
+    server {
+        listen 80;
+        default_type application/json;
+        location /healthz {
+            return 200 '{"status": "UP", "application": "devops-app"}\n';
+        }
+        location / {
+            return 200 '{"status": "UP", "application": "devops-app"}\n';
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app
+  namespace: private-app
+  labels:
+    app: devops-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-app
+  template:
+    metadata:
+      labels:
+        app: devops-app
+    spec:
+      containers:
+        - name: devops-app
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+      volumes:
+        - name: config-volume
+          configMap:
+            name: devops-app-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-app
+  namespace: private-app
+  labels:
+    app: devops-app
+spec:
+  type: ClusterIP
+  selector:
+    app: devops-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+```
+
+Bu manifesti cluster'a uygula ve pod'un hazır olmasını bekle:
 
 ```bash
 kubectl apply -f starter/app.yaml
@@ -59,17 +124,19 @@ kubectl -n private-app rollout status deployment/devops-app
 kubectl -n private-app get pods,service
 ```
 
-Beklenen sonuç: `private-app` namespace'inde `devops-app` Deployment'ı, `Running` durumunda bir Pod ve `devops-app` Service'i listelenir.
+Beklenen sonuç: `devops-app` Deployment'ı, `Running` durumunda bir Pod ve `devops-app` Service'i listelenir.
 
 ---
 
 ## 2. NGINX Ingress Controller'ı kur
 
-Ingress manifesti tek başına trafik taşımaz; kuralları okuyup uygulayan bir controller gerekir. Kind kümesi için hazırlanmış resmi NGINX Ingress Controller manifestini kur.
+Ingress kaynağı tek başına sadece bir kuraldır; bu kuralı okuyup trafiği yönlendiren bir Ingress Controller gerekir.
 
 > [!NOTE]
 > Kind ortamında Ingress Controller `control-plane` node'unun 80 portunu (`hostPort: 80`) kullanır. Kümede bu portu kullanan başka bir Ingress (örn. Traefik) varsa çakışmaması için önce kaldırılmalıdır:
 > `helm uninstall traefik -n traefik 2>/dev/null || true`
+
+Resmi Kind NGINX Ingress manifestini kur ve Controller Pod'unun hazır olmasını bekle:
 
 ```bash
 kubectl apply -f https://github.com/kubernetes/ingress-nginx/raw/controller-v1.12.0/deploy/static/provider/kind/deploy.yaml
@@ -86,7 +153,7 @@ Beklenen sonuç: `ingress-nginx-controller` Pod'u `Running` (1/1) durumuna gelir
 
 ## 3. Kendi DNS adını değişkene ata
 
-Sunucu adını otomatik almak için:
+Sunucu adınızı otomatik almak ve değişkene atamak için:
 
 ```bash
 export STUDENT_ID="${STUDENT_ID:-$(hostname)}"
@@ -98,20 +165,42 @@ Beklenen sonuç: `student101-app1.devopsatolyesi.com` (veya size atanan öğrenc
 
 ---
 
-## 4. Ingress manifestini hazırla ve uygula
+## 4. Ingress manifestini incele ve uygula
 
-Starter dosyasının yerel bir kopyasını oluştur ve içindeki `__APP_HOST__` şablonunu kendi DNS adınla güncelle.
+Aşağıdaki Ingress manifesti (`starter/ingress.yaml`), `ingressClassName: nginx` kullanarak kuralı NGINX Controller'a bağlar ve gelen host adresini `devops-app` servisinin 80 portuna yönlendirir:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devops-app
+  namespace: private-app
+spec:
+  ingressClassName: nginx            # Kuralı okuyacak controller
+  rules:
+    - host: __APP_HOST__             # Dışarıdan gelecek alan adı
+      http:
+        paths:
+          - path: /                  # Tüm istek yolları
+            pathType: Prefix
+            backend:
+              service:
+                name: devops-app     # Hedef Kubernetes servisi
+                port:
+                  number: 80         # Hedef servis portu
+```
+
+Starter dosyasını kopyala, `sed` komutuyla `__APP_HOST__` şablonunu kendi DNS adınla değiştir ve cluster'a uygula:
 
 ```bash
 cp starter/ingress.yaml ingress.local.yaml
 sed -i "s/__APP_HOST__/${APP_HOST}/g" ingress.local.yaml
-cat ingress.local.yaml
+kubectl apply -f ingress.local.yaml
 ```
 
-Yerel Ingress manifestini cluster'a uygula:
+Oluşan Ingress kuralını incele:
 
 ```bash
-kubectl apply -f ingress.local.yaml
 kubectl -n private-app get ingress devops-app
 kubectl -n private-app describe ingress devops-app
 ```

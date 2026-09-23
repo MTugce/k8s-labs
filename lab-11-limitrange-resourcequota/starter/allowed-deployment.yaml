@@ -6,10 +6,12 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels: { app: allowed-app }
+    matchLabels:
+      app: allowed-app
   template:
     metadata:
-      labels: { app: allowed-app }
+      labels:
+        app: allowed-app
     spec:
       containers:
         - name: web

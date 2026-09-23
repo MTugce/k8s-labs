@@ -186,10 +186,52 @@ Beklenen sonuç: HTTP isteği `HTTP/1.1 200 OK` döndürür. `web-clusterip`, Po
 
 ## 6. NodePort, ExternalName ve LoadBalancer türlerini dene
 
-Hazır manifest aynı Deployment için üç Service türü daha oluşturur.
+Hazır manifest (`starter/service-types.yaml`), aynı Deployment için üç Service türünü (`NodePort`, `ExternalName`, `LoadBalancer`) tanımlar:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-nodeport
+  namespace: first-app
+spec:
+  type: NodePort
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30086
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-docs
+  namespace: first-app
+spec:
+  type: ExternalName
+  externalName: kubernetes.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-loadbalancer
+  namespace: first-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+```
+
+Manifesti uygulayarak servisleri oluştur:
 
 ```bash
-kubectl apply -f ~/k8s-labs/lab-01-first-app-pod-deployment-and-services/starter/service-types.yaml
+kubectl apply -f starter/service-types.yaml
 kubectl -n first-app get services
 ```
 

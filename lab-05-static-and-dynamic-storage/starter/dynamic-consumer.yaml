@@ -1,10 +1,19 @@
 apiVersion: v1
 kind: Pod
-metadata: { name: dynamic-consumer }
+metadata:
+  name: dynamic-consumer
 spec:
   containers:
     - name: consumer
       image: busybox:1.37
-      command: [sh, -c, "echo dynamic-volume-ready > /data/status.txt; sleep 3600"]
-      volumeMounts: [{ name: data, mountPath: /data }]
-  volumes: [{ name: data, persistentVolumeClaim: { claimName: dynamic-pvc } }]
+      command:
+        - sh
+        - -c
+        - "echo dynamic-volume-ready > /data/status.txt; sleep 3600"
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: dynamic-pvc
