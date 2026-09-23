@@ -45,7 +45,7 @@ labs:
     topic: kubernetes
     difficulty: orta
     estimated_minutes: 45
-    prerequisites: [LAB-K8S-02]
+    prerequisites: [platform-ready]
     profiles: [kubectl]
     ports: [19001]
     guide: lab-03-nginx-ingress-routing/README.md
@@ -101,7 +101,7 @@ labs:
     topic: kubernetes
     difficulty: orta
     estimated_minutes: 55
-    prerequisites: [LAB-K8S-02]
+    prerequisites: [platform-ready]
     profiles: [kubectl]
     ports: [30087]
     guide: lab-07-daemonset-and-hpa-scaling/README.md

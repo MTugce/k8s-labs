@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: devops-app
+  namespace: private-app
 spec:
   ingressClassName: nginx
   rules:
@@ -11,4 +12,7 @@ spec:
           - path: /
             pathType: Prefix
             backend:
-              service: { name: devops-app, port: { number: 80 } }
+              service:
+                name: devops-app
+                port:
+                  number: 80
