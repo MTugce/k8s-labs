@@ -13,6 +13,8 @@ grafana:
     dashboards:
       enabled: true
       label: grafana_dashboard
+  defaultDashboardsEnabled: true
+
 prometheus:
   prometheusSpec:
     retention: 2d
@@ -28,3 +30,13 @@ prometheus:
           resources:
             requests:
               storage: 5Gi
+
+# Kind kümesinde localhost dinleyen kontrol bileşenlerinin hedeflerde hata vermesini önler
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false

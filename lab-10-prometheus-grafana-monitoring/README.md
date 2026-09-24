@@ -1,14 +1,21 @@
-# Prometheus ve Grafana ile Cluster ve Uygulama Metriklerini İzle
+# * Prometheus ve Grafana ile Küme ve Sistem Metriklerini İzle
 
 ## Amaç
 
-Cluster ve uygulama metriklerini Prometheus ile toplamak, Grafana üzerinde görsel panellerle izlemek ve alert kuralları tetiklemek.
+- Helm ile `kube-prometheus-stack` (Prometheus, Grafana, Node Exporter, Kube-State-Metrics) paketini kurmak.
+- Nginx Edge Proxy ve NodePort port eşlemelerini çakışma olmadan doğru uçlara bağlamak.
+- Linux host ve Kubernetes node'larının kaynak kullanımını (CPU, RAM, Disk, Ağ) Node Exporter ile izlemek.
+- Kümedeki tüm container ve Pod'ların kaynak tüketimini Kubelet ve cAdvisor üzerinden otomatik toplamak.
+- Prometheus web arayüzünde otomatik hedefleri incelemek ve PromQL sorguları çalıştırmak.
+- Grafana arayüzünde sıfırdan özel panel oluşturma, değişken (variable) filtresi ekleme ve alert kuralları tanımlama pratiklerini öğrenmek.
 
 ## Kullanılan Kubernetes nesneleri
 
-- **ServiceMonitor:** Prometheus Operator'a hangi Service'ten metrik toplanacağını bildirir.
+- **Helm Release:** Prometheus, Grafana, Alertmanager ve exporter bileşenlerini tek merkezden kurar ve yönetir.
+- **DaemonSet:** `node-exporter` pod'larını her node'a dağıtarak alt donanım ve Linux çekirdeği metriklerini toplar.
+- **ServiceMonitor:** Prometheus Operator'a hangi Service uçlarından metrik toplanacağını bildirir.
 - **PrometheusRule:** PromQL ifadeleriyle eşik değer aşıldığında üretilecek alert koşullarını tanımlar.
-- **ConfigMap:** Grafana dashboard JSON tanımlarını taşır (`grafana_dashboard=1`).
+- **ConfigMap:** Grafana dashboard JSON tanımlarını taşır (`grafana_dashboard: "1"`).
 - **Secret:** Grafana yönetici giriş bilgilerini (`admin-user`, `admin-password`) saklar.
 
 ## Çalışma dizini
@@ -17,57 +24,61 @@ Cluster ve uygulama metriklerini Prometheus ile toplamak, Grafana üzerinde gör
 cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
 ```
 
-## Monitoring mimarisi
+## Erişim ve Ağ Mimarisi
 
-```text
-devops-app /metrics → Service → ServiceMonitor → Prometheus Operator → Prometheus
-                                                                    ├→ Grafana Dashboard
-                                                                    └→ PrometheusRule → Alertmanager
-```
+İzleme araçlarına iki farklı yöntemle erişilebilir. Her iki yöntem de port çakışması yaşanmayacak şekilde ayrılmıştır:
 
----
+| Servis | Erişim Türü | Adres / Port | Açıklama |
+| --- | --- | --- | --- |
+| **Grafana** | NodePort (Doğrudan) | `http://SUNUCU_IP:30089` | Kind cluster `hostPort: 30089` portudur |
+| **Grafana** | Nginx Edge Proxy (HTTPS) | `https://KULLANICI-grafana.ALAN_ADI` | Host üzerindeki `127.0.0.1:13000` portuna yönlenir |
+| **Prometheus** | Nginx Edge Proxy (HTTPS) | `https://KULLANICI-prometheus.ALAN_ADI` | Host üzerindeki `127.0.0.1:19090` portuna yönlenir |
+| **Prometheus** | Port-Forward (Yerel) | `http://127.0.0.1:9090` | Doğrudan geliştirici tünelidir |
 
-## 1. Uygulamanın ve HPA'nın hazır olduğunu doğrula
+- **Varsayılan Kullanıcı adı:** `admin`
+- **Varsayılan Parola:** `devops-monitor-2026`
+
+## Başlamadan önce
+
+Kind kümesinin çalıştığını doğrula:
 
 ```bash
-kubectl -n private-app get deployment,pods,service,hpa
-kubectl top pods -n private-app
+kubectl get nodes -o wide
 ```
 
-Beklenen sonuç: `devops-app` Pod'ları çalışır ve Metrics Server CPU değerleri listelenir.
+Beklenen sonuç: 1 control-plane ve 2 worker node `Ready` durumunda listelenmelidir.
 
 ---
 
-## 2. Grafana Yönetici Giriş Secret'ını Hazırla
+## 1. İzleme Namespace'i ve Grafana Giriş Secret'ını Oluştur
 
-Aşağıdaki manifest (`starter/grafana-admin-secret.example.yaml`), Grafana yönetici panelinin kullanıcı adı ve parolasını belirler:
+Grafana yönetici giriş bilgileri `starter/grafana-admin-secret.yaml` manifestinde tanımlanmıştır:
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
   name: grafana-admin
+  namespace: monitoring
 type: Opaque
 stringData:
-  admin-user: "__YEREL_GRAFANA_KULLANICI_ADI__"
-  admin-password: "__YEREL_GRAFANA_PAROLASI__"
+  admin-user: "admin"
+  admin-password: "devops-monitor-2026"
 ```
 
-Dosyayı kopyala, `sed` ile kullanıcı ve parola bilgilerini yerleştirip `monitoring` namespace'ine uygula:
+Namespace'i ve yönetici Secret'ını uygula:
 
 ```bash
 kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
-
-cp starter/grafana-admin-secret.example.yaml grafana-admin.local.yaml
-sed -i "s|__YEREL_GRAFANA_KULLANICI_ADI__|admin|g; s|__YEREL_GRAFANA_PAROLASI__|student-lab-monitor|g" grafana-admin.local.yaml
-kubectl apply -n monitoring -f grafana-admin.local.yaml
-
+kubectl apply -f starter/grafana-admin-secret.yaml
 kubectl -n monitoring get secret grafana-admin
 ```
 
+Beklenen sonuç: `grafana-admin` Secret'ı `monitoring` namespace'inde listelenir.
+
 ---
 
-## 3. Monitoring Helm Deposunu Ekle ve Güncelle
+## 2. Prometheus Community Helm Deposunu Ekle ve Güncelle
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -76,96 +87,212 @@ helm repo update
 
 ---
 
-## 4. Kube Prometheus Stack'i Kur
+## 3. Kube Prometheus Stack'i Kur
 
-Grafana'yı ayrılmış `30089` NodePort portunda açan ve diğer namespace'lerdeki ServiceMonitor'leri okumasını sağlayan `starter/monitoring-values.yaml` ile kurulumu yap:
+Kurulum ayarları `starter/monitoring-values.yaml` dosyasındadır:
+- Grafana `30089` NodePort portunda açılır.
+- Hazır dashboard'lar aktiftir (`defaultDashboardsEnabled: true`).
+- Kind kümesinde localhost dinleyen iç bileşenler (kubeControllerManager, kubeScheduler, kubeEtcd, kubeProxy) hedeflerden çıkarılarak listenin temiz kalması sağlanır.
+
+Kurulumu başlat:
 
 ```bash
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --version 91.5.0 \
   --namespace monitoring \
   --values starter/monitoring-values.yaml \
-  --wait
+  --wait --timeout=300s
 ```
 
 Kurulan bileşenleri doğrula:
 
 ```bash
-kubectl -n monitoring get pods,service,pvc
+kubectl -n monitoring get pods,svc
 ```
 
-Beklenen sonuç: Prometheus, Grafana ve Alertmanager Pod'ları `Running` olur. Grafana servisinde `30089` NodePort portu görünür.
+Beklenen sonuç: Prometheus, Alertmanager, Grafana, Kube-State-Metrics ve 3 node'un tamamında çalışan Node Exporter Pod'ları `Running` durumuna gelir.
 
 ---
 
-## 5. ServiceMonitor, Dashboard ve Alert Kaynaklarını Ekle
+## 4. Nginx Edge Proxy ve Doğrudan Erişim Portlarını Bağla
 
-Aşağıdaki ServiceMonitor (`starter/devops-app-servicemonitor.yaml`), Prometheus'un `private-app` namespace'indeki `devops-app` servisinin `/metrics` ucunu her 15 saniyede bir kazımasını (scrape) sağlar:
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: devops-app
-  namespace: private-app
-  labels:
-    release: monitoring
-spec:
-  selector:
-    matchLabels:
-      app: devops-app
-  endpoints:
-    - port: http
-      path: /metrics
-      interval: 15s
-```
-
-Tüm izleme ve dashboard varlıklarını uygulayan scripti çalıştır:
+Nginx Edge Proxy kayıtlarının (`13000` ve `19090`) arka plandaki pod'lara ulaşabilmesi ve tarayıcıdan HTTPS ile açılabilmesi için port yönlendirmelerini arka planda başlat:
 
 ```bash
-bash scripts/apply-observability-assets.sh
+# Nginx Grafana slotu (13000 -> Grafana Service)
+kubectl -n monitoring port-forward --address 127.0.0.1 svc/monitoring-grafana 13000:80 >/dev/null 2>&1 &
+
+# Nginx Prometheus slotu (19090 -> Prometheus Service)
+kubectl -n monitoring port-forward --address 127.0.0.1 svc/monitoring-kube-prometheus-prometheus 19090:9090 >/dev/null 2>&1 &
 ```
 
-Beklenen sonuç: `devops-app` ServiceMonitor'u, `devops-app-alerts` PrometheusRule'u ve dashboard ConfigMap'leri cluster'a yüklenir.
+Bağlantıların aktif olduğunu yerel `curl` ile kontrol et:
+
+```bash
+curl -I http://127.0.0.1:13000
+curl -I http://127.0.0.1:19090
+```
+
+Beklenen sonuç: Her iki porttan da HTTP yanıtı (200 veya 302 yönlendirmesi) alınır. Artık hem `https://KULLANICI-grafana.ALAN_ADI` hem de doğrudan `http://SUNUCU_IP:30089` üzerinden erişilebilir.
 
 ---
 
-## 6. Grafana Paneline Giriş Yap ve İncele
+## 5. Prometheus UI Üzerinde Otomatik Toplanan Verileri ve Hedefleri İncele
 
-- **Grafana URL:** `http://SUNUCU_IP:30089` (veya port-forward / yerel erişimde `http://127.0.0.1:30089`)
+Tarayıcında Prometheus arayüzünü aç (`https://KULLANICI-prometheus.ALAN_ADI` veya `http://127.0.0.1:19090`).
+
+### A. Otomatik Keşfedilen Hedefleri (Targets) İnceleme
+1. Üst menüden **Status -> Targets** sekmesine tıkla.
+2. Prometheus'un kümede önceden hiçbir ayar yapmadan topladığı 4 ana grubu incele:
+   - **`node-exporter`:** Ubuntu host ve Kind node'larının çekirdek ve donanım metrikleri (CPU, RAM, disk I/O, ağ).
+   - **`kubelet / cAdvisor`:** Kümedeki tüm namespace'lerde çalışan Pod ve konteynerlerin bellek ve işlemci tüketimleri.
+   - **`kube-state-metrics`:** Deployment, Pod, PVC gibi Kubernetes kaynaklarının durumları.
+   - **`apiserver`:** Kubernetes API sunucusunun istek sıklığı ve gecikme metrikleri.
+3. Tüm hedeflerin durumunun mavi/yeşil `UP (1/1)` olduğunu doğrula.
+
+### B. Graph Sekmesinde PromQL Sorguları Çalıştırma
+Üst menüden **Graph** sekmesine tıkla ve arama çubuğuna şu sorguları yazarak **Execute** butonuna bas:
+
+1. **Host ve Node Boşta CPU Oranı:**
+   ```promql
+   node_cpu_seconds_total{mode="idle"}
+   ```
+   *Table* sekmesinden anlık değerleri, *Graph* sekmesine geçerek zaman içerisindeki çizgi grafiğini incele.
+
+2. **Kullanılabilir Bellek Miktarı (MB Cinsinden):**
+   ```promql
+   node_memory_MemAvailable_bytes / 1024 / 1024
+   ```
+
+3. **Çalışan Pod Sayısı:**
+   ```promql
+   sum(kube_pod_status_phase{phase="Running"})
+   ```
+
+---
+
+## 6. Grafana Paneline Giriş ve Hazır Panelleri İnceleme
+
+Tarayıcında Grafana'yı aç (`https://KULLANICI-grafana.ALAN_ADI` veya `http://SUNUCU_IP:30089`).
 - **Kullanıcı adı:** `admin`
-- **Parola:** `student-lab-monitor`
+- **Parola:** `devops-monitor-2026`
 
-Giriş yaptıktan sonra sol menüden **Dashboards** sekmesine gidin. `Devops App Lab` ve `Devops App Operations` panellerini açarak istek hızı, p95 gecikme süresi ve HPA pod metriklerini izleyin.
-
----
-
-## 7. Yük Üret ve Alert Tetikle
-
-Uygulamanın `/work?ms=500` endpoint'ine sürekli istek göndererek gecikme süresini yükselt:
-
-```bash
-bash scripts/run-load-test.sh
-```
-
-Başka bir terminalde Pod ve HPA tepkisini izleyin:
-
-```bash
-kubectl -n private-app get hpa,pods -w
-```
-
-Grafana Alerting sekmesinde `DevopsAppSlowRequests` kuralının yeşilden sarıya (`Pending`) ve ardından kırmızıya (`Firing`) geçtiğini gözlemleyin.
+Sol menüden **Dashboards** sekmesine gir. Kurulumla birlikte gelen hazır panelleri incele:
+- **Kubernetes / Compute Resources / Cluster:** Kümenin toplam CPU, bellek kapasitesi ve kullanım oranları.
+- **Kubernetes / Compute Resources / Node (Pods):** Her bir node'un üzerindeki pod yükü ve kaynak dökümü.
+- **Kubernetes / Compute Resources / Namespace (Pods):** `kube-system` ve `monitoring` servislerinin kaynak tüketimleri.
+- **Node Exporter / Nodes:** Linux çekirdeği seviyesinde RAM dağılımı (buffers/cached) ve disk okuma-yazma hızları.
 
 ---
 
-## 8. Metin Raporunu Al ve Yükü Durdur
+## 7. Grafana UI Üzerinde Sıfırdan Yeni Pano (Panel) Oluşturma
 
-İzleme metriklerinin terminal özetini alıp yük testini sonlandırın:
+Grafana arayüzünde kendi görsel panelini adım adım tasarla:
+
+1. Sol menüden **Dashboards** sekmesine tıkla, sağ üstteki **New -> New Dashboard** butonuna bas.
+2. Açılan ekranda **+ Add visualization** butonuna tıkla.
+3. Veri kaynağı listesinden **Prometheus** seç.
+4. **Query (A)** alanına namespace bazlı bellek kullanımını veren şu PromQL ifadesini yapıştır:
+   ```promql
+   sum by (namespace) (container_memory_working_set_bytes) / 1024 / 1024
+   ```
+5. Sağ taraftaki ayar sütunundan:
+   - **Panel options -> Title:** `Namespace Bellek Tüketimi (MB)` yaz.
+   - En üstteki grafik türü açılır kutusundan **Bar gauge** seç.
+   - **Standard options -> Unit:** `Data -> Megabytes (MB)` olarak ayarla.
+   - **Thresholds:** `50` değerine sarı, `100` değerine kırmızı renk ata.
+6. Sağ üst köşedeki mavi **Apply** butonuna bas.
+7. Sayfanın sağ üstündeki disket simgesine (**Save dashboard**) tıkla, başlık olarak `Ozel Sistem Panosu` yaz ve kaydet.
+
+---
+
+## 8. Dashboard'a Dinamik Filtre (Variable) Ekleme
+
+Farklı namespace'leri tek tıkla filtreleyebilmek için panoya bir değişken ekle:
+
+1. Az önce oluşturduğun dashboard'un sağ üst köşesindeki çark simgesine (**Dashboard settings**) tıkla.
+2. Sol menüden **Variables** sekmesini seç ve **Add variable** butonuna bas.
+3. Alanları şu şekilde doldur:
+   - **Name:** `secili_namespace`
+   - **Type:** `Query`
+   - **Query:** `label_values(container_memory_working_set_bytes, namespace)`
+4. Sayfanın altındaki **Apply** butonuna bas ve sol üstteki ok simgesiyle panoya geri dön.
+5. Pano üzerinde bir açılır kutu (dropdown) belirdiğini gör.
+6. Az önce oluşturduğun panelin sağ üstündeki üç noktaya tıkla ve **Edit** seç.
+7. Sorguyu seçilen değişkene göre filtreleyecek şekilde güncelle:
+   ```promql
+   sum(container_memory_working_set_bytes{namespace="$secili_namespace"}) / 1024 / 1024
+   ```
+8. **Apply** diyerek kaydet. Artık açılır kutudan hangi namespace seçilirse panel sadece o namespace'in verisini filtreler.
+
+---
+
+## 9. GitOps Yaklaşımıyla Hazır Pano ve Alarm Kurallarını Uygula
+
+Panel ve alarm tanımlarını arayüz dışında YAML manifesti olarak yönetmek Kubernetes izleme standartlarındandır:
+
+1. **`starter/cluster-alerts.yaml`:** Pod'lar sürekli yeniden başladığında veya bir node'un belleği %85'i aştığında alarm üreten `PrometheusRule` nesnesidir.
+2. **`starter/cluster-dashboard.yaml`:** Grafana sidecar'ının otomatik tanıması için `grafana_dashboard: "1"` etiketine sahip hazır bir `ConfigMap` panosudur.
+
+Manifestleri uygula:
 
 ```bash
-bash scripts/monitoring-report.sh
-bash scripts/stop-load-test.sh
+kubectl apply -f starter/cluster-alerts.yaml
+kubectl apply -f starter/cluster-dashboard.yaml
 ```
+
+Kuralların ve panonun yüklendiğini kontrol et:
+
+```bash
+kubectl -n monitoring get prometheusrule cluster-workload-alerts
+kubectl -n monitoring get configmap cluster-summary-dashboard -l grafana_dashboard=1
+```
+
+Grafana'da **Dashboards** sayfasına dönüldüğünde **Küme ve Sistem Özeti** panosunun otomatik yüklendiğini gör.
+
+---
+
+## 10. Canlı Yük Oluştur ve Grafana'da Değişimi İzle
+
+İzlemenin canlı çalıştığını görmek için `default` namespace'inde tek satırlık bir CPU yük pod'u çalıştır:
+
+```bash
+kubectl run cpu-stress-test --image=busybox:1.36 --restart=Never -- sh -c "while true; do :; done"
+kubectl get pod cpu-stress-test
+```
+
+Grafana paneline dön:
+- **Dashboards -> Kubernetes / Compute Resources / Pod** paneline git.
+- Namespace kutusundan `default`, Pod kutusundan `cpu-stress-test` seç.
+- Sağ üstten zaman aralığını `Last 5 minutes` ve yenileme sıklığını `5s` yap.
+- CPU kullanım grafiğinin tırmandığını canlı olarak izle.
+
+Test tamamlandığında yük pod'unu sil:
+
+```bash
+kubectl delete pod cpu-stress-test
+```
+
+Beklenen sonuç: Pod silindikten sonra CPU grafiğinin tekrar taban seviyeye indiği doğrulanır.
+
+---
+
+## Doğal Doğrulama ve Beklenen Sonuç
+
+İzleme altyapısının tüm bileşenlerinin sağlıklı çalıştığını aşağıdaki komutlarla doğrula:
+
+```bash
+kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus
+kubectl -n monitoring get pods -l app.kubernetes.io/name=grafana
+kubectl -n monitoring get daemonset -l app.kubernetes.io/name=prometheus-node-exporter
+```
+
+| Bileşen | Beklenen Durum |
+| --- | --- |
+| Prometheus Sunucusu | 1/1 Running |
+| Grafana Web Arayüzü | 1/1 Running (Port: 30089 ve Port: 13000) |
+| Node Exporter | 3/3 Desired / Current (Tüm node'larda aktif) |
+| Kube State Metrics | 1/1 Running |
 
 > [!NOTE]
-> Bu labın sonunda Prometheus ve Grafana kaldırılmaz; sonraki izleme pratiklerinde kullanılmak üzere çalışır durumda bırakılır.
+> Bu labın sonunda Prometheus ve Grafana kaldırılmaz; sonraki çalışmalarda küme durumunu takip etmek üzere aktif bırakılır.

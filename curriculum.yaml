@@ -143,11 +143,11 @@ labs:
     topic: kubernetes
     difficulty: orta
     estimated_minutes: 75
-    prerequisites: [LAB-K8S-07, LAB-K8S-09]
-    profiles: [docker, helm, kubectl]
+    prerequisites: [platform-ready]
+    profiles: [helm, kubectl]
     ports: [30089]
     guide: lab-10-prometheus-grafana-monitoring/README.md
-    assets: [lab-10-prometheus-grafana-monitoring/starter, lab-10-prometheus-grafana-monitoring/scripts]
+    assets: [lab-10-prometheus-grafana-monitoring/starter]
     validation_mode: metrics-dashboard-and-alert
     learning_paths: [k8s-labs]
     access_tags: [student]

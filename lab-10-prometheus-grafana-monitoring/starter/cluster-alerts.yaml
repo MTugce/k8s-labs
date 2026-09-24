@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cluster-workload-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: cluster.workload.rules
+      rules:
+        - alert: PodRestartingFrequently
+          expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 > 2
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod sürekli yeniden başlıyor"
+            description: "{{ $labels.namespace }} namespace'i altındaki {{ $labels.pod }} pod'u son 5 dakikada 2'den fazla kez yeniden başladı."
+        - alert: NodeHighMemoryUsage
+          expr: (node_memory_MemTotal_bytes - (node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes)) / node_memory_MemTotal_bytes * 100 > 85
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node bellek kullanımı yüksek"
+            description: "{{ $labels.instance }} node'unda RAM kullanımı %85 seviyesinin üzerine çıktı."

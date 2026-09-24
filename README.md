@@ -13,7 +13,7 @@
 | 7 | [* Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle](lab-07-daemonset-and-hpa-scaling/README.md) | `~/k8s-labs/lab-07-daemonset-and-hpa-scaling` |
 | 8 | [* Sürümü Güvenle Yayınla](lab-08-deployment-strategies/README.md) | `~/k8s-labs/lab-08-deployment-strategies` |
 | 9 | [* WordPress ile Helm Operasyonlarını Öğren](lab-09-wordpress-ile-helm-operasyonlari/README.md) | `~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari` |
-| 10 | [Prometheus ve Grafana ile Metrikleri İzle](lab-10-prometheus-grafana-monitoring/README.md) | `~/k8s-labs/lab-10-prometheus-grafana-monitoring` |
+| 10 | [* Prometheus ve Grafana ile Küme ve Sistem Metriklerini İzle](lab-10-prometheus-grafana-monitoring/README.md) | `~/k8s-labs/lab-10-prometheus-grafana-monitoring` |
 | 11 | [* LimitRange ve ResourceQuota](lab-11-limitrange-resourcequota/README.md) | `~/k8s-labs/lab-11-limitrange-resourcequota` |
 | 12 | [* Basit RBAC](lab-12-basit-rbac/README.md) | `~/k8s-labs/lab-12-basit-rbac` |
 
