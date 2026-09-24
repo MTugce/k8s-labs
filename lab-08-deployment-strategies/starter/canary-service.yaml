@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app-canary-v1
+  namespace: private-app
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: devops-app-canary
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: devops-app-canary
+        version: v1
+    spec:
+      containers:
+        - name: app
+          image: __IMAGE__:1.0
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app-canary-v2
+  namespace: private-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-app-canary
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: devops-app-canary
+        version: v2
+    spec:
+      containers:
+        - name: app
+          image: __IMAGE__:2.0
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-canary
+  namespace: private-app
+spec:
+  selector:
+    app: devops-app-canary
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

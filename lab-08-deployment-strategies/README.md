@@ -6,9 +6,9 @@ Modern yazılım dağıtım stratejileri olan Recreate, RollingUpdate, Blue-Gree
 
 ## Kullanılan Kubernetes nesneleri
 
-- **Deployment:** Recreate ve RollingUpdate stratejileri ile pod güncellemelerini yönetir.
-- **Service:** Blue-Green stratejisinde pod label selector'ını anlık değiştirerek canlı trafiği yeni sürüme aktarır.
-- **Gateway & HTTPRoute:** Canary stratejisinde gelen HTTP trafiğini sürümler arasında yüzdelik oranlarla (%90-%10, %50-%50) paylaştırır.
+- **Deployment:** Recreate, RollingUpdate ve pod sayısı ölçekleme (Canary replica scaling) ile sürüm geçişlerini yönetir.
+- **Service:** Blue-Green stratejisinde pod label selector'ını anlık değiştirir; doğal Canary stratejisinde pod oranına göre trafiği dengeler.
+- **Gateway & HTTPRoute (Alternatif):** Gateway API Canary stratejisinde gelen HTTP trafiğini sürümler arasında ağ katmanında yüzdelik ağırlıklarla (%90-%10, %50-%50) paylaştırır.
 
 ## Çalışma dizini
 
@@ -18,9 +18,9 @@ cd ~/k8s-labs/lab-08-deployment-strategies
 
 ---
 
-## 1. İkinci İmaj Sürümünü Derle ve Test İstemcisini Hazırla
+## 1. İmaj Sürümlerini (1.0 ve 2.0) Derle ve Test İstemcisini Hazırla
 
-Canlı güncelleme stratejilerini deneyebilmek için iki farklı sürüme (`1.0` ve `2.0`) ihtiyacımız var.
+Canlı güncelleme stratejilerini deneyebilmek için iki farklı sürüme (`1.0` ve `2.0`) ihtiyacımız var. Uygulama kaynak kodları `~/k8s-labs/app/devops-app` dizinindedir.
 
 Değişkenleri tanımla:
 
@@ -31,17 +31,28 @@ export STUDENT_ID="${STUDENT_ID:-$(hostname)}"
 export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
 ```
 
-İkinci imajı (`2.0`) derleyip Docker Hub'a gönder:
+Her iki sürümü de derleyip Docker Hub'a gönder:
 
 ```bash
+# Sürüm 1.0 (Kararlı eski sürüm)
+docker build -t "${IMAGE}:1.0" ~/k8s-labs/app/devops-app
+docker push "${IMAGE}:1.0"
+
+# Sürüm 2.0 (Yeni sürüm)
 docker build --build-arg APP_VERSION=2.0 -t "${IMAGE}:2.0" ~/k8s-labs/app/devops-app
 docker push "${IMAGE}:2.0"
 ```
 
-Kubernetes'in private Docker Hub imajlarını çekebilmesi için ServiceAccount yetkisini tanımla ve cluster içinden canlı istek gönderecek `test-client` Pod'unu başlat:
+Kubernetes'in Docker Hub imajlarını çekebilmesi için namespace'i hazırla, (varsa private depo için) secret'ı tanımla ve cluster içinden canlı istek gönderecek `test-client` Pod'unu başlat:
 
 ```bash
 kubectl create namespace private-app --dry-run=client -o yaml | kubectl apply -f -
+
+# Docker Hub reponuz Private ise secret'ı oluşturun (Public ise bu adım zorunlu değildir):
+# kubectl -n private-app create secret docker-registry dockerhub-creds \
+#   --docker-server=docker.io --docker-username="$DOCKERHUB_USER" --docker-password="DOCKERHUB_TOKEN" \
+#   --dry-run=client -o yaml | kubectl apply -f -
+
 kubectl -n private-app patch serviceaccount default -p '{"imagePullSecrets": [{"name": "dockerhub-creds"}]}' 2>/dev/null || true
 
 kubectl -n private-app run test-client --image=curlimages/curl:8.12.1 --restart=Never -- sleep 3600
@@ -345,11 +356,182 @@ kubectl -n private-app delete service strategy-app
 
 ---
 
-## 5. Gateway API ile Canary Dağıtımı (Ağırlıklı Yönlendirme)
+## 5. Canary Dağıtımı (Kademeli Trafik Geçişi)
 
-Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir.
+Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir. Yeni sürümde hata gözlenmezse trafik kademeli olarak artırılır.
 
-Aşağıdaki manifest (`starter/canary-httproute.yaml`), iki sürümün servislerini ve Gateway API ağırlıklı yönlendirme kuralını tanımlar:
+Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
+
+---
+
+### Seçenek A: Doğal Kubernetes — Pod Sayısı / Ölçekleme ile Canary (Önerilen & Bağımsız)
+
+Bu yöntem harici hiçbir Ingress controller veya Gateway API gerektirmez. Kubernetes `Service` nesnesinin trafiği arkasındaki Pod'lara eşit olasılıkla dağıtma (Round-Robin) prensibini kullanır.
+
+Aşağıdaki manifest (`starter/canary-service.yaml`), ortak bir Service (`strategy-canary`) ve başlangıçta 9 adet `v1` (%90), 1 adet `v2` (%10) podu çalıştıran iki Deployment tanımlar:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app-canary-v1
+  namespace: private-app
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: devops-app-canary
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: devops-app-canary
+        version: v1
+    spec:
+      containers:
+        - name: app
+          image: __IMAGE__:1.0
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app-canary-v2
+  namespace: private-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-app-canary
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: devops-app-canary
+        version: v2
+    spec:
+      containers:
+        - name: app
+          image: __IMAGE__:2.0
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strategy-canary
+  namespace: private-app
+spec:
+  selector:
+    app: devops-app-canary
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+```
+
+#### 1. Manifesti Uygula ve Başlat
+
+```bash
+sed "s|__IMAGE__|${IMAGE}|g" starter/canary-service.yaml | kubectl apply -f -
+kubectl -n private-app rollout status deployment/devops-app-canary-v1
+kubectl -n private-app rollout status deployment/devops-app-canary-v2
+```
+
+#### 2. Başlangıç Pod Dağılımını Gör (%90 v1 - %10 v2)
+
+Podların sürümlerini ve sayılarını listele:
+
+```bash
+kubectl -n private-app get pods -l app=devops-app-canary -L version
+```
+
+Beklenen sonuç: 9 adet `version=v1` podu ve 1 adet `version=v2` podu `Running` durumundadır (toplam 10 pod).
+
+#### 3. Canlı Trafik Testi (%90 - %10)
+
+`test-client` üzerinden Service'e 10 adet HTTP isteği gönder:
+
+```bash
+for i in {1..10}; do kubectl -n private-app exec test-client -- curl -s http://strategy-canary/ | grep -o '"version":"[^"]*"'; done
+```
+
+Beklenen sonuç: İsteklerin yaklaşık 9'u `"version":"1.0"` dönerken, araya 1 adet `"version":"2.0"` yanıtı düşer.
+
+#### 4. Podları Ölçekle (%50 - %50 Dengeleme)
+
+Yeni sürümün stabil çalıştığı görüldü; trafiği %50 / %50 oranına çekmek için pod sayılarını eşitle:
+
+```bash
+kubectl -n private-app scale deployment/devops-app-canary-v1 --replicas=5
+kubectl -n private-app scale deployment/devops-app-canary-v2 --replicas=5
+```
+
+Podların azalıp çoğaldığını anlık izle:
+
+```bash
+kubectl -n private-app get pods -l app=devops-app-canary -L version
+```
+
+Beklenen sonuç: 4 adet `v1` podunun kapandığını (`Terminating`) ve 4 adet yeni `v2` podunun açıldığını görürsünüz. İşlem bitince 5 adet `v1` ve 5 adet `v2` podu kalır.
+
+Tekrar 10 adet HTTP isteği gönder:
+
+```bash
+for i in {1..10}; do kubectl -n private-app exec test-client -- curl -s http://strategy-canary/ | grep -o '"version":"[^"]*"'; done
+```
+
+Beklenen sonuç: Yanıtlar yarı yarıya `"version":"1.0"` ve `"version":"2.0"` olarak dengeli dağılır.
+
+#### 5. Canary Terfisi (%100 v2 - Promotion)
+
+Yeni sürüm tamamen onaylandı. Eski sürüm tamamen kapatılıp tüm trafik yeni sürüme aktarılır:
+
+```bash
+kubectl -n private-app scale deployment/devops-app-canary-v2 --replicas=10
+kubectl -n private-app scale deployment/devops-app-canary-v1 --replicas=0
+```
+
+Son pod durumunu denetle:
+
+```bash
+kubectl -n private-app get pods -l app=devops-app-canary -L version
+```
+
+Beklenen sonuç: `devops-app-canary-v1` podları tamamen sonlanmıştır; yalnızca 10 adet `version=v2` podu aktiftir.
+
+Final testini yap:
+
+```bash
+for i in {1..10}; do kubectl -n private-app exec test-client -- curl -s http://strategy-canary/ | grep -o '"version":"[^"]*"'; done
+```
+
+Beklenen sonuç: 10 isteğin tamamı `"version":"2.0"` yanıtı verir. Canary geçişi başarıyla tamamlanmıştır!
+
+Temizlik:
+
+```bash
+kubectl -n private-app delete deployment devops-app-canary-v1 devops-app-canary-v2
+kubectl -n private-app delete service strategy-canary
+```
+
+---
+
+### Seçenek B: İleri Seviye — Gateway API ile Canary (Ağırlıklı Yönlendirme)
+
+> [!NOTE]
+> Bu seçenek `LAB-04` kapsamında kurulan **Traefik Gateway Controller** ve **Gateway API CRD'lerini** gerektirir. Pod sayılarını değiştirmeden, ağ yönlendiricisi üzerinde `HTTPRoute` ağırlıkları (`weight: 90 / 10`) ile yüzdelik trafik dağıtımı sağlar.
+
+Önce Traefik Gateway Controller'ın cluster'da çalıştığını doğrula:
+
+```bash
+kubectl -n traefik get pods 2>/dev/null || echo "Traefik bulunamadı; LAB-04'ü uygulayın veya Seçenek A'yı kullanın."
+```
+
+Aşağıdaki manifest (`starter/canary-httproute.yaml`), Traefik Gateway'i, iki sürümün servislerini ve Gateway API ağırlıklı yönlendirme kuralını tanımlar:
 
 ```yaml
 apiVersion: apps/v1
@@ -429,6 +611,21 @@ spec:
       targetPort: 8080
 ---
 apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: devops-app-gateway
+  namespace: private-app
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: devops-app-canary
@@ -459,10 +656,10 @@ kubectl -n private-app rollout status deployment/strategy-app-v2
 10 adet HTTP isteği göndererek %90 / %10 dağılımını gözlemle:
 
 ```bash
-for i in {1..10}; do curl -s -k "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'; done
+for i in {1..10}; do curl -s -k -H "Host: ${APP_HOST}" http://127.0.0.1:30088/ | grep -o '"version":"[^"]*"'; done
 ```
 
-Beklenen sonuç: İsteklerin neredeyse tamamı `"version":"1.0"` dönerken, araya tek tük `"version":"2.0"` yanıtı düşer.
+*(Eğer edge router Traefik'e yönlendirilmişse doğrudan `https://${APP_HOST}/` adresini de kullanabilirsiniz).*
 
 Şimdi ağırlıkları %50 / %50 olarak güncelle:
 
@@ -474,14 +671,24 @@ kubectl -n private-app patch httproute devops-app-canary --type=json \
 Tekrar 10 adet HTTP isteği gönder:
 
 ```bash
-for i in {1..10}; do curl -s -k "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'; done
+for i in {1..10}; do curl -s -k -H "Host: ${APP_HOST}" http://127.0.0.1:30088/ | grep -o '"version":"[^"]*"'; done
 ```
 
 Beklenen sonuç: Yanıtlar yarı yarıya `"version":"1.0"` ve `"version":"2.0"` olarak dengeli dağılır.
 
+Temizlik:
+
+```bash
+kubectl -n private-app delete httproute devops-app-canary
+kubectl -n private-app delete deployment strategy-app-v1 strategy-app-v2
+kubectl -n private-app delete service strategy-app-v1 strategy-app-v2
+```
+
 ---
 
 ## 6. Temizlik
+
+Tüm lab kaynaklarını ve `private-app` isim alanını kaldır:
 
 ```bash
 kubectl delete namespace private-app
