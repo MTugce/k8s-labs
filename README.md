@@ -16,5 +16,6 @@
 | 10 | [* Prometheus ve Grafana ile Küme ve Sistem Metriklerini İzle](lab-10-prometheus-grafana-monitoring/README.md) | `~/k8s-labs/lab-10-prometheus-grafana-monitoring` |
 | 11 | [* LimitRange ve ResourceQuota](lab-11-limitrange-resourcequota/README.md) | `~/k8s-labs/lab-11-limitrange-resourcequota` |
 | 12 | [* Basit RBAC](lab-12-basit-rbac/README.md) | `~/k8s-labs/lab-12-basit-rbac` |
+| 13 | [* Headlamp Görsel Gösterge Paneli ve Güvenli Küme İzleme](lab-13-headlamp-cluster-dashboard/README.md) | `~/k8s-labs/lab-13-headlamp-cluster-dashboard` |
 
 [Kubectl ve Kind Hızlı Başvuru](cheat-sheets/kubectl-ve-kind-hizli-basvuru.md)

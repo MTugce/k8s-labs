@@ -9,7 +9,7 @@ course:
     - Ölçekleme ve yayın
     - Helm ve monitoring
     - Kaynak yönetimi ve RBAC
-  lab_ids: [LAB-K8S-01, LAB-K8S-02, LAB-K8S-03, LAB-K8S-04, LAB-K8S-05, LAB-K8S-06, LAB-K8S-07, LAB-K8S-08, LAB-K8S-09, LAB-K8S-10, LAB-K8S-11, LAB-K8S-12]
+  lab_ids: [LAB-K8S-01, LAB-K8S-02, LAB-K8S-03, LAB-K8S-04, LAB-K8S-05, LAB-K8S-06, LAB-K8S-07, LAB-K8S-08, LAB-K8S-09, LAB-K8S-10, LAB-K8S-11, LAB-K8S-12, LAB-K8S-13]
 labs:
   - id: LAB-K8S-01
     slug: first-app-pod-deployment-and-services
@@ -176,6 +176,20 @@ labs:
     ports: []
     guide: lab-12-basit-rbac/README.md
     assets: [lab-12-basit-rbac/starter]
+    validation_mode: kubectl-auth-can-i
+    learning_paths: [k8s-labs]
+    access_tags: [student]
+  - id: LAB-K8S-13
+    slug: headlamp-cluster-dashboard
+    title: Headlamp Görsel Gösterge Paneli ve Güvenli Küme İzleme
+    topic: kubernetes
+    difficulty: orta
+    estimated_minutes: 40
+    prerequisites: [LAB-K8S-12]
+    profiles: [helm, kubectl]
+    ports: [18084]
+    guide: lab-13-headlamp-cluster-dashboard/README.md
+    assets: [lab-13-headlamp-cluster-dashboard/starter]
     validation_mode: kubectl-auth-can-i
     learning_paths: [k8s-labs]
     access_tags: [student]
