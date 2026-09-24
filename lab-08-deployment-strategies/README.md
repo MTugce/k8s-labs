@@ -34,6 +34,8 @@ export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
 Her iki sürümü de derleyip Docker Hub'a gönder:
 
 ```bash
+docker login -u "$DOCKERHUB_USER"
+
 # Sürüm 1.0 (Kararlı eski sürüm)
 docker build -t "${IMAGE}:1.0" ~/k8s-labs/app/devops-app
 docker push "${IMAGE}:1.0"
@@ -48,9 +50,9 @@ Kubernetes'in Docker Hub imajlarını çekebilmesi için namespace'i hazırla, (
 ```bash
 kubectl create namespace private-app --dry-run=client -o yaml | kubectl apply -f -
 
-# Docker Hub reponuz Private ise secret'ı oluşturun (Public ise bu adım zorunlu değildir):
+# Eğer Docker Hub'daki devops-app reponuz Private ise secret'ı oluşturun (Public ise gerekmez):
 # kubectl -n private-app create secret docker-registry dockerhub-creds \
-#   --docker-server=docker.io --docker-username="$DOCKERHUB_USER" --docker-password="DOCKERHUB_TOKEN" \
+#   --docker-server=https://index.docker.io/v1/ --docker-username="$DOCKERHUB_USER" --docker-password="DOCKERHUB_TOKEN" \
 #   --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl -n private-app patch serviceaccount default -p '{"imagePullSecrets": [{"name": "dockerhub-creds"}]}' 2>/dev/null || true
