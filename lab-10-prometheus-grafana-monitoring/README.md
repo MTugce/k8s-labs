@@ -26,6 +26,28 @@ cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
 
 ## Erişim ve Ağ Mimarisi
 
+[![Prometheus ve Grafana Küme İzleme Mimarisi](images/monitoring-architecture.png)](images/monitoring-architecture.png)
+*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+
+```mermaid
+flowchart LR
+  subgraph EXP["1. Metrik Kaynakları (Exporters)"]
+    NE["Node Exporter (Linux OS)"]
+    CAD["Kubelet / cAdvisor (Konteyner)"]
+    KSM["kube-state-metrics (K8s Nesneleri)"]
+  end
+  subgraph PROM["2. Prometheus Server (Core Engine)"]
+    SCRAPE["Pull Mekanizması (15sn Scrape)"]
+    TSDB[("TSDB (Zaman Serisi Deposu)")]
+    PROMQL["PromQL Sorgu Motoru"]
+  end
+  subgraph UI["3. Görselleştirme & Alert"]
+    GRAF["Grafana Web UI (:30089)"]
+    ALERT["Alertmanager (Bildirimler)"]
+  end
+  NE & CAD & KSM -->|Scrape| SCRAPE --> TSDB --> PROMQL --> GRAF & ALERT
+```
+
 İzleme araçlarına iki farklı yöntemle erişilebilir. Her iki yöntem de port çakışması yaşanmayacak şekilde ayrılmıştır:
 
 | Servis | Erişim Türü | Adres / Port | Açıklama |

@@ -70,6 +70,26 @@ Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce 
 [![Recreate Dağıtım Stratejisi](images/strategy-recreate.png)](images/strategy-recreate.png)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
+```mermaid
+flowchart LR
+  subgraph S1["1. Önceki Durum (v1.0)"]
+    direction TB
+    C1["İstemci (%100)"] --> SRV1["Service"]
+    SRV1 --> P1A["Pod v1.0"] & P1B["Pod v1.0"]
+  end
+  subgraph S2["2. Geçiş Anı (Downtime)"]
+    direction TB
+    C2["İstemci"] -->|502 Bad Gateway| SRV2["Service (Pod Yok)"]
+    SRV2 -.-> X["⚠️ KESİNTİ (0 Pod)"]
+  end
+  subgraph S3["3. Yeni Durum (v2.0)"]
+    direction TB
+    C3["İstemci (%100)"] --> SRV3["Service"]
+    SRV3 --> P2A["Pod v2.0"] & P2B["Pod v2.0"]
+  end
+  S1 --> S2 --> S3
+```
+
 Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
 
 ```yaml
@@ -155,6 +175,27 @@ RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olma
 
 [![RollingUpdate Dağıtım Stratejisi](images/strategy-rolling-update.png)](images/strategy-rolling-update.png)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+
+```mermaid
+flowchart LR
+  subgraph R1["1. Başlangıç (%100 v1)"]
+    direction TB
+    CR1["İstemci (%100)"] --> SR1["Service"]
+    SR1 --> PA["Pod v1.0"] & PB["Pod v1.0"] & PC["Pod v1.0"]
+  end
+  subgraph R2["2. Kademeli Geçiş (Surge)"]
+    direction TB
+    CR2["İstemci (Sıfır Kesinti)"] --> SR2["Service"]
+    SR2 --> PN["Pod v2.0 (Surge)"] & PB2["Pod v1.0"] & PC2["Pod v1.0"]
+    PA2["Pod v1.0"] -.->|Terminating| T["Kapatılıyor"]
+  end
+  subgraph R3["3. Tamamlandı (%100 v2)"]
+    direction TB
+    CR3["İstemci (%100)"] --> SR3["Service"]
+    SR3 --> P2A["Pod v2.0"] & P2B["Pod v2.0"] & P2C["Pod v2.0"]
+  end
+  R1 --> R2 --> R3
+```
 
 Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
 
@@ -248,6 +289,22 @@ Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2
 
 [![Blue-Green Dağıtımı](images/strategy-blue-green.png)](images/strategy-blue-green.png)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+
+```mermaid
+flowchart TB
+  subgraph Before["Aşama 1: Test & Hazırlık (Trafik Mavi'de)"]
+    direction TB
+    CB["İstemci (%100)"] --> SB["Service (selector: version=blue)"]
+    SB -->|100% Canlı| B1["Pod Blue (v1.0)"] & B2["Pod Blue (v1.0)"]
+    G_IDLE["Green Ortamı (v2.0) - Test Ediliyor (0% Canlı)"]
+  end
+  subgraph After["Aşama 2: Anlık Geçiş (Trafik Yeşil'de)"]
+    direction TB
+    CG["İstemci (%100)"] --> SG["Service (selector: version=green)"]
+    SG -->|100% Canlı| G1["Pod Green (v2.0)"] & G2["Pod Green (v2.0)"]
+    B_IDLE["Blue Ortamı (v1.0) - Standby / Rollback Hazır"]
+  end
+```
 
 Aşağıdaki manifestte (`starter/blue-green.yaml`):
 - Blue deployment'ı doğrudan `1.0` sürümünü çalıştırır.
@@ -373,6 +430,28 @@ Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`
 
 [![Canary Dağıtımı](images/strategy-canary.png)](images/strategy-canary.png)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+
+```mermaid
+flowchart LR
+  subgraph C_Phase1["Aşama 1: İlk Sızıntı"]
+    direction TB
+    CLI1["İstemci"] --> LB1["Router / Service"]
+    LB1 -->|%90 Trafik| V1_STABLE["Kararlı Sürüm (v1.0 - 9 Pod)"]
+    LB1 -->|%10 Trafik| V2_CANARY["Canary Sürüm (v2.0 - 1 Pod)"]
+  end
+  subgraph C_Phase2["Aşama 2: Güven Artışı"]
+    direction TB
+    CLI2["İstemci"] --> LB2["Router / Service"]
+    LB2 -->|%50 Trafik| V1_50["v1.0 (5 Pod)"]
+    LB2 -->|%50 Trafik| V2_50["v2.0 (5 Pod)"]
+  end
+  subgraph C_Phase3["Aşama 3: Tam Promosyon"]
+    direction TB
+    CLI3["İstemci"] --> LB3["Router / Service"]
+    LB3 -->|%100 Trafik| V2_FULL["Tam Canlı (v2.0 - 10 Pod)"]
+  end
+  C_Phase1 --> C_Phase2 --> C_Phase3
+```
 
 Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
 

@@ -19,6 +19,23 @@ cd ~/k8s-labs/lab-04-ingress-to-gateway-api
 
 ## Gateway API mimarisi
 
+[![Kubernetes Gateway API Rol Tabanlı Mimari](images/gateway-api-architecture.png)](images/gateway-api-architecture.png)
+*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+
+```mermaid
+flowchart TB
+  subgraph R1["1. Altyapı Sağlayıcı (Infra Provider)"]
+    GC["GatewayClass (traefik)"]
+  end
+  subgraph R2["2. Küme Yöneticisi (Platform Ops)"]
+    GW["Gateway (Giriş Noktası, Port 80/443, TLS)"]
+  end
+  subgraph R3["3. Uygulama Geliştiricisi (App Dev)"]
+    HR["HTTPRoute (Host, Path Kuralları, %90/%10 Ağırlık)"]
+  end
+  GC --> GW --> HR --> SVC["Service: devops-app"] --> POD["Pod'lar"]
+```
+
 ```text
 İstemci → DNS / Edge Nginx → 19001 → Kind control-plane :80
         → Traefik Gateway controller → Gateway → HTTPRoute → Service → Pod
