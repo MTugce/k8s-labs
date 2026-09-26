@@ -2,7 +2,6 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 50–65 dakika
-> **Ön koşul:** Beginner Lab 1 ve çok node'lu Kind cluster
 > **Eğitim durumu:** İsteğe bağlı
 
 ## Amaç

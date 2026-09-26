@@ -2,7 +2,6 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 55–70 dakika
-> **Ön koşul:** Beginner Lab 2, Docker ve Kind
 > **Eğitim durumu:** Orta seviye çekirdek
 
 ## Amaç

@@ -2,7 +2,6 @@
 
 > **Seviye:** Başlangıç
 > **Tahmini süre:** 35–45 dakika
-> **Ön koşul:** Kind cluster çalışıyor olmalı
 > **Eğitim durumu:** Zorunlu
 
 ## Amaç

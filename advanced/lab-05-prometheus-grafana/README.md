@@ -2,7 +2,6 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 90–120 dakika
-> **Ön koşul:** Helm ve en az 8 GiB kullanılabilir RAM
 > **Eğitim durumu:** İsteğe bağlı
 
 ## Amaç
@@ -45,18 +44,6 @@ cd ~/k8s-labs/advanced/lab-05-prometheus-grafana
 
 - **Varsayılan Kullanıcı adı:** `admin`
 - **Varsayılan Parola:** `devops-monitor-2026`
-
-## Başlamadan önce
-
-Kind kümesinin çalıştığını doğrula:
-
-```bash
-kubectl get nodes -o wide
-```
-
-Beklenen sonuç: 1 control-plane ve 2 worker node `Ready` durumunda listelenmelidir.
-
----
 
 ## 1. İzleme Namespace'i ve Grafana Giriş Secret'ını Oluştur
 

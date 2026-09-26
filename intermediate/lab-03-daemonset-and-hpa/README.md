@@ -2,7 +2,6 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 55–70 dakika
-> **Ön koşul:** Docker, Kind ve Beginner Lab 2 bilgisi
 > **Eğitim durumu:** HPA çekirdek; DaemonSet ek görev
 
 ## Amaç

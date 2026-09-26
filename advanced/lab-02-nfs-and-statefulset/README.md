@@ -2,7 +2,6 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 70–90 dakika
-> **Ön koşul:** Beginner Lab 4 ve Helm
 > **Eğitim durumu:** İsteğe bağlı
 
 ## Amaç

@@ -2,7 +2,6 @@
 
 > **Seviye:** Başlangıç / Orta
 > **Tahmini süre:** Çekirdek 45 dakika, ek görev 30 dakika
-> **Ön koşul:** Beginner Lab 2 ve Docker temel bilgisi
 > **Eğitim durumu:** ConfigMap/Secret zorunlu; private registry ek görev
 
 ## Amaç

@@ -2,7 +2,6 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 45–60 dakika
-> **Ön koşul:** Intermediate Lab 6 ve Helm
 > **Eğitim durumu:** İsteğe bağlı
 
 ## Amaç
@@ -35,18 +34,6 @@ Headlamp servisine iki farklı yolla erişilebilir:
 | **Port-Forward (Doğrudan)** | `http://127.0.0.1:18084` | Doğrudan geliştirici tünelidir |
 
 - **Kimlik Doğrulama:** Token (Bearer JWT Token)
-
-## Başlamadan önce
-
-Kind kümesinin çalıştığını doğrula:
-
-```bash
-kubectl get nodes -o wide
-```
-
-Beklenen sonuç: 1 control-plane ve 2 worker node `Ready` durumunda listelenmelidir.
-
----
 
 ## 1. Headlamp Helm Deposunu Ekle ve Kurulumu Başlat
 

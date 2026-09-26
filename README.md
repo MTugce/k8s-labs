@@ -237,39 +237,42 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 
 [Beginner bölüm özeti](beginner/README.md)
 
-| Sıra | Lab ve doğrudan rehber | Kısa özet | Ön koşul |
-|---:|---|---|---|
-| B1 | [Cluster, kubectl, Namespace, Label ve Selector](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Cluster'ı keşfetme, API kaynakları, namespace ve selector kullanımı | Çalışan Kind cluster |
-| B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice | B1 |
-| B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi | B2 ve Docker temel bilgisi |
-| B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi | B2 |
+| Sıra | Lab ve doğrudan rehber | Kısa özet |
+|---:|---|---|
+| B1 | [Cluster, kubectl, Namespace, Label ve Selector](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Cluster'ı keşfetme, API kaynakları, namespace ve selector kullanımı |
+| B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice |
+| B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi |
+| B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi |
 
 ## 6. Intermediate Labları
 
 [Intermediate bölüm özeti](intermediate/README.md)
 
-| Sıra | Lab ve doğrudan rehber | Kısa özet | Ön koşul |
-|---:|---|---|---|
-| I1 | [NGINX Ingress ve DNS](intermediate/lab-01-ingress-and-dns/README.md) | Host tabanlı dış trafik yönlendirme ve yerel Host header testi | B3 |
-| I2 | [ResourceQuota ve LimitRange](intermediate/lab-02-resourcequota-and-limitrange/README.md) | Namespace kaynak bütçesi ve varsayılan container limitleri | B1 |
-| I3 | [HPA ve DaemonSet](intermediate/lab-03-daemonset-and-hpa/README.md) | HPA ile otomatik ölçekleme; ek görevde her node'da ajan çalıştırma | B2, Docker ve Kind |
-| I4 | [Probes, Resources ve Troubleshooting](intermediate/lab-04-probes-resources-troubleshooting/README.md) | Sağlık kontrolleri, kaynak yönetimi ve yaygın Pod hatalarının teşhisi | B2 |
-| I5 | [Recreate ve RollingUpdate](intermediate/lab-05-recreate-and-rolling-update/README.md) | Temel deployment stratejileri, kesinti gözlemi ve rollback | B2, Docker ve Kind |
-| I6 | [Basit RBAC](intermediate/lab-06-rbac/README.md) | ServiceAccount, Role ve RoleBinding ile en az yetki | B1 |
+| Sıra | Lab ve doğrudan rehber | Kısa özet |
+|---:|---|---|
+| I1 | [NGINX Ingress ve DNS](intermediate/lab-01-ingress-and-dns/README.md) | Host tabanlı dış trafik yönlendirme ve yerel Host header testi |
+| I2 | [ResourceQuota ve LimitRange](intermediate/lab-02-resourcequota-and-limitrange/README.md) | Namespace kaynak bütçesi ve varsayılan container limitleri |
+| I3 | [HPA ve DaemonSet](intermediate/lab-03-daemonset-and-hpa/README.md) | HPA ile otomatik ölçekleme; ek görevde her node'da ajan çalıştırma |
+| I4 | [Probes, Resources ve Troubleshooting](intermediate/lab-04-probes-resources-troubleshooting/README.md) | Sağlık kontrolleri, kaynak yönetimi ve yaygın Pod hatalarının teşhisi |
+| I5 | [Recreate ve RollingUpdate](intermediate/lab-05-recreate-and-rolling-update/README.md) | Temel deployment stratejileri, kesinti gözlemi ve rollback |
+| I6 | [Basit RBAC](intermediate/lab-06-rbac/README.md) | ServiceAccount, Role ve RoleBinding ile en az yetki |
 
 ## 7. Advanced Labları
 
 [Advanced bölüm özeti](advanced/README.md)
 
-| Sıra | Lab ve doğrudan rehber | Kısa özet | Ön koşul |
-|---:|---|---|---|
-| A1 | [Gateway API](advanced/lab-01-gateway-api/README.md) | Ingress kurallarından rol tabanlı Gateway API modeline geçiş | I1 |
-| A2 | [NFS ve StatefulSet](advanced/lab-02-nfs-and-statefulset/README.md) | RWX paylaşımlı depolama ve durum bilgili MySQL workload'u | B4 |
-| A3 | [Blue-Green ve Canary](advanced/lab-03-blue-green-and-canary/README.md) | Service seçicisi, Pod oranı ve Gateway ağırlıklarıyla ileri yayın | I5; Gateway seçeneği için A1 |
-| A4 | [Helm Operasyonları](advanced/lab-04-helm-operations/README.md) | Install, upgrade, rollback ve uninstall işlemleri | B4 ve Helm |
-| A5 | [Prometheus ve Grafana](advanced/lab-05-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi | Helm |
-| A6 | [Headlamp Dashboard](advanced/lab-06-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi | I6 ve Helm |
-| A7 | [Scheduling ve Node Bakımı](advanced/lab-07-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain | B1 ve çok node'lu Kind cluster |
+| Sıra | Lab ve doğrudan rehber | Kısa özet |
+|---:|---|---|
+| A1 | [Gateway API](advanced/lab-01-gateway-api/README.md) | Ingress kurallarından rol tabanlı Gateway API modeline geçiş |
+| A2 | [NFS ve StatefulSet](advanced/lab-02-nfs-and-statefulset/README.md) | RWX paylaşımlı depolama ve durum bilgili MySQL workload'u |
+| A3 | [Blue-Green ve Canary](advanced/lab-03-blue-green-and-canary/README.md) | Service seçicisi, Pod oranı ve Gateway ağırlıklarıyla ileri yayın |
+| A4 | [Helm Operasyonları](advanced/lab-04-helm-operations/README.md) | Install, upgrade, rollback ve uninstall işlemleri |
+| A5 | [Prometheus ve Grafana](advanced/lab-05-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi |
+| A6 | [Headlamp Dashboard](advanced/lab-06-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi |
+| A7 | [Scheduling ve Node Bakımı](advanced/lab-07-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain |
+
+> [!IMPORTANT]
+> Advanced Lab 01 mevcut Ingress kurallarını Gateway API'ye taşıdığı için önce Intermediate Lab 01 tamamlanmalıdır. Advanced Lab 03 içindeki isteğe bağlı Gateway API bölümü de Advanced Lab 01'de kurulan Traefik ve Gateway API kaynaklarını kullanır.
 
 ---
 

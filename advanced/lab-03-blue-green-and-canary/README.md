@@ -2,7 +2,6 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 75–100 dakika
-> **Ön koşul:** Intermediate Lab 5; Gateway seçeneği için Advanced Lab 1
 > **Eğitim durumu:** İsteğe bağlı
 
 ## Amaç

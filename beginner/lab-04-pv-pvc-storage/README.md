@@ -2,7 +2,6 @@
 
 > **Seviye:** Başlangıç / Orta
 > **Tahmini süre:** 55–70 dakika
-> **Ön koşul:** Beginner Lab 2
 > **Eğitim durumu:** Zorunlu
 
 ## Amaç

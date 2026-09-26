@@ -2,7 +2,6 @@
 
 > **Seviye:** Başlangıç
 > **Tahmini süre:** 100–120 dakika
-> **Ön koşul:** Beginner Lab 1
 > **Eğitim durumu:** Zorunlu
 
 ## Amaç
@@ -32,18 +31,6 @@ cd ~/k8s-labs/beginner/lab-02-pod-deployment-service
 
 - URL: `http://SUNUCU_IP:30086`
 - Kimlik doğrulaması: yok
-
-## Başlamadan önce
-
-Kind cluster çalışır durumda olmalıdır:
-
-```bash
-kubectl get nodes -o wide
-```
-
-Beklenen sonuç: 1 control-plane ve 2 worker node `Ready` durumunda görünmelidir.
-
----
 
 ## 1. İlk Pod Manifestini Uygula ve Konteyneri Keşfet (Explore & Debug)
 
