@@ -237,115 +237,42 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 
 [Beginner bölüm özeti](beginner/README.md)
 
-| Sıra | Lab ve doğrudan rehber | Kısa özet | Süre | Durum |
-|---:|---|---|---:|---|
-| B1 | [Cluster, kubectl, Namespace, Label ve Selector](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Cluster'ı keşfetme, API kaynakları, namespace ve selector kullanımı | 35–45 dk | Zorunlu |
-| B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice | 100–120 dk | Zorunlu |
-| B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi | 45–75 dk | Çekirdek + ek görev |
-| B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi | 55–70 dk | Zorunlu |
+| Sıra | Lab ve doğrudan rehber | Kısa özet | Ön koşul |
+|---:|---|---|---|
+| B1 | [Cluster, kubectl, Namespace, Label ve Selector](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Cluster'ı keşfetme, API kaynakları, namespace ve selector kullanımı | Çalışan Kind cluster |
+| B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice | B1 |
+| B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi | B2 ve Docker temel bilgisi |
+| B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi | B2 |
 
 ## 6. Intermediate Labları
 
 [Intermediate bölüm özeti](intermediate/README.md)
 
-| Sıra | Lab ve doğrudan rehber | Kısa özet | Süre | Durum |
-|---:|---|---|---:|---|
-| I1 | [NGINX Ingress ve DNS](intermediate/lab-01-ingress-and-dns/README.md) | Host tabanlı dış trafik yönlendirme ve yerel Host header testi | 55–70 dk | Zorunlu |
-| I2 | [ResourceQuota ve LimitRange](intermediate/lab-02-resourcequota-and-limitrange/README.md) | Namespace kaynak bütçesi ve varsayılan container limitleri | 40–50 dk | Zorunlu |
-| I3 | [HPA ve DaemonSet](intermediate/lab-03-daemonset-and-hpa/README.md) | HPA ile otomatik ölçekleme; ek görevde her node'da ajan çalıştırma | 55–70 dk | Çekirdek + ek görev |
-| I4 | [Probes, Resources ve Troubleshooting](intermediate/lab-04-probes-resources-troubleshooting/README.md) | Sağlık kontrolleri, kaynak yönetimi ve yaygın Pod hatalarının teşhisi | 60–75 dk | Zorunlu |
-| I5 | [Recreate ve RollingUpdate](intermediate/lab-05-recreate-and-rolling-update/README.md) | Temel deployment stratejileri, kesinti gözlemi ve rollback | 55–70 dk | Seviyeye göre |
-| I6 | [Basit RBAC](intermediate/lab-06-rbac/README.md) | ServiceAccount, Role ve RoleBinding ile en az yetki | 40–50 dk | Seviyeye göre |
+| Sıra | Lab ve doğrudan rehber | Kısa özet | Ön koşul |
+|---:|---|---|---|
+| I1 | [NGINX Ingress ve DNS](intermediate/lab-01-ingress-and-dns/README.md) | Host tabanlı dış trafik yönlendirme ve yerel Host header testi | B3 |
+| I2 | [ResourceQuota ve LimitRange](intermediate/lab-02-resourcequota-and-limitrange/README.md) | Namespace kaynak bütçesi ve varsayılan container limitleri | B1 |
+| I3 | [HPA ve DaemonSet](intermediate/lab-03-daemonset-and-hpa/README.md) | HPA ile otomatik ölçekleme; ek görevde her node'da ajan çalıştırma | B2, Docker ve Kind |
+| I4 | [Probes, Resources ve Troubleshooting](intermediate/lab-04-probes-resources-troubleshooting/README.md) | Sağlık kontrolleri, kaynak yönetimi ve yaygın Pod hatalarının teşhisi | B2 |
+| I5 | [Recreate ve RollingUpdate](intermediate/lab-05-recreate-and-rolling-update/README.md) | Temel deployment stratejileri, kesinti gözlemi ve rollback | B2, Docker ve Kind |
+| I6 | [Basit RBAC](intermediate/lab-06-rbac/README.md) | ServiceAccount, Role ve RoleBinding ile en az yetki | B1 |
 
 ## 7. Advanced Labları
 
 [Advanced bölüm özeti](advanced/README.md)
 
-| Sıra | Lab ve doğrudan rehber | Kısa özet | Süre | Ön koşul |
-|---:|---|---|---:|---|
-| A1 | [Gateway API](advanced/lab-01-gateway-api/README.md) | Ingress kurallarından rol tabanlı Gateway API modeline geçiş | 60–75 dk | I1 |
-| A2 | [NFS ve StatefulSet](advanced/lab-02-nfs-and-statefulset/README.md) | RWX paylaşımlı depolama ve durum bilgili MySQL workload'u | 70–90 dk | B4 |
-| A3 | [Blue-Green ve Canary](advanced/lab-03-blue-green-and-canary/README.md) | Service seçicisi, Pod oranı ve Gateway ağırlıklarıyla ileri yayın | 75–100 dk | I5 |
-| A4 | [Helm Operasyonları](advanced/lab-04-helm-operations/README.md) | Install, upgrade, rollback ve uninstall işlemleri | 60–75 dk | B4 |
-| A5 | [Prometheus ve Grafana](advanced/lab-05-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi | 90–120 dk | Helm |
-| A6 | [Headlamp Dashboard](advanced/lab-06-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi | 45–60 dk | I6 ve Helm |
-| A7 | [Scheduling ve Node Bakımı](advanced/lab-07-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain | 50–65 dk | B1 |
+| Sıra | Lab ve doğrudan rehber | Kısa özet | Ön koşul |
+|---:|---|---|---|
+| A1 | [Gateway API](advanced/lab-01-gateway-api/README.md) | Ingress kurallarından rol tabanlı Gateway API modeline geçiş | I1 |
+| A2 | [NFS ve StatefulSet](advanced/lab-02-nfs-and-statefulset/README.md) | RWX paylaşımlı depolama ve durum bilgili MySQL workload'u | B4 |
+| A3 | [Blue-Green ve Canary](advanced/lab-03-blue-green-and-canary/README.md) | Service seçicisi, Pod oranı ve Gateway ağırlıklarıyla ileri yayın | I5; Gateway seçeneği için A1 |
+| A4 | [Helm Operasyonları](advanced/lab-04-helm-operations/README.md) | Install, upgrade, rollback ve uninstall işlemleri | B4 ve Helm |
+| A5 | [Prometheus ve Grafana](advanced/lab-05-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi | Helm |
+| A6 | [Headlamp Dashboard](advanced/lab-06-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi | I6 ve Helm |
+| A7 | [Scheduling ve Node Bakımı](advanced/lab-07-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain | B1 ve çok node'lu Kind cluster |
 
 ---
 
-## 8. Öğrenci Seviyesine Göre Eğitim Rotası
-
-### Başlangıç sınıfı
-
-```text
-B1 → B2 temel nesneler → B3 çekirdek → I2 → B2 DNS bölümü → I1 → B4 → I4
-```
-
-Private registry, HPA ve deployment stratejileri zaman kalırsa ek görev olarak uygulanır.
-
-### Orta seviye sınıf
-
-```text
-B1 hızlı kontrol → B2 → B3 → I1 → B4 → I2 → I3 → I4 → I5 → I6
-```
-
-### Hızlı veya ileri sınıf
-
-Intermediate rota tamamlandıktan sonra ihtiyaca göre A1, A2, A3 veya A7 seçilir. Helm, monitoring ve yönetim arayüzleri daha uzun uygulama süresi gerektirir.
-
----
-
-## 9. Önerilen İki Günlük Akış
-
-Docker içeriği [docker-labs](https://gitlab.com/devops-practitioner-labs/docker-labs) repository'sinde uygulanır. Eğitim süresinin yaklaşık `%80`i Kubernetes'e ayrılır.
-
-### 1. gün
-
-| Saat | Konu |
-|---|---|
-| 09:00–10:30 | Docker tekrar ve Docker labları |
-| 10:30–11:00 | Orchestration ve Kubernetes mimarisi |
-| 11:00–12:00 | B1 – Cluster ve kubectl |
-| 13:00–14:30 | B2 – Pod, Deployment ve Service |
-| 14:45–15:45 | B3 – ConfigMap ve Secret |
-| 16:00–17:00 | I2 – LimitRange ve ResourceQuota |
-
-### 2. gün
-
-| Saat | Konu |
-|---|---|
-| 09:00–10:00 | B2 – Service Discovery ve DNS bölümü |
-| 10:15–11:30 | I1 – Ingress |
-| 11:30–12:30 | B4 – PV/PVC |
-| 13:30–14:30 | I3 – HPA |
-| 14:45–15:45 | I4 – Troubleshooting ve probes |
-| 16:00–17:00 | Sınıf seviyesine göre tekrar, I5 veya advanced demo |
-
----
-
-## 10. Eğitim Sunucusu Portları
-
-| Port | Kullanım |
-|---:|---|
-| `22` | SSH erişimi |
-| `19001` | I1 NGINX Ingress, A1 Gateway API veya A3 Gateway tabanlı canary |
-| `19002`, `19003` | Ek Ingress/Gateway trafik slotları |
-| `30086` | B2 NodePort web servisi |
-| `30087` | B3 uygulaması |
-| `30088` | A1 Gateway API preview |
-| `30089` | A5 Grafana NodePort |
-| `8088` | A4 WordPress port-forward |
-| `18084` | A6 Headlamp port-forward |
-| `19090` | A5 Prometheus port-forward |
-
-Sunucu önünde Nginx Edge Proxy veya benzer bir ters proxy kullanılıyorsa dış dünyaya yalnızca gerekli portları açın.
-
----
-
-## 11. Lab Çalışma Düzeni
-
-Her lab README'sindeki çalışma dizinine geçin, adımları sırayla uygulayın ve bir sonraki laba geçmeden önce ilgili temizlik bölümünü çalıştırın. Aynı cluster üzerinde kullanılan namespace, port ve controller bileşenleri lab rehberlerinde ayrıca belirtilmiştir.
-
-## 12. Hızlı Başvuru
+## 8. Hızlı Başvuru
 
 Sık kullanılan komutlar için [kubectl ve Kind hızlı başvuru kılavuzunu](cheat-sheets/kubectl-ve-kind-hizli-basvuru.md) kullanın.
