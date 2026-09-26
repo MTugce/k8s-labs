@@ -171,7 +171,7 @@ spec:
       command:
         - sh
         - -c
-        - "echo writer-b >> /data/shared.txt; cat /data/shared.txt; sleep 3600"
+        - "sleep 2; echo writer-b >> /data/shared.txt; cat /data/shared.txt; sleep 3600"
       volumeMounts:
         - name: data
           mountPath: /data
@@ -285,7 +285,7 @@ Beklenen sonuç:
 MySQL Pod adını ve hostname bilgisini kontrol edin:
 
 ```bash
-kubectl exec -n stateful-lab mysql-0 -- hostname
+kubectl exec -n stateful-lab mysql-0 -- uname -n
 kubectl exec -n stateful-lab mysql-0 -- \
   mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e 'CREATE DATABASE IF NOT EXISTS labdb; SHOW DATABASES;'
 ```
@@ -295,6 +295,7 @@ Pod'u silin ve aynı kimlikle yeniden oluşmasını bekleyin:
 ```bash
 kubectl delete pod mysql-0 -n stateful-lab
 kubectl wait -n stateful-lab --for=condition=Ready pod/mysql-0 --timeout=180s
+sleep 5
 kubectl exec -n stateful-lab mysql-0 -- \
   mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e 'SHOW DATABASES;'
 ```

@@ -44,7 +44,7 @@ spec:
       command:
         - sh
         - -c
-        - "echo writer-b >> /data/shared.txt; cat /data/shared.txt; sleep 3600"
+        - "sleep 2; echo writer-b >> /data/shared.txt; cat /data/shared.txt; sleep 3600"
       volumeMounts:
         - name: data
           mountPath: /data
