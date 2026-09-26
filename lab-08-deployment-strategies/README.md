@@ -67,8 +67,11 @@ kubectl -n private-app wait --for=condition=Ready pod/test-client --timeout=60s
 
 Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce mevcut tüm eski pod'ları sonlandırır. Bu durum servis kesintisine yol açar:
 
-[![Recreate Dağıtım Stratejisi](images/strategy-recreate.png)](images/strategy-recreate.png)
-*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+[![Recreate dağıtım stratejisi infografiği](images/recreate-infographic.jpg)](images/recreate-infographic.jpg)
+*İnfografiği özgün boyutunda açmak için üzerine tıklayın.*
+
+<details>
+<summary>Mermaid diyagram kaynağı</summary>
 
 ```mermaid
 flowchart LR
@@ -89,6 +92,8 @@ flowchart LR
   end
   S1 --> S2 --> S3
 ```
+
+</details>
 
 Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
 
@@ -173,8 +178,11 @@ kubectl -n private-app delete service strategy-recreate
 
 RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olmadan eski pod'lar kapatılmaz; böylece sıfır kesinti sağlanır:
 
-[![RollingUpdate Dağıtım Stratejisi](images/strategy-rolling-update.png)](images/strategy-rolling-update.png)
-*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+[![RollingUpdate dağıtım stratejisi infografiği](images/rolling-update-infographic.jpg)](images/rolling-update-infographic.jpg)
+*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel 4 podlu temsili bir akış gösterir; bu labın manifesti 3 replika kullanır.*
+
+<details>
+<summary>Mermaid diyagram kaynağı</summary>
 
 ```mermaid
 flowchart LR
@@ -196,6 +204,8 @@ flowchart LR
   end
   R1 --> R2 --> R3
 ```
+
+</details>
 
 Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
 
@@ -287,8 +297,11 @@ kubectl -n private-app delete service strategy-rolling
 
 Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2.0) aynı anda kümede yaşar. Servis selector'ı hangi rengi işaret ederse tüm canlı trafik anında o sürüme yönlenir:
 
-[![Blue-Green Dağıtımı](images/strategy-blue-green.png)](images/strategy-blue-green.png)
-*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+[![Blue-Green dağıtım stratejisi infografiği](images/blue-green-infographic.jpg)](images/blue-green-infographic.jpg)
+*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Bu labda ek trafik katmanı gerekmez; trafik `strategy-app` Service selector'ı değiştirilerek aktarılır.*
+
+<details>
+<summary>Mermaid diyagram kaynağı</summary>
 
 ```mermaid
 flowchart TB
@@ -305,6 +318,8 @@ flowchart TB
     B_IDLE["Blue Ortamı (v1.0) - Standby / Rollback Hazır"]
   end
 ```
+
+</details>
 
 Aşağıdaki manifestte (`starter/blue-green.yaml`):
 - Blue deployment'ı doğrudan `1.0` sürümünü çalıştırır.
@@ -428,8 +443,11 @@ kubectl -n private-app delete service strategy-app
 
 Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir. Yeni sürümde hata gözlenmezse trafik kademeli olarak artırılır:
 
-[![Canary Dağıtımı](images/strategy-canary.png)](images/strategy-canary.png)
-*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
+[![Canary dağıtım stratejisi infografiği](images/canary-infographic.jpg)](images/canary-infographic.jpg)
+*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel ağırlıklı yönlendirmeyi örnekler; bu labın doğal Canary akışı 9/1 pod ile başlar (%90/%10), ardından 5/5 ve 10/0 olarak ölçeklenir.*
+
+<details>
+<summary>Mermaid diyagram kaynağı</summary>
 
 ```mermaid
 flowchart LR
@@ -452,6 +470,8 @@ flowchart LR
   end
   C_Phase1 --> C_Phase2 --> C_Phase3
 ```
+
+</details>
 
 Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
 
