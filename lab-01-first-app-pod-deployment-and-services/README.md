@@ -6,10 +6,11 @@ Kubernetes küme mimarisini anlamak; Pod, Deployment ve dört Service türünün
 
 ## Temel Kubernetes Mimarisi
 
-[![Kubernetes Küme Mimarisi](images/k8s-architecture.png)](images/k8s-architecture.png)
+[![Kubernetes Küme Mimarisi](images/k8s-architecture.jpg)](images/k8s-architecture.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
 flowchart TB
   subgraph USER["Geliştirici / İstemci"]
     CLI["kubectl CLI"]
@@ -229,10 +230,11 @@ Pod IP'leri dinamiktir ve sürekli değişebilir. `Service`, Pod'lara sabit bir 
 
 ### Service & Label Selector Çalışma Şeması
 
-[![Service ve Pod Yönlendirme Şeması](images/service-pod-routing.png)](images/service-pod-routing.png)
+[![Service ve Pod Yönlendirme Şeması](images/service-pod-routing.jpg)](images/service-pod-routing.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
 flowchart LR
   CLIENT["İstemci Talebi\n(curl http://web-clusterip:80)"] --> SRV["Service: web-clusterip\n(Sabit ClusterIP: 10.96.x.x:80)"]
   SRV -->|selector: app=web| EPS["Endpoints / EndpointSlice\n(Dinamik Canlı Pod IP Tablosu)"]

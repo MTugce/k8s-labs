@@ -19,10 +19,11 @@ cd ~/k8s-labs/lab-04-ingress-to-gateway-api
 
 ## Gateway API mimarisi
 
-[![Kubernetes Gateway API Rol Tabanlı Mimari](images/gateway-api-architecture.png)](images/gateway-api-architecture.png)
+[![Kubernetes Gateway API Rol Tabanlı Mimari](images/gateway-api-architecture.jpg)](images/gateway-api-architecture.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
 flowchart TB
   subgraph R1["1. Altyapı Sağlayıcı (Infra Provider)"]
     GC["GatewayClass (traefik)"]

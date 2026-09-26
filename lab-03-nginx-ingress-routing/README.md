@@ -19,10 +19,11 @@ cd ~/k8s-labs/lab-03-nginx-ingress-routing
 
 ## Trafik mimarisi nasıl çalışır?
 
-[![NGINX Ingress Ağ ve Trafik Mimarisi](images/ingress-traffic-flow.png)](images/ingress-traffic-flow.png)
+[![NGINX Ingress Ağ ve Trafik Mimarisi](images/ingress-traffic-flow.jpg)](images/ingress-traffic-flow.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
 flowchart LR
   C["İstemci\n(Tarayıcı / curl)"] -->|HTTPS :443| EDGE["Host Edge Nginx Proxy\n(127.0.0.1:19001)"]
   EDGE -->|Kind Port Eşleme| KIND["Kind Node (:80)"]

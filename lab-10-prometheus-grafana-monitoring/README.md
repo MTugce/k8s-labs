@@ -26,10 +26,11 @@ cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring
 
 ## Erişim ve Ağ Mimarisi
 
-[![Prometheus ve Grafana Küme İzleme Mimarisi](images/monitoring-architecture.png)](images/monitoring-architecture.png)
+[![Prometheus ve Grafana Küme İzleme Mimarisi](images/monitoring-architecture.jpg)](images/monitoring-architecture.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
 flowchart LR
   subgraph EXP["1. Metrik Kaynakları (Exporters)"]
     NE["Node Exporter (Linux OS)"]
