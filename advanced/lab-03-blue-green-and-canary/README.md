@@ -161,11 +161,14 @@ kubectl delete service strategy-canary -n private-app
 
 ## 8. İsteğe bağlı: Gateway API ile ağırlıklı Canary
 
-> Bu bölüm için Advanced Lab 1 tamamlanmış ve Traefik `30088` portunda çalışıyor olmalıdır.
+> Bu bölüm için Advanced Lab 1 tamamlanmış ve Traefik `30088` portunda veya cutover yapıldıysa ana ingress portunda çalışıyor olmalıdır.
+
+Gateway API kuralında öğrenci DNS adınızı (`studentX-app1.devopsatolyesi.com`) kullanarak ağırlıklı canary testi yapabilirsiniz:
 
 ```bash
 export STUDENT_ID="${STUDENT_ID:-$(hostname)}"
 export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
+echo "Canary test hostu: ${APP_HOST}"
 
 sed "s|__IMAGE__|${IMAGE}|g; s|__APP_HOST__|${APP_HOST}|g" \
   starter/canary-httproute.yaml | kubectl apply -f -
@@ -174,23 +177,36 @@ kubectl rollout status deployment/strategy-app-v2 -n private-app --timeout=120s
 kubectl get gateway,httproute -n private-app
 ```
 
-Trafiği test edin:
+Trafiği öğrenci DNS adresi üzerinden (%90 v1 / %10 v2 ağırlığıyla) test edin:
 
 ```bash
+# 1. Yöntem: Gateway API Cutover yapıldıysa doğrudan öğrenci DNS adresi (HTTPS):
 for i in $(seq 1 20); do
-  curl -s -H "Host: ${APP_HOST}" http://127.0.0.1:30088/ \
-    | grep -o '"version":"[^"]*"'
+  curl -k -s "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'
+done
+
+# 2. Yöntem: Traefik preview portu (NodePort 30088) üzerinden:
+for i in $(seq 1 20); do
+  curl -s -H "Host: ${APP_HOST}" http://127.0.0.1:30088/ | grep -o '"version":"[^"]*"'
 done
 ```
 
-Ağırlıkları %50/%50 yapın:
+Beklenen sonuç: 20 isteğin yaklaşık %90'ı (`v1`), yaklaşık %10'u (`v2`) olarak döner.
+
+Ağırlıkları %50 / %50 olarak güncelleyin:
 
 ```bash
 kubectl patch httproute devops-app-canary -n private-app --type=json \
   -p '[{"op":"replace","path":"/spec/rules/0/backendRefs/0/weight","value":50},{"op":"replace","path":"/spec/rules/0/backendRefs/1/weight","value":50}]'
 ```
 
-Testi tekrarlayın ve dağılımı karşılaştırın.
+DNS üzerinden testi tekrarlayın ve dağılımın dengelendiğini (yaklaşık 10 `v1`, 10 `v2`) gözlemleyin:
+
+```bash
+for i in $(seq 1 20); do
+  curl -k -s "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'
+done
+```
 
 ## Başarı kriterleri
 
