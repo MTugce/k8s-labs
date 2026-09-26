@@ -255,6 +255,14 @@ spec:
           volumeMounts:
             - name: mysql-data
               mountPath: /var/lib/mysql
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "mysqladmin ping -u root -p$MYSQL_ROOT_PASSWORD -h localhost"
+            initialDelaySeconds: 5
+            periodSeconds: 2
   volumeClaimTemplates:              # Her replica için otomatik PVC açar
     - metadata:
         name: mysql-data
