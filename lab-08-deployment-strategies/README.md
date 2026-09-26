@@ -71,26 +71,11 @@ Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce 
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın.*
 
 ```mermaid
-%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
+%%{init: {'themeVariables': {'fontSize': '20px'}}}%%
 flowchart TB
-  accTitle: Recreate dağıtım aşamaları
-  accDescr: Eski sürümün çalışmasından kesinti anına ve yeni sürüme geçişi gösterir.
-  subgraph S1["1. Önceki Durum (v1.0)"]
-    direction TB
-    C1["İstemci (%100)"] --> SRV1["Service"]
-    SRV1 --> P1A["Pod v1.0"] & P1B["Pod v1.0"]
-  end
-  subgraph S2["2. Geçiş Anı (Downtime)"]
-    direction TB
-    C2["İstemci"] -->|502 Bad Gateway| SRV2["Service (Pod Yok)"]
-    SRV2 -.-> X["⚠️ KESİNTİ (0 Pod)"]
-  end
-  subgraph S3["3. Yeni Durum (v2.0)"]
-    direction TB
-    C3["İstemci (%100)"] --> SRV3["Service"]
-    SRV3 --> P2A["Pod v2.0"] & P2B["Pod v2.0"]
-  end
-  S1 --> S2 --> S3
+  accTitle: Recreate dağıtımı
+  accDescr: Eski podlar kapanınca kesinti olur; yeni sürüm başlayınca trafik geri gelir.
+  A["v1 çalışıyor"] --> B["0 Pod · kesinti"] --> C["v2 çalışıyor"]
 ```
 
 Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
@@ -180,27 +165,11 @@ RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olma
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel 4 podlu temsili bir akış gösterir; bu labın manifesti 3 replika kullanır.*
 
 ```mermaid
-%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
+%%{init: {'themeVariables': {'fontSize': '20px'}}}%%
 flowchart TB
-  accTitle: RollingUpdate dağıtım aşamaları
-  accDescr: RollingUpdate sırasında eski ve yeni podların sıfır kesintiyle kademeli değişimini gösterir.
-  subgraph R1["1. Başlangıç (%100 v1)"]
-    direction TB
-    CR1["İstemci (%100)"] --> SR1["Service"]
-    SR1 --> PA["Pod v1.0"] & PB["Pod v1.0"] & PC["Pod v1.0"]
-  end
-  subgraph R2["2. Kademeli Geçiş (Surge)"]
-    direction TB
-    CR2["İstemci (Sıfır Kesinti)"] --> SR2["Service"]
-    SR2 --> PN["Pod v2.0 (Surge)"] & PB2["Pod v1.0"] & PC2["Pod v1.0"]
-    PA2["Pod v1.0"] -.->|Terminating| T["Kapatılıyor"]
-  end
-  subgraph R3["3. Tamamlandı (%100 v2)"]
-    direction TB
-    CR3["İstemci (%100)"] --> SR3["Service"]
-    SR3 --> P2A["Pod v2.0"] & P2B["Pod v2.0"] & P2C["Pod v2.0"]
-  end
-  R1 --> R2 --> R3
+  accTitle: RollingUpdate dağıtımı
+  accDescr: Yeni pod hazır olunca eski pod kapatılır; trafik kesilmeden tüm replikalar yenilenir.
+  A["3 × v1 canlı"] --> B["v2 hazır · v1 hizmette"] --> C["3 × v2 canlı"]
 ```
 
 Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
@@ -294,35 +263,24 @@ kubectl -n private-app delete service strategy-rolling
 Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2.0) aynı anda kümede yaşar. Servis selector'ı hangi rengi işaret ederse tüm canlı trafik anında o sürüme yönlenir:
 
 [![Blue-Green dağıtım stratejisi infografiği](images/blue-green-infographic.jpg)](images/blue-green-infographic.jpg)
-*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Bu labda ek trafik katmanı gerekmez; trafik `strategy-app` Service selector'ı değiştirilerek aktarılır.*
+*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görseldeki ek yönlendirme katmanı notu ağırlıklı trafik dağıtımı içindir; bu labda trafik `strategy-app` Service selector'ı değiştirilerek aktarılır.*
 
 ```mermaid
-%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 64, 'useMaxWidth': false}}}%%
+%%{init: {'themeVariables': {'fontSize': '22px'}}}%%
 flowchart TB
   accTitle: Blue-Green trafik geçişi
-  accDescr: Aynı Kubernetes Service DNS adı üzerinden önce Blue sürümüne, sonra Service selector değişince Green sürümüne trafik aktarımını gösterir.
-  subgraph Stage1["Aşama 1: Blue aktif, Green beklemede"]
-    direction TB
-    CB["İstemci"] --> DNS1["Cluster DNS: strategy-app"] --> SB["Service selector: version=blue"]
-    SB -->|Aktif trafik| B1["Blue Pod (v1.0)"]
-    SB -.->|Yedek · 0% trafik| G1["Green Pod (v2.0)"]
+  accDescr: Aynı Service DNS adı korunur; Service selector Blue'dan Green'e çevrilir ve boşta kalan renk kesik çizgiyle gösterilir.
+  subgraph S1["1 · Blue aktif"]
+    C1["İstemci"] --> D1["Cluster DNS: strategy-app"] --> B["Service: blue"]
+    B -->|Canlı trafik| B1["Blue v1"]
+    B -.->|Beklemede| G1["Green v2"]
   end
-  subgraph Stage2["Aşama 2: Green aktif, Blue beklemede"]
-    direction TB
-    CG["İstemci"] --> DNS2["Aynı Cluster DNS: strategy-app"] --> SG["Service selector: version=green"]
-    SG -->|Aktif trafik| G2["Green Pod (v2.0)"]
-    SG -.->|Yedek · rollback hazır| B2["Blue Pod (v1.0)"]
+  subgraph S2["2 · Green aktif"]
+    C2["İstemci"] --> D2["Aynı Cluster DNS"] --> G["Service: green"]
+    G -->|Canlı trafik| G2["Green v2"]
+    G -.->|Rollback için beklemede| B2["Blue v1"]
   end
-  Stage1 -->|Service selector değiştirilir| Stage2
-
-  classDef dns fill:#f3e8ff,stroke:#7e22ce,stroke-width:2px,color:#581c87
-  classDef blue fill:#dbeafe,stroke:#2563eb,stroke-width:3px,color:#1e3a8a
-  classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:3px,color:#14532d
-  classDef standby fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:5 5,color:#64748b
-  class DNS1,DNS2 dns
-  class B1 blue
-  class G2 green
-  class B2,G1 standby
+  S1 -->|Selector green olur| S2
 ```
 
 Aşağıdaki manifestte (`starter/blue-green.yaml`):
@@ -448,31 +406,14 @@ kubectl -n private-app delete service strategy-app
 Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir. Yeni sürümde hata gözlenmezse trafik kademeli olarak artırılır:
 
 [![Canary dağıtım stratejisi infografiği](images/canary-infographic.jpg)](images/canary-infographic.jpg)
-*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel ağırlıklı yönlendirmeyi örnekler; bu labın doğal Canary akışı 9/1 pod ile başlar (%90/%10), ardından 5/5 ve 10/0 olarak ölçeklenir.*
+*İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel ağırlıklı yönlendirmeyi örnekler; bu labın doğal Canary akışı 9 v1 / 1 v2 podla (%90/%10) başlar, 5/5'e ve son olarak 0 v1 / 10 v2 poda (%0/%100) geçer.*
 
 ```mermaid
-%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
+%%{init: {'themeVariables': {'fontSize': '20px'}}}%%
 flowchart TB
   accTitle: Canary trafik aşamaları
-  accDescr: Yeni sürüme ayrılan trafiğin kademeli biçimde artırılmasını gösterir.
-  subgraph C_Phase1["Aşama 1: İlk Sızıntı"]
-    direction TB
-    CLI1["İstemci"] --> LB1["Router / Service"]
-    LB1 -->|%90 Trafik| V1_STABLE["Kararlı Sürüm (v1.0 - 9 Pod)"]
-    LB1 -->|%10 Trafik| V2_CANARY["Canary Sürüm (v2.0 - 1 Pod)"]
-  end
-  subgraph C_Phase2["Aşama 2: Güven Artışı"]
-    direction TB
-    CLI2["İstemci"] --> LB2["Router / Service"]
-    LB2 -->|%50 Trafik| V1_50["v1.0 (5 Pod)"]
-    LB2 -->|%50 Trafik| V2_50["v2.0 (5 Pod)"]
-  end
-  subgraph C_Phase3["Aşama 3: Tam Promosyon"]
-    direction TB
-    CLI3["İstemci"] --> LB3["Router / Service"]
-    LB3 -->|%100 Trafik| V2_FULL["Tam Canlı (v2.0 - 10 Pod)"]
-  end
-  C_Phase1 --> C_Phase2 --> C_Phase3
+  accDescr: Canary v2 pod oranı 1'den 10'a yükselirken trafik payının kademeli artışını gösterir.
+  A["1 · 9 v1 + 1 v2 · %90/%10"] --> B["2 · 5 v1 + 5 v2 · %50/%50"] --> C["3 · 0 v1 + 10 v2 · %0/%100"]
 ```
 
 Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
