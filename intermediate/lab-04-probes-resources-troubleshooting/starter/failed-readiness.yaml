@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: failed-readiness
+  namespace: health-lab
+  labels:
+    app: failed-readiness
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27-alpine
+      ports:
+        - name: http
+          containerPort: 80
+      readinessProbe:
+        httpGet:
+          path: /not-ready
+          port: http
+        periodSeconds: 3
+        failureThreshold: 1

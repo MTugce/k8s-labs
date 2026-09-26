@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cluster-basics
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+  namespace: cluster-basics
+  labels:
+    app: web
+    tier: frontend
+    environment: training
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27-alpine
+      ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend
+  namespace: cluster-basics
+  labels:
+    app: api
+    tier: backend
+    environment: training
+spec:
+  containers:
+    - name: api
+      image: nginx:1.27-alpine
+      ports:
+        - containerPort: 80

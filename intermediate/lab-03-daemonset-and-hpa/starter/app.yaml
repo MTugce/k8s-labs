@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: private-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app
+  namespace: private-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-app
+  template:
+    metadata:
+      labels:
+        app: devops-app
+    spec:
+      containers:
+        - name: app
+          image: devops-app:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-app
+  namespace: private-app
+spec:
+  selector:
+    app: devops-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

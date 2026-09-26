@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dns-client
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-same
+  namespace: first-app
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:8.12.1
+      command: ["sleep", "3600"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-other
+  namespace: dns-client
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:8.12.1
+      command: ["sleep", "3600"]

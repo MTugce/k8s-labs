@@ -1,22 +1,32 @@
 # Kubernetes Labs
 
-Bu laboratuvar serisi; temel Kubernetes nesnelerinden (Pod, Deployment, Service) başlayarak ileri seviye ağ yönetimi (Ingress, Gateway API), kalıcı depolama (PV/PVC, RWX NFS, StatefulSet), otomatik ölçekleme (HPA, DaemonSet), dağıtım stratejileri (Canary, Blue-Green), paket yönetimi (Helm) ve küme izlemeye (Prometheus, Grafana, Headlamp) kadar uçtan uca pratik yapmanızı sağlar.
+Bu laboratuvar serisi; temel Kubernetes nesnelerinden başlayarak uygulama yayınlama, ağ yönetimi, kalıcı depolama, otomatik ölçekleme, güvenlik, dağıtım stratejileri, Helm ve monitoring konularına kadar uçtan uca pratik yapmanızı sağlar.
+
+Lablar üç seviyede ve pedagojik sırayla düzenlenmiştir:
+
+```text
+Beginner → Intermediate → Advanced
+```
+
+- **Beginner:** Kubernetes'e ilk kez başlayan öğrenciler için temel kaynaklar.
+- **Intermediate:** Uygulama yayınlama, ölçekleme, hata ayıklama ve güvenlik.
+- **Advanced:** Gateway API, StatefulSet, ileri deployment stratejileri, Helm ve monitoring.
 
 > [!IMPORTANT]
-> Bu laboratuvarların tamamı **Kind (Kubernetes in Docker)** kümesine tam uyumlu olarak tasarlanmıştır. Lablarda kullanılan ingress, servis portları ve kalıcı disk bağlama noktaları önceden belirlenmiş mimariye göre yapılandırılmıştır.
+> Bütün lablar `k8s-labs` adlı, bir control-plane ve iki worker node'dan oluşan **Kind (Kubernetes in Docker)** cluster'ı için hazırlanmıştır. Lablarda kullanılan ingress, servis portları ve kalıcı disk bağlama noktaları önceden belirlenmiş mimariye göre yapılandırılmıştır.
 
 ---
 
 ## 1. Sistem Gereksinimleri ve Ön Kontrol
 
-Laboratuvarları çalıştırabilmek için sisteminizde (Ubuntu 20.04/22.04/24.04 önerilir) aşağıdaki 4 temel aracın kurulu olması gerekir:
+Laboratuvarları çalıştırabilmek için sisteminizde (Ubuntu 20.04/22.04/24.04 önerilir) aşağıdaki dört temel aracın kurulu olması gerekir:
 
 1. **Docker:** Konteyner motoru ve Kind node'larının üzerinde çalışacağı ortam.
-2. **Kind:** Docker konteynerleri içinde çok düğümlü (multi-node) yerel Kubernetes kümesi çalıştıran araç.
+2. **Kind:** Docker konteynerleri içinde çok düğümlü yerel Kubernetes cluster'ı çalıştıran araç.
 3. **kubectl:** Kubernetes API sunucusu ile iletişim kuran resmi komut satırı aracı.
-4. **Helm:** Kubernetes için paket yöneticisi (WordPress, Traefik, Prometheus, Headlamp kurulumları için).
+4. **Helm:** WordPress, Traefik, Prometheus ve Headlamp kurulumlarında kullanılan Kubernetes paket yöneticisi.
 
-Sisteminizde bu araçların kurulu olup olmadığını kontrol etmek için aşağıdaki komutları çalıştırın:
+Araçların kurulu olup olmadığını kontrol edin:
 
 ```bash
 docker --version
@@ -25,7 +35,7 @@ kubectl version --client
 helm version --short
 ```
 
-Her komutun çıktısında geçerli bir sürüm numarası görmelisiniz. Eğer araçlardan biri veya birkaçı eksikse, aşağıdaki **Otomatik Kurulum (Önerilen)** veya **Manuel Kurulum** adımlarını uygulayın.
+Her komutun çıktısında geçerli bir sürüm numarası görünmelidir. Bir araç eksikse aşağıdaki otomatik veya manuel kurulum adımlarını uygulayın.
 
 ---
 
@@ -33,7 +43,7 @@ Her komutun çıktısında geçerli bir sürüm numarası görmelisiniz. Eğer a
 
 ### Seçenek A: Otomatik Kurulum (Önerilen)
 
-Tüm araçları, Docker izinlerini ve kalıcı disk dizinlerini tek komutla, hata vermeden (idempotent mantığıyla) kurmak için repo içindeki hazır kurulum betiğini çalıştırabilirsiniz:
+Tüm araçları, Docker izinlerini ve kalıcı disk dizinlerini idempotent kurulum betiğiyle hazırlayabilirsiniz:
 
 ```bash
 cd ~/k8s-labs
@@ -41,26 +51,27 @@ chmod +x install-prerequisites.sh
 ./install-prerequisites.sh
 ```
 
-*Bu betik: Sistemde zaten kurulu olan araçları tespit ederek atlar, yalnızca eksik olanları resmi depolardan en güncel sürümleriyle kurar ve disk izinlerini ayarlar.*
+Betik, sistemde kurulu araçları atlar; yalnızca eksik bileşenleri kurar ve storage labı için gereken dizini hazırlar.
 
 ---
 
 ### Seçenek B: Adım Adım Manuel Kurulum (Ubuntu)
 
-Eğer her bileşeni adım adım elle kurarak öğrenmek isterseniz aşağıdaki talimatları izleyin:
+#### 1. Temel sistem paketleri
 
-#### 1. Temel Sistem Paketleri
 ```bash
 sudo apt-get update -y
 sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git conntrack jq
 ```
 
-#### 2. Docker CE Kurulumu
+#### 2. Docker CE kurulumu
+
 Docker, Kind'in çalışması için zorunlu konteyner motorudur.
+
 ```bash
-# Docker resmi GPG anahtarını ve reposunu ekle
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
 echo \
@@ -68,18 +79,16 @@ echo \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Docker'ı kur ve servisi başlat
 sudo apt-get update -y
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo systemctl enable --now docker
 
-# Mevcut kullanıcınızı docker grubuna ekleyin (sudo olmadan docker çalıştırabilmek için)
 sudo usermod -aG docker "$USER"
 newgrp docker 2>/dev/null || true
 ```
 
-#### 3. kubectl Kurulumu
-`kubectl`, küme yönetiminde Pod, Deployment, Service gibi nesneleri oluşturup yönettiğimiz ana komut satırı aracıdır.
+#### 3. kubectl kurulumu
+
 ```bash
 K8S_VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt)
 ARCH=$(dpkg --print-architecture)
@@ -88,8 +97,8 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm -f kubectl
 ```
 
-#### 4. Kind Kurulumu
-Kind, her bir Kubernetes node'unu bağımsız bir Docker konteyneri olarak ayağa kaldıran hafif bir araçtır.
+#### 4. Kind kurulumu
+
 ```bash
 KIND_VERSION="v0.27.0"
 ARCH=$(dpkg --print-architecture)
@@ -98,14 +107,16 @@ chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 ```
 
-#### 5. Helm Kurulumu
-Helm, Kubernetes uygulamalarını Chart adı verilen şablon paketler halinde kurmayı ve yönetmeyi sağlar.
+#### 5. Helm kurulumu
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
-#### 6. Static PV Dizinini Hazırla
-Lab 05'te kullanılacak statik PersistentVolume'un host üzerinde yazabilmesi için bu dizin gereklidir:
+#### 6. Static PV dizinini hazırla
+
+Beginner Lab 04'te kullanılacak static PersistentVolume'un host üzerinde yazabilmesi için:
+
 ```bash
 sudo mkdir -p /opt/k8s-labs/static-pv
 sudo chmod 0777 /opt/k8s-labs/static-pv
@@ -115,7 +126,7 @@ sudo chmod 0777 /opt/k8s-labs/static-pv
 
 ## 3. Kind Cluster Yapılandırması (`kind-cluster.yaml`)
 
-Laboratuvarların sorunsuz çalışabilmesi için Kind kümesi özel bir ağ ve disk sözleşmesiyle yapılandırılmıştır. Dosya içeriği:
+Laboratuvarların sorunsuz çalışabilmesi için Kind cluster'ı özel bir ağ ve disk sözleşmesiyle yapılandırılmıştır:
 
 ```yaml
 kind: Cluster
@@ -130,7 +141,6 @@ nodes:
           kubeletExtraArgs:
             node-labels: "ingress-ready=true"
     extraPortMappings:
-      # Ingress & Gateway API HTTP slotları (Host 19001 -> Kind :80)
       - containerPort: 80
         hostPort: 19001
         listenAddress: "0.0.0.0"
@@ -143,7 +153,6 @@ nodes:
         hostPort: 19003
         listenAddress: "0.0.0.0"
         protocol: TCP
-      # Lablara ayrılmış özel NodePort port alanları
       - containerPort: 30086
         hostPort: 30086
         listenAddress: "0.0.0.0"
@@ -161,7 +170,6 @@ nodes:
         listenAddress: "0.0.0.0"
         protocol: TCP
     extraMounts:
-      # Static PV için host dizin eşlemesi
       - hostPath: /opt/k8s-labs/static-pv
         containerPath: /mnt/k8s-labs/static-pv
   - role: worker
@@ -174,80 +182,170 @@ nodes:
         containerPath: /mnt/k8s-labs/static-pv
 ```
 
-### Yapılandırmada Neler Tanımlandı?
-- **3 Düğümlü Mimari:** 1 adet `control-plane` ve 2 adet `worker` node kurulur.
-- **`ingress-ready=true`:** NGINX Ingress ve Traefik Gateway Pod'larının doğrudan control-plane üzerinde konumlanmasını sağlar.
-- **Port Eşlemeleri (`extraPortMappings`):**
-  - `19001-19003`: Ingress / Gateway API HTTP trafiğini Kind control-plane'in `:80` portuna yönlendirir.
-  - `30086`: Lab 01 (İlk Web Servisi - NodePort).
-  - `30087`: Lab 02 & Lab 07 (DevOps Uygulaması - NodePort).
-  - `30088`: Lab 04 & Lab 08 (Traefik Gateway API Önizleme - NodePort).
-  - `30089`: Lab 10 (Grafana Paneli - NodePort).
-- **Disk Bağlantısı (`extraMounts`):** Host makinedeki `/opt/k8s-labs/static-pv` dizini tüm node'larda `/mnt/k8s-labs/static-pv` konumuna monte edilir.
+### Yapılandırmada neler tanımlandı?
+
+- **Üç node'lu mimari:** Bir control-plane ve iki worker node oluşturulur.
+- **`ingress-ready=true`:** NGINX Ingress ve Traefik Gateway Pod'larının control-plane üzerinde konumlandırılabilmesini sağlar.
+- **`19001–19003`:** Ingress ve Gateway API trafiği için ayrılmış host portlarıdır.
+- **`30086–30089`:** NodePort kullanan lablar için ayrılmış portlardır.
+- **`extraMounts`:** Host makinedeki `/opt/k8s-labs/static-pv` dizinini bütün node'larda `/mnt/k8s-labs/static-pv` konumuna bağlar.
 
 ---
 
 ## 4. Kind Cluster'ı Başlatma ve Doğrulama
 
-Kümeyi oluşturmak için:
+Cluster'ı oluşturun:
 
 ```bash
 cd ~/k8s-labs
 kind create cluster --name k8s-labs --config kind-cluster.yaml
 ```
 
-Oluşturulan kümenin hazır olduğunu kontrol edin:
+Doğru context'i seçip node'ları doğrulayın:
 
 ```bash
 kubectl config use-context kind-k8s-labs
 kubectl get nodes -o wide
 ```
 
-**Beklenen sonuç:** Üç node (`k8s-labs-control-plane`, `k8s-labs-worker`, `k8s-labs-worker2`) `Ready` durumunda listelenmelidir.
+Beklenen sonuç:
+
+```text
+k8s-labs-control-plane   Ready
+k8s-labs-worker          Ready
+k8s-labs-worker2         Ready
+```
+
+Cluster zaten varsa yeniden oluşturmayın. Mevcut durumu kontrol edin:
+
+```bash
+kind get clusters
+kubectl config current-context
+kubectl get nodes
+```
+
+Cluster'ı tamamen sıfırlamak gerektiğinde bütün lab cleanup adımlarını uyguladıktan sonra:
+
+```bash
+kind delete cluster --name k8s-labs
+kind create cluster --name k8s-labs --config kind-cluster.yaml
+```
 
 ---
 
-## 5. Laboratuvarlar ve Çalışma Dizinleri
+## 5. Beginner Labları
 
-Tüm lab geçişlerinde terminalinizden aşağıdaki tam dizin adreslerini kullanabilirsiniz:
+[Beginner bölüm özeti](beginner/README.md)
 
-| Sıra | Lab Başlığı | Port | Tam Çalışma Dizini | Rehber |
-| :---: | :--- | :---: | :--- | :---: |
-| **1** | İlk Uygulaman: Pod, Deployment ve Service | `30086` | `cd ~/k8s-labs/lab-01-first-app-pod-deployment-and-services` | [Rehber](lab-01-first-app-pod-deployment-and-services/README.md) |
-| **2** | Kendi Docker İmajını Private Docker Hub'dan Çalıştır | `30087` | `cd ~/k8s-labs/lab-02-private-dockerhub-image-configmap-secret` | [Rehber](lab-02-private-dockerhub-image-configmap-secret/README.md) |
-| **3** | Uygulamanı NGINX Ingress ile İnternete Aç | `19001` | `cd ~/k8s-labs/lab-03-nginx-ingress-routing` | [Rehber](lab-03-nginx-ingress-routing/README.md) |
-| **4** | Ingress Kurallarını Gateway API'ye Taşı | `19001`, `30088` | `cd ~/k8s-labs/lab-04-ingress-to-gateway-api` | [Rehber](lab-04-ingress-to-gateway-api/README.md) |
-| **5** | Veriyi Kaybetme: PV, PVC, Static ve Dynamic Storage | - | `cd ~/k8s-labs/lab-05-static-and-dynamic-storage` | [Rehber](lab-05-static-and-dynamic-storage/README.md) |
-| **6** | Paylaşımlı Depolama ve StatefulSet ile MySQL | - | `cd ~/k8s-labs/lab-06-nfs-storage-and-statefulset` | [Rehber](lab-06-nfs-storage-and-statefulset/README.md) |
-| **7** | Her Node'da Ajan Çalıştır ve Uygulamanı Otomatik Ölçekle | `30087` | `cd ~/k8s-labs/lab-07-daemonset-and-hpa-scaling` | [Rehber](lab-07-daemonset-and-hpa-scaling/README.md) |
-| **8** | Sürümü Güvenle Yayınla (Recreate, Rolling, Blue-Green, Canary) | `19001` | `cd ~/k8s-labs/lab-08-deployment-strategies` | [Rehber](lab-08-deployment-strategies/README.md) |
-| **9** | WordPress ile Helm Operasyonlarını Öğren | `8088` | `cd ~/k8s-labs/lab-09-wordpress-ile-helm-operasyonlari` | [Rehber](lab-09-wordpress-ile-helm-operasyonlari/README.md) |
-| **10** | Prometheus ve Grafana ile Küme ve Sistem Metriklerini İzle | `30089` | `cd ~/k8s-labs/lab-10-prometheus-grafana-monitoring` | [Rehber](lab-10-prometheus-grafana-monitoring/README.md) |
-| **11** | LimitRange ve ResourceQuota | - | `cd ~/k8s-labs/lab-11-limitrange-resourcequota` | [Rehber](lab-11-limitrange-resourcequota/README.md) |
-| **12** | Basit RBAC: ServiceAccount, Role ve RoleBinding | - | `cd ~/k8s-labs/lab-12-basit-rbac` | [Rehber](lab-12-basit-rbac/README.md) |
-| **13** | Headlamp Görsel Gösterge Paneli ve Güvenli Küme İzleme | `18084` | `cd ~/k8s-labs/lab-13-headlamp-cluster-dashboard` | [Rehber](lab-13-headlamp-cluster-dashboard/README.md) |
+| Sıra | Lab ve doğrudan rehber | Kısa özet | Süre | Durum |
+|---:|---|---|---:|---|
+| B1 | [Cluster, kubectl, Namespace, Label ve Selector](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Cluster'ı keşfetme, API kaynakları, namespace ve selector kullanımı | 35–45 dk | Zorunlu |
+| B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice | 100–120 dk | Zorunlu |
+| B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi | 45–75 dk | Çekirdek + ek görev |
+| B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi | 55–70 dk | Zorunlu |
+
+## 6. Intermediate Labları
+
+[Intermediate bölüm özeti](intermediate/README.md)
+
+| Sıra | Lab ve doğrudan rehber | Kısa özet | Süre | Durum |
+|---:|---|---|---:|---|
+| I1 | [NGINX Ingress ve DNS](intermediate/lab-01-ingress-and-dns/README.md) | Host tabanlı dış trafik yönlendirme ve yerel Host header testi | 55–70 dk | Zorunlu |
+| I2 | [ResourceQuota ve LimitRange](intermediate/lab-02-resourcequota-and-limitrange/README.md) | Namespace kaynak bütçesi ve varsayılan container limitleri | 40–50 dk | Zorunlu |
+| I3 | [HPA ve DaemonSet](intermediate/lab-03-daemonset-and-hpa/README.md) | HPA ile otomatik ölçekleme; ek görevde her node'da ajan çalıştırma | 55–70 dk | Çekirdek + ek görev |
+| I4 | [Probes, Resources ve Troubleshooting](intermediate/lab-04-probes-resources-troubleshooting/README.md) | Sağlık kontrolleri, kaynak yönetimi ve yaygın Pod hatalarının teşhisi | 60–75 dk | Zorunlu |
+| I5 | [Recreate ve RollingUpdate](intermediate/lab-05-recreate-and-rolling-update/README.md) | Temel deployment stratejileri, kesinti gözlemi ve rollback | 55–70 dk | Seviyeye göre |
+| I6 | [Basit RBAC](intermediate/lab-06-rbac/README.md) | ServiceAccount, Role ve RoleBinding ile en az yetki | 40–50 dk | Seviyeye göre |
+
+## 7. Advanced Labları
+
+[Advanced bölüm özeti](advanced/README.md)
+
+| Sıra | Lab ve doğrudan rehber | Kısa özet | Süre | Ön koşul |
+|---:|---|---|---:|---|
+| A1 | [Gateway API](advanced/lab-01-gateway-api/README.md) | Ingress kurallarından rol tabanlı Gateway API modeline geçiş | 60–75 dk | I1 |
+| A2 | [NFS ve StatefulSet](advanced/lab-02-nfs-and-statefulset/README.md) | RWX paylaşımlı depolama ve durum bilgili MySQL workload'u | 70–90 dk | B4 |
+| A3 | [Blue-Green ve Canary](advanced/lab-03-blue-green-and-canary/README.md) | Service seçicisi, Pod oranı ve Gateway ağırlıklarıyla ileri yayın | 75–100 dk | I5 |
+| A4 | [Helm Operasyonları](advanced/lab-04-helm-operations/README.md) | Install, upgrade, rollback ve uninstall işlemleri | 60–75 dk | B4 |
+| A5 | [Prometheus ve Grafana](advanced/lab-05-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi | 90–120 dk | Helm |
+| A6 | [Headlamp Dashboard](advanced/lab-06-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi | 45–60 dk | I6 ve Helm |
+| A7 | [Scheduling ve Node Bakımı](advanced/lab-07-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain | 50–65 dk | B1 |
 
 ---
 
-## 6. Eğitim Sunucusu Güvenlik Duvarı Port Listesi
+## 8. Öğrenci Seviyesine Göre Eğitim Rotası
 
-Eğitim sunucusunun güvenlik grubunda (Security Group / UFW) dışarıdan erişim için açılması gereken TCP portları:
+### Başlangıç sınıfı
 
-- **`22`**: SSH erişimi.
-- **`30086`**: Lab 01 Web Servisi.
-- **`30087`**: Lab 02 & Lab 07 DevOps Uygulaması.
-- **`30088`**: Lab 04 & Lab 08 Traefik Gateway API Önizleme.
-- **`30089`**: Lab 10 Grafana Görsel İzleme Arayüzü (`http://SUNUCU_IP:30089`).
-- **`19001`**: Lab 03, Lab 04, Lab 08 Ingress / Gateway API Ana HTTP Girişi.
-- **`8088`**: Lab 09 WordPress Web Paneli (`kubectl port-forward --address 0.0.0.0 ... 8088:80`).
-- **`18084`**: Lab 13 Headlamp Küme Yönetim Paneli (`kubectl port-forward --address 0.0.0.0 ... 18084:80`).
-- **`19090`**: Lab 10 Prometheus Metrik Arayüzü.
+```text
+B1 → B2 temel nesneler → B3 çekirdek → I2 → B2 DNS bölümü → I1 → B4 → I4
+```
 
-*(Eğer sunucu önünde Nginx Edge Proxy veya Cloudflare SSL kullanılıyorsa, dış dünyaya sadece `80` ve `443` portları açılır).*
+Private registry, HPA ve deployment stratejileri zaman kalırsa ek görev olarak uygulanır.
+
+### Orta seviye sınıf
+
+```text
+B1 hızlı kontrol → B2 → B3 → I1 → B4 → I2 → I3 → I4 → I5 → I6
+```
+
+### Hızlı veya ileri sınıf
+
+Intermediate rota tamamlandıktan sonra ihtiyaca göre A1, A2, A3 veya A7 seçilir. Helm, monitoring ve yönetim arayüzleri daha uzun uygulama süresi gerektirir.
 
 ---
 
-## 7. Hızlı Başvuru
+## 9. Önerilen İki Günlük Akış
 
-Günlük kullanımda sık ihtiyaç duyulan `kubectl` ve `kind` komutları için:
-- 📖 [Kubectl ve Kind Hızlı Başvuru Kılavuzu](cheat-sheets/kubectl-ve-kind-hizli-basvuru.md)
+Docker içeriği [docker-labs](https://gitlab.com/devops-practitioner-labs/docker-labs) repository'sinde uygulanır. Eğitim süresinin yaklaşık `%80`i Kubernetes'e ayrılır.
+
+### 1. gün
+
+| Saat | Konu |
+|---|---|
+| 09:00–10:30 | Docker tekrar ve Docker labları |
+| 10:30–11:00 | Orchestration ve Kubernetes mimarisi |
+| 11:00–12:00 | B1 – Cluster ve kubectl |
+| 13:00–14:30 | B2 – Pod, Deployment ve Service |
+| 14:45–15:45 | B3 – ConfigMap ve Secret |
+| 16:00–17:00 | I2 – LimitRange ve ResourceQuota |
+
+### 2. gün
+
+| Saat | Konu |
+|---|---|
+| 09:00–10:00 | B2 – Service Discovery ve DNS bölümü |
+| 10:15–11:30 | I1 – Ingress |
+| 11:30–12:30 | B4 – PV/PVC |
+| 13:30–14:30 | I3 – HPA |
+| 14:45–15:45 | I4 – Troubleshooting ve probes |
+| 16:00–17:00 | Sınıf seviyesine göre tekrar, I5 veya advanced demo |
+
+---
+
+## 10. Eğitim Sunucusu Portları
+
+| Port | Kullanım |
+|---:|---|
+| `22` | SSH erişimi |
+| `19001` | I1 NGINX Ingress, A1 Gateway API veya A3 Gateway tabanlı canary |
+| `19002`, `19003` | Ek Ingress/Gateway trafik slotları |
+| `30086` | B2 NodePort web servisi |
+| `30087` | B3 uygulaması |
+| `30088` | A1 Gateway API preview |
+| `30089` | A5 Grafana NodePort |
+| `8088` | A4 WordPress port-forward |
+| `18084` | A6 Headlamp port-forward |
+| `19090` | A5 Prometheus port-forward |
+
+Sunucu önünde Nginx Edge Proxy veya benzer bir ters proxy kullanılıyorsa dış dünyaya yalnızca gerekli portları açın.
+
+---
+
+## 11. Lab Çalışma Düzeni
+
+Her lab README'sindeki çalışma dizinine geçin, adımları sırayla uygulayın ve bir sonraki laba geçmeden önce ilgili temizlik bölümünü çalıştırın. Aynı cluster üzerinde kullanılan namespace, port ve controller bileşenleri lab rehberlerinde ayrıca belirtilmiştir.
+
+## 12. Hızlı Başvuru
+
+Sık kullanılan komutlar için [kubectl ve Kind hızlı başvuru kılavuzunu](cheat-sheets/kubectl-ve-kind-hizli-basvuru.md) kullanın.

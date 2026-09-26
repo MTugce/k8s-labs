@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scheduling-lab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: selected-app
+  namespace: scheduling-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: selected-app
+  template:
+    metadata:
+      labels:
+        app: selected-app
+    spec:
+      nodeSelector:
+        training-workload: "true"
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          resources:
+            requests:
+              cpu: 25m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

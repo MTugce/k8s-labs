@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tolerated-app
+  namespace: scheduling-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tolerated-app
+  template:
+    metadata:
+      labels:
+        app: tolerated-app
+    spec:
+      nodeSelector:
+        training-workload: "true"
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: training
+          effect: NoSchedule
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          resources:
+            requests:
+              cpu: 25m
+              memory: 16Mi

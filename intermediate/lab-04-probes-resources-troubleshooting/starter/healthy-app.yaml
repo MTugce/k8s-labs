@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: health-lab
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: health-web-config
+  namespace: health-lab
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      default_type text/plain;
+      location / {
+        return 200 "application-ok\n";
+      }
+      location /healthz {
+        return 200 "healthy\n";
+      }
+      location /ready {
+        return 200 "ready\n";
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-web
+  namespace: health-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: health-web
+  template:
+    metadata:
+      labels:
+        app: health-web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 15
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 3
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+      volumes:
+        - name: config
+          configMap:
+            name: health-web-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: health-web
+  namespace: health-lab
+spec:
+  selector:
+    app: health-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-client
+  namespace: health-lab
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:8.12.1
+      command: ["sleep", "3600"]
