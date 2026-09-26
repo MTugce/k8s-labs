@@ -6,23 +6,8 @@ Kubernetes küme mimarisini anlamak; Pod, Deployment ve dört Service türünün
 
 ## Temel Kubernetes Mimarisi
 
-```mermaid
-graph TD
-    subgraph ControlPlane["Control Plane (Yönetim Düzlemi)"]
-        API["kube-apiserver (Merkezi API)"]
-        Sched["kube-scheduler (Pod Yerleşimi)"]
-        Etcd["etcd (Durum Veritabanı)"]
-    end
-    subgraph WorkerNode["Worker Node (İş Düğümü)"]
-        Kubelet["kubelet (Ajan)"]
-        Proxy["kube-proxy (Ağ Yönlendirme)"]
-        subgraph Pod["Pod: first-web"]
-            Container["Konteyner: Nginx (:80)"]
-        end
-    end
-    API <--> Kubelet
-    Proxy -.-> Pod
-```
+[![Kubernetes Küme Mimarisi](images/k8s-architecture.png)](images/k8s-architecture.png)
+*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ## Kullanılan Kubernetes nesneleri
 
@@ -213,13 +198,8 @@ Pod IP'leri dinamiktir ve sürekli değişebilir. `Service`, Pod'lara sabit bir 
 
 ### Service & Label Selector Çalışma Şeması
 
-```mermaid
-graph LR
-    Client["Test İstemcisi (curl-inside)"] -->|HTTP: web-clusterip| Svc["ClusterIP Service: web-clusterip"]
-    Svc -->|selector: app=web| P1["Pod 1 (app=web)"]
-    Svc -->|selector: app=web| P2["Pod 2 (app=web)"]
-    Svc -->|selector: app=web| P3["Pod 3 (app=web)"]
-```
+[![Service ve Pod Yönlendirme Şeması](images/service-pod-routing.png)](images/service-pod-routing.png)
+*(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 `starter/service-clusterip.yaml` manifesti, `app: web` etiketine sahip tüm pod'ları 80 portundan tek bir iç serviste toplar:
 
