@@ -70,11 +70,11 @@ Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce 
 [![Recreate dağıtım stratejisi infografiği](images/recreate-infographic.jpg)](images/recreate-infographic.jpg)
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın.*
 
-<details>
-<summary>Mermaid diyagram kaynağı</summary>
-
 ```mermaid
-flowchart LR
+%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
+flowchart TB
+  accTitle: Recreate dağıtım aşamaları
+  accDescr: Eski sürümün çalışmasından kesinti anına ve yeni sürüme geçişi gösterir.
   subgraph S1["1. Önceki Durum (v1.0)"]
     direction TB
     C1["İstemci (%100)"] --> SRV1["Service"]
@@ -92,8 +92,6 @@ flowchart LR
   end
   S1 --> S2 --> S3
 ```
-
-</details>
 
 Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
 
@@ -181,11 +179,11 @@ RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olma
 [![RollingUpdate dağıtım stratejisi infografiği](images/rolling-update-infographic.jpg)](images/rolling-update-infographic.jpg)
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel 4 podlu temsili bir akış gösterir; bu labın manifesti 3 replika kullanır.*
 
-<details>
-<summary>Mermaid diyagram kaynağı</summary>
-
 ```mermaid
-flowchart LR
+%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
+flowchart TB
+  accTitle: RollingUpdate dağıtım aşamaları
+  accDescr: RollingUpdate sırasında eski ve yeni podların sıfır kesintiyle kademeli değişimini gösterir.
   subgraph R1["1. Başlangıç (%100 v1)"]
     direction TB
     CR1["İstemci (%100)"] --> SR1["Service"]
@@ -204,8 +202,6 @@ flowchart LR
   end
   R1 --> R2 --> R3
 ```
-
-</details>
 
 Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
 
@@ -300,11 +296,11 @@ Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2
 [![Blue-Green dağıtım stratejisi infografiği](images/blue-green-infographic.jpg)](images/blue-green-infographic.jpg)
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın. Bu labda ek trafik katmanı gerekmez; trafik `strategy-app` Service selector'ı değiştirilerek aktarılır.*
 
-<details>
-<summary>Mermaid diyagram kaynağı</summary>
-
 ```mermaid
+%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
 flowchart TB
+  accTitle: Blue-Green trafik geçişi
+  accDescr: Trafiğin Blue sürümünden Green sürümüne aktarılmasını gösterir.
   subgraph Before["Aşama 1: Test & Hazırlık (Trafik Mavi'de)"]
     direction TB
     CB["İstemci (%100)"] --> SB["Service (selector: version=blue)"]
@@ -318,8 +314,6 @@ flowchart TB
     B_IDLE["Blue Ortamı (v1.0) - Standby / Rollback Hazır"]
   end
 ```
-
-</details>
 
 Aşağıdaki manifestte (`starter/blue-green.yaml`):
 - Blue deployment'ı doğrudan `1.0` sürümünü çalıştırır.
@@ -446,11 +440,11 @@ Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`
 [![Canary dağıtım stratejisi infografiği](images/canary-infographic.jpg)](images/canary-infographic.jpg)
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın. Görsel ağırlıklı yönlendirmeyi örnekler; bu labın doğal Canary akışı 9/1 pod ile başlar (%90/%10), ardından 5/5 ve 10/0 olarak ölçeklenir.*
 
-<details>
-<summary>Mermaid diyagram kaynağı</summary>
-
 ```mermaid
-flowchart LR
+%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
+flowchart TB
+  accTitle: Canary trafik aşamaları
+  accDescr: Yeni sürüme ayrılan trafiğin kademeli biçimde artırılmasını gösterir.
   subgraph C_Phase1["Aşama 1: İlk Sızıntı"]
     direction TB
     CLI1["İstemci"] --> LB1["Router / Service"]
@@ -470,8 +464,6 @@ flowchart LR
   end
   C_Phase1 --> C_Phase2 --> C_Phase3
 ```
-
-</details>
 
 Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
 
