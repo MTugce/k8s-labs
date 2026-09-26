@@ -297,8 +297,8 @@ Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2
 *İnfografiği özgün boyutunda açmak için üzerine tıklayın. Bu labda ek trafik katmanı gerekmez; trafik `strategy-app` Service selector'ı değiştirilerek aktarılır.*
 
 ```mermaid
-%%{init: {'themeVariables': {'fontSize': '18px'}, 'flowchart': {'nodeSpacing': 36, 'rankSpacing': 48}}}%%
-flowchart TB
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 64, 'useMaxWidth': false}}}%%
+flowchart LR
   accTitle: Blue-Green trafik geçişi
   accDescr: Trafiğin Blue sürümünden Green sürümüne aktarılmasını gösterir.
   subgraph Before["Aşama 1: Test & Hazırlık (Trafik Mavi'de)"]
