@@ -11,7 +11,7 @@ Bu labda Pod'ları node label ve `nodeSelector` ile belirli bir node'a yerleşti
 ## Çalışma dizini
 
 ```bash
-cd ~/k8s-labs/advanced/lab-07-scheduling-and-node-maintenance
+cd ~/k8s-labs/advanced/lab-08-scheduling-and-node-maintenance
 ```
 
 ## 1. Node'ları incele ve hedef worker'ı seç

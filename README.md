@@ -266,10 +266,11 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 | A1 | [Gateway API](advanced/lab-01-gateway-api/README.md) | Ingress kurallarından rol tabanlı Gateway API modeline geçiş |
 | A2 | [NFS ve StatefulSet](advanced/lab-02-nfs-and-statefulset/README.md) | RWX paylaşımlı depolama ve durum bilgili MySQL workload'u |
 | A3 | [Blue-Green ve Canary](advanced/lab-03-blue-green-and-canary/README.md) | Service seçicisi, Pod oranı ve Gateway ağırlıklarıyla ileri yayın |
-| A4 | [Helm Operasyonları](advanced/lab-04-helm-operations/README.md) | Install, upgrade, rollback ve uninstall işlemleri |
-| A5 | [Prometheus ve Grafana](advanced/lab-05-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi |
-| A6 | [Headlamp Dashboard](advanced/lab-06-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi |
-| A7 | [Scheduling ve Node Bakımı](advanced/lab-07-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain |
+| A4 | [Sıfırdan Helm Chart Geliştirme](advanced/lab-04-helm-chart-from-scratch/README.md) | Public Docker Hub image'ı için chart yazma, doğrulama, kurulum, upgrade, rollback, test, paketleme ve kaldırma |
+| A5 | [Helm Operasyonları](advanced/lab-05-helm-operations/README.md) | Hazır WordPress chart'ı ile install, upgrade, rollback ve uninstall işlemleri |
+| A6 | [Prometheus ve Grafana](advanced/lab-06-prometheus-grafana/README.md) | Metrik toplama, PromQL, dashboard ve alarm yönetimi |
+| A7 | [Headlamp Dashboard](advanced/lab-07-headlamp-cluster-dashboard/README.md) | Salt-okunur RBAC ile görsel cluster yönetimi |
+| A8 | [Scheduling ve Node Bakımı](advanced/lab-08-scheduling-and-node-maintenance/README.md) | nodeSelector, taint, toleration, cordon ve drain |
 
 > [!IMPORTANT]
 > Advanced Lab 01 mevcut Ingress kurallarını Gateway API'ye taşıdığı için önce Intermediate Lab 01 tamamlanmalıdır. Advanced Lab 03 içindeki isteğe bağlı Gateway API bölümü de Advanced Lab 01'de kurulan Traefik ve Gateway API kaynaklarını kullanır.

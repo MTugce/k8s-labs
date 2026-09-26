@@ -25,7 +25,7 @@
 ## Çalışma dizini
 
 ```bash
-cd ~/k8s-labs/advanced/lab-05-prometheus-grafana
+cd ~/k8s-labs/advanced/lab-06-prometheus-grafana
 ```
 
 ## Erişim ve Ağ Mimarisi

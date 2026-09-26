@@ -21,7 +21,7 @@
 ## Çalışma dizini
 
 ```bash
-cd ~/k8s-labs/advanced/lab-06-headlamp-cluster-dashboard
+cd ~/k8s-labs/advanced/lab-07-headlamp-cluster-dashboard
 ```
 
 ## Erişim ve Ağ Mimarisi

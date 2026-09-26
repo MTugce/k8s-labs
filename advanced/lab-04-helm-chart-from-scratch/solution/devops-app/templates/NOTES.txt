@@ -1,0 +1,11 @@
+Release {{ .Release.Name }} başarıyla kuruldu.
+
+Uygulamaya yerel erişim için:
+
+  kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "devops-app.fullname" . }} 18080:{{ .Values.service.port }}
+
+Ardından başka bir terminalde:
+
+  curl http://127.0.0.1:18080/
+  curl http://127.0.0.1:18080/healthz
+  curl http://127.0.0.1:18080/config

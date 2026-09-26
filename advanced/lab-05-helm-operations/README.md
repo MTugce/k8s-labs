@@ -17,7 +17,7 @@ Helm ile paket yönetiminin mantığını; repository ekleme, chart anatomisini 
 ## Çalışma dizini
 
 ```bash
-cd ~/k8s-labs/advanced/lab-04-helm-operations
+cd ~/k8s-labs/advanced/lab-05-helm-operations
 ```
 
 ---
