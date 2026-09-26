@@ -298,7 +298,7 @@ Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 64, 'useMaxWidth': false}}}%%
-flowchart LR
+flowchart TB
   accTitle: Blue-Green trafik geçişi
   accDescr: Aynı Kubernetes Service DNS adı üzerinden önce Blue sürümüne, sonra Service selector değişince Green sürümüne trafik aktarımını gösterir.
   subgraph Stage1["Aşama 1: Blue aktif, Green beklemede"]
