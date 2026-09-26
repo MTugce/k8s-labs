@@ -65,7 +65,23 @@ kubectl -n private-app wait --for=condition=Ready pod/test-client --timeout=60s
 
 ## 2. Recreate Stratejisi — Kesinti Anını (Downtime) Canlı Gör
 
-Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce mevcut tüm eski pod'ları sonlandırır. Bu durum servis kesintisine yol açar.
+Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce mevcut tüm eski pod'ları sonlandırır. Bu durum servis kesintisine yol açar:
+
+```mermaid
+graph LR
+    subgraph Adim1["1. Adım: Eski Podlar Kapatılır"]
+        P1["Pod 1 (v1.0) - Terminating"]
+        P2["Pod 2 (v1.0) - Terminating"]
+    end
+    subgraph Kesinti["KESİNTİ (DOWNTIME)"]
+        DOWN["Hizmet Verilemiyor (Aktif Pod Yok)"]
+    end
+    subgraph Adim2["2. Adım: Yeni Podlar Başlatılır"]
+        P3["Pod 1 (v2.0) - Running"]
+        P4["Pod 2 (v2.0) - Running"]
+    end
+    Adim1 --> Kesinti --> Adim2
+```
 
 Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
 
@@ -148,7 +164,21 @@ kubectl -n private-app delete service strategy-recreate
 
 ## 3. RollingUpdate Stratejisi — Sıfır Kesintiyi (Zero Downtime) Canlı Gör
 
-RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olmadan eski pod'lar kapatılmaz; böylece sıfır kesinti sağlanır.
+RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olmadan eski pod'lar kapatılmaz; böylece sıfır kesinti sağlanır:
+
+```mermaid
+graph TD
+    subgraph Asama1["1. Başlangıç: Tüm Podlar v1.0"]
+        V1_1["Pod 1 (v1)"] --- V1_2["Pod 2 (v1)"] --- V1_3["Pod 3 (v1)"]
+    end
+    subgraph Asama2["2. Kademeli Geçiş (maxSurge=1, maxUnavailable=0)"]
+        V2_1["Yeni Pod 4 (v2) Hazırlanıyor..."] -.->|Ready Olunca| V1_1X["Eski Pod 1 Kapatılır"]
+    end
+    subgraph Asama3["3. Tamamlandı: Tüm Podlar v2.0 (Sıfır Kesinti)"]
+        V2_A["Pod 1 (v2)"] --- V2_B["Pod 2 (v2)"] --- V2_C["Pod 3 (v2)"]
+    end
+    Asama1 ==> Asama2 ==> Asama3
+```
 
 Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
 
@@ -238,7 +268,22 @@ kubectl -n private-app delete service strategy-rolling
 
 ## 4. Blue-Green Dağıtımı — Anlık Geçişi (Instant Switch) Canlı Gör
 
-Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2.0) aynı anda kümede yaşar. Servis selector'ı hangi rengi işaret ederse tüm canlı trafik anında o sürüme yönlenir.
+Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2.0) aynı anda kümede yaşar. Servis selector'ı hangi rengi işaret ederse tüm canlı trafik anında o sürüme yönlenir:
+
+```mermaid
+graph LR
+    Client["Kullanıcı Trafiği"] --> Svc["Service: strategy-app"]
+    subgraph Blue["Blue Ortamı (v1.0 - Aktif)"]
+        B1["Pod Blue 1"]
+        B2["Pod Blue 2"]
+    end
+    subgraph Green["Green Ortamı (v2.0 - Hazır)"]
+        G1["Pod Green 1"]
+        G2["Pod Green 2"]
+    end
+    Svc ==>|selector: version=blue| Blue
+    Svc -.->|"Patch ile Anlık Geçiş (version=green)"| Green
+```
 
 Aşağıdaki manifestte (`starter/blue-green.yaml`):
 - Blue deployment'ı doğrudan `1.0` sürümünü çalıştırır.
@@ -360,7 +405,16 @@ kubectl -n private-app delete service strategy-app
 
 ## 5. Canary Dağıtımı (Kademeli Trafik Geçişi)
 
-Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir. Yeni sürümde hata gözlenmezse trafik kademeli olarak artırılır.
+Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`), büyük kısmı (%90) kararlı eski sürüme (`v1`) yönlendirilir. Yeni sürümde hata gözlenmezse trafik kademeli olarak artırılır:
+
+```mermaid
+graph LR
+    Client["Kullanıcı İstekleri"] --> Svc["Service: strategy-canary"]
+    subgraph PodHavuzu["Pod Havuzu (Round-Robin Dağıtım)"]
+        Svc -->|"%90 Trafik"| V1["9 Adet Pod (v1.0 Kararlı)"]
+        Svc -->|"%10 Trafik"| V2["1 Adet Pod (v2.0 Canary)"]
+    end
+```
 
 Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
 
