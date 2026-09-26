@@ -313,6 +313,7 @@ Beklenen sonuç: Pod yeniden `mysql-0` adıyla gelir ve `labdb` veritabanı kal�
 
 ```bash
 kubectl delete namespace stateful-lab
+kubectl delete pod writer-a writer-b -n nfs-lab --ignore-not-found
 helm uninstall nfs-provisioner -n nfs-lab
 kubectl delete namespace nfs-lab
 kubectl delete storageclass lab-nfs --ignore-not-found
