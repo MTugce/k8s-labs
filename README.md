@@ -239,7 +239,7 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 
 | Sıra | Lab ve doğrudan rehber | Kısa özet |
 |---:|---|---|
-| B1 | [Cluster, kubectl, Namespace, Label ve Selector](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Cluster'ı keşfetme, API kaynakları, namespace ve selector kullanımı |
+| B1 | [Kind Cluster, Context, Kubeconfig, Namespace ve Label](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Geçici cluster oluşturma ve silme, cluster'lar arası geçiş, kubeconfig kurtarma ve temel kaynak keşfi |
 | B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice |
 | B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi |
 | B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi |
