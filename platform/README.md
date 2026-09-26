@@ -2,14 +2,24 @@
 
 Bu adım tüm lablardan önce bir kez yapılır.
 
-## 1. Gerekli araçları kontrol et
+## 1. Gerekli araçları kur ve kontrol et
 
-Bu komutlar Docker, Kind ve kubectl araçlarının kurulu olduğunu gösterir.
+Gerekli tüm araçları (Docker, Kind, kubectl, helm) ve disk dizinini tek komutla otomatik ve hatasız kurmak için:
+
+```bash
+cd ~/k8s-labs
+./platform/install-prerequisites.sh
+```
+
+*(Eğer araçlar zaten kuruluysa betik hata vermeden mevcut sürümleri gösterir ve eksikleri tamamlar).*
+
+Manuel kontrol etmek isterseniz:
 
 ```bash
 docker --version
 kind version
 kubectl version --client
+helm version --short
 ```
 
 Her komutta sürüm bilgisi görmelisin.
