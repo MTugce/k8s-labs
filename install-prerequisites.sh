@@ -87,4 +87,4 @@ echo -e "${GREEN}✓ Tüm altyapı araçları hazır!                       ${NC
 echo -e "${GREEN}====================================================${NC}"
 echo -e "Şimdi Kind cluster'ı oluşturabilirsiniz:"
 echo -e "  cd ~/k8s-labs"
-echo -e "  kind create cluster --name k8s-labs --config platform/kind-cluster.yaml"
+echo -e "  kind create cluster --name k8s-labs --config kind-cluster.yaml"

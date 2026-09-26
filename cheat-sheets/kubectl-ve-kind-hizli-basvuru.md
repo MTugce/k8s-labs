@@ -17,7 +17,7 @@ kind get clusters
 Bu repodaki port ve disk ayarlarıyla `k8s-labs` adlı cluster oluşturur. Bu komut cluster henüz yoksa bir kez çalıştırılır.
 
 ```bash
-kind create cluster --name k8s-labs --config ~/k8s-labs/platform/kind-cluster.yaml
+kind create cluster --name k8s-labs --config ~/k8s-labs/kind-cluster.yaml
 ```
 
 ### Aktif Kubernetes hedefini seç
