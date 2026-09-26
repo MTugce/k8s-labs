@@ -72,10 +72,19 @@ Recreate stratejisinde Kubernetes, yeni sürüm pod'larını başlatmadan önce 
 
 ```mermaid
 flowchart TB
-subgraph A["1 · v1 aktif"];C["İstemci"]-->S[Service];S-->P["Pod v1"]&Q["Pod v1"];end
-subgraph B["2 · Kesinti"];D[İstemci]-->|502 Bad Gateway|T["Service · 0 Pod"];T-.->X[KESİNTİ];end
-subgraph C["3 · v2 aktif"];E[İstemci]-->U[Service];U-->R["Pod v2"]&V["Pod v2"];end
-A-->B-->C
+  subgraph P1["1 · v1 aktif"]
+    C["İstemci"] --> S[Service]
+    S --> P["Pod v1"] & Q["Pod v1"]
+  end
+  subgraph P2["2 · Kesinti"]
+    D[İstemci] -->|502 Bad Gateway| T["Service · 0 Pod"]
+    T -.-> X[KESİNTİ]
+  end
+  subgraph P3["3 · v2 aktif"]
+    E[İstemci] --> U[Service]
+    U --> R["Pod v2"] & V["Pod v2"]
+  end
+  P1 --> P2 --> P3
 ```
 
 Aşağıdaki manifest (`starter/recreate.yaml`), Recreate stratejisi kullanan 2 replikalı bir Deployment ve Service tanımlar:
@@ -166,10 +175,20 @@ RollingUpdate, Kubernetes'in varsayılan stratejisidir. Yeni pod'lar hazır olma
 
 ```mermaid
 flowchart TB
-subgraph A["1 · Başlangıç · %100 v1"];C[İstemci]-->S[Service];S-->P["Pod v1"]&Q["Pod v1"]&R["Pod v1"];end
-subgraph B["2 · Surge · kesintisiz"];D[İstemci]-->T[Service];T-->U["Pod v2 · ek"]&V["Pod v1"]&W["Pod v1"];X["Eski Pod v1"]-.->|Kapatılıyor|Y[Sonlanıyor];end
-subgraph C["3 · Tamamlandı · %100 v2"];E[İstemci]-->Z[Service];Z-->L["Pod v2"]&M["Pod v2"]&N["Pod v2"];end
-A-->B-->C
+  subgraph P1["1 · Başlangıç · %100 v1"]
+    C[İstemci] --> S[Service]
+    S --> P["Pod v1"] & Q["Pod v1"] & R["Pod v1"]
+  end
+  subgraph P2["2 · Surge · kesintisiz"]
+    D[İstemci] --> T[Service]
+    T --> U["Pod v2 · ek"] & V["Pod v1"] & W["Pod v1"]
+    X["Eski Pod v1"] -.->|Kapatılıyor| Y[Sonlanıyor]
+  end
+  subgraph P3["3 · Tamamlandı · %100 v2"]
+    E[İstemci] --> Z[Service]
+    Z --> L["Pod v2"] & M["Pod v2"] & N["Pod v2"]
+  end
+  P1 --> P2 --> P3
 ```
 
 Aşağıdaki manifest (`starter/rolling.yaml`), sıfır kesinti politikasıyla 3 replika tanımlar:
@@ -267,11 +286,23 @@ Blue-Green stratejisinde iki bağımsız Deployment (`blue` = v1.0, `green` = v2
 
 ```mermaid
 flowchart TB
-subgraph A["1 · Blue aktif"];C[İstemci]-->D["DNS: strategy-app"]-->S["Service selector: blue"];S-->|Aktif|B1["Blue Pod v1"]&B2["Blue Pod v1"];S-.->|Beklemede|G1["Green Pod v2"]&G2["Green Pod v2"];end
-subgraph B["2 · Green aktif"];E[İstemci]-->F["Aynı DNS"]-->T["Service selector: green"];T-->|Aktif|G3["Green Pod v2"]&G4["Green Pod v2"];T-.->|Yedek|B3["Blue Pod v1"]&B4["Blue Pod v1"];end
-A-->B
-classDef blue fill:#dbeafe,stroke:#2563eb;classDef green fill:#dcfce7,stroke:#16a34a;classDef idle fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:5 5
-class S,B1,B2 blue;class T,G3,G4 green;class G1,G2,B3,B4 idle
+  subgraph BG1["1 · Blue aktif"]
+    C[İstemci] --> D[DNS] --> S["Service: blue"]
+    S -->|Aktif| B1["Blue v1"] & B2["Blue v1"]
+    S -.->|Beklemede| G1["Green v2"] & G2["Green v2"]
+  end
+  subgraph BG2["2 · Green aktif"]
+    E[İstemci] --> F[DNS] --> T["Service: green"]
+    T -->|Aktif| G3["Green v2"] & G4["Green v2"]
+    T -.->|Yedek| B3["Blue v1"] & B4["Blue v1"]
+  end
+  BG1 --> BG2
+  classDef blue fill:#dbeafe,stroke:#2563eb
+  classDef green fill:#dcfce7,stroke:#16a34a
+  classDef idle fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:5 5
+  class S,B1,B2 blue
+  class T,G3,G4 green
+  class G1,G2,B3,B4 idle
 ```
 
 Aşağıdaki manifestte (`starter/blue-green.yaml`):
@@ -402,10 +433,21 @@ Canary stratejisinde canlı trafiğin ufak bir kısmı (%10) yeni sürüme (`v2`
 ```mermaid
 %%{init:{'themeVariables':{'fontSize':'18px'}}}%%
 flowchart TB
-subgraph A["Aşama 1: İlk Sızıntı"];C[İstemci]-->S["Router / Service"];S-->|%90 Trafik|V["Kararlı Sürüm (v1.0 - 9 Pod)"];S-->|%10 Trafik|W["Canary Sürüm (v2.0 - 1 Pod)"];end
-subgraph B["Aşama 2: Güven Artışı"];D[İstemci]-->T["Router / Service"];T-->|%50 Trafik|X["v1.0 (5 Pod)"];T-->|%50 Trafik|Y["v2.0 (5 Pod)"];end
-subgraph C["Aşama 3: Tam Promosyon"];E[İstemci]-->U["Router / Service"];U-->|%100 Trafik|Z["Tam Canlı (v2.0 - 10 Pod)"];end
-A-->B-->C
+  subgraph CP1["Aşama 1: İlk Sızıntı"]
+    C[İstemci] --> S[Service]
+    S -->|%90| V["v1.0 · 9 Pod"]
+    S -->|%10| W["Canary v2.0 · 1 Pod"]
+  end
+  subgraph CP2["Aşama 2: Güven Artışı"]
+    D[İstemci] --> T[Service]
+    T -->|%50| X["v1.0 · 5 Pod"]
+    T -->|%50| Y["v2.0 · 5 Pod"]
+  end
+  subgraph CP3["Aşama 3: Tam Promosyon"]
+    E[İstemci] --> U[Service]
+    U -->|%100| Z["v2.0 · 10 Pod"]
+  end
+  CP1 --> CP2 --> CP3
 ```
 
 Bu stratejiyi deneyimlemek için iki yöntem mevcuttur:
