@@ -155,7 +155,7 @@ Gateway ve HTTPRoute'un controller tarafından kabul edildiğini doğrula:
 
 ```bash
 kubectl -n private-app wait --for=condition=Programmed gateway/devops-app-gateway --timeout=120s
-kubectl -n private-app wait --for=condition=Accepted httproute/devops-app-route --timeout=120s
+kubectl -n private-app wait --for=jsonpath='{.status.parents[0].conditions[0].status}'=True httproute/devops-app-route --timeout=120s
 kubectl -n private-app get gateway,httproute
 ```
 
