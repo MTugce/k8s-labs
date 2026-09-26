@@ -22,16 +22,6 @@ cd ~/k8s-labs/lab-03-nginx-ingress-routing
 [![NGINX Ingress Ağ ve Trafik Mimarisi](images/ingress-traffic-flow.jpg)](images/ingress-traffic-flow.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
-```mermaid
-%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
-flowchart LR
-  C["İstemci\n(Tarayıcı / curl)"] -->|HTTPS :443| EDGE["Host Edge Nginx Proxy\n(127.0.0.1:19001)"]
-  EDGE -->|Kind Port Eşleme| KIND["Kind Node (:80)"]
-  KIND --> ING["NGINX Ingress Controller Pod"]
-  ING -->|Host: app1 / Path: /| SVC["ClusterIP Service: devops-app:80"]
-  SVC --> POD["devops-app Pod (:8080)"]
-```
-
 ```text
 İstemci (Tarayıcı / curl)
   → DNS / Cloudflare HTTPS (:443)

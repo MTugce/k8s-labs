@@ -9,38 +9,6 @@ Kubernetes küme mimarisini anlamak; Pod, Deployment ve dört Service türünün
 [![Kubernetes Küme Mimarisi](images/k8s-architecture.jpg)](images/k8s-architecture.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
-```mermaid
-%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
-flowchart TB
-  subgraph USER["Geliştirici / İstemci"]
-    CLI["kubectl CLI"]
-  end
-  subgraph CP["Control Plane Node (Yönetim Düzlemi)"]
-    API["kube-apiserver (:6443)"]
-    ETCD[("etcd (Durum Deposu)")]
-    SCHED["kube-scheduler"]
-    CTRL["kube-controller-manager"]
-    API <--> ETCD
-    API <--> SCHED
-    API <--> CTRL
-  end
-  subgraph W1["Worker Node 1"]
-    K1["kubelet"] <--> API
-    KP1["kube-proxy"]
-    CR1["containerd"]
-    P1["Pod: devops-app-1"]
-    P2["Pod: nginx-web"]
-  end
-  subgraph W2["Worker Node 2"]
-    K2["kubelet"] <--> API
-    KP2["kube-proxy"]
-    CR2["containerd"]
-    P3["Pod: devops-app-2"]
-    P4["Pod: redis-cache"]
-  end
-  CLI -->|HTTPS / TLS :6443| API
-```
-
 ## Kullanılan Kubernetes nesneleri
 
 - **Pod:** Kubernetes'in en küçük dağıtılabilir birimidir; bir veya birden fazla konteyneri, depolama ve IP adresini paylaşır.
@@ -232,16 +200,6 @@ Pod IP'leri dinamiktir ve sürekli değişebilir. `Service`, Pod'lara sabit bir 
 
 [![Service ve Pod Yönlendirme Şeması](images/service-pod-routing.jpg)](images/service-pod-routing.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
-
-```mermaid
-%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 48, 'rankSpacing': 56}}}%%
-flowchart LR
-  CLIENT["İstemci Talebi\n(curl http://web-clusterip:80)"] --> SRV["Service: web-clusterip\n(Sabit ClusterIP: 10.96.x.x:80)"]
-  SRV -->|selector: app=web| EPS["Endpoints / EndpointSlice\n(Dinamik Canlı Pod IP Tablosu)"]
-  EPS -->|Round-Robin| P1["Pod 1\nIP: 10.244.1.14:80"]
-  EPS -->|Round-Robin| P2["Pod 2\nIP: 10.244.2.22:80"]
-  EPS -->|Round-Robin| P3["Pod 3\nIP: 10.244.1.15:80"]
-```
 
 `starter/service-clusterip.yaml` manifesti, `app: web` etiketine sahip tüm pod'ları 80 portundan tek bir iç serviste toplar:
 
