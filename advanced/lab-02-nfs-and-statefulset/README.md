@@ -260,8 +260,8 @@ spec:
               command:
                 - sh
                 - -c
-                - "mysqladmin ping -u root -p$MYSQL_ROOT_PASSWORD -h localhost"
-            initialDelaySeconds: 5
+                - "mysql -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1;'"
+            initialDelaySeconds: 15
             periodSeconds: 2
   volumeClaimTemplates:              # Her replica için otomatik PVC açar
     - metadata:
