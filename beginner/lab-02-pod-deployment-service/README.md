@@ -10,7 +10,7 @@ Kubernetes küme mimarisini anlamak; Pod, Deployment ve dört Service türünün
 
 ## Temel Kubernetes Mimarisi
 
-[![Kubernetes Küme Mimarisi](images/k8s-architecture.jpg)](images/k8s-architecture.jpg)
+[![Kubernetes Küme Mimarisi](images/k8s-architecture.svg)](images/k8s-architecture.svg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ## Kullanılan Kubernetes nesneleri
@@ -192,7 +192,7 @@ Pod IP'leri dinamiktir ve sürekli değişebilir. `Service`, Pod'lara sabit bir 
 
 ### Service & Label Selector Çalışma Şeması
 
-[![Service ve Pod Yönlendirme Şeması](images/service-pod-routing.jpg)](images/service-pod-routing.jpg)
+[![Service ve Pod Yönlendirme Şeması](images/service-pod-routing.svg)](images/service-pod-routing.svg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 `starter/service-clusterip.yaml` manifesti, `app: web` etiketine sahip tüm pod'ları 80 portundan tek bir iç serviste toplar:
