@@ -6,3 +6,8 @@ node_modules/
 coverage/
 k8s.pptx
 /plan.html
+
+# AI & Agent internal files
+.agents/
+.codex/
+AGENTS.md
