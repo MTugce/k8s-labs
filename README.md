@@ -8,7 +8,7 @@ Lablar üç seviyede ve pedagojik sırayla düzenlenmiştir:
 Beginner → Intermediate → Advanced
 ```
 
-- **Beginner:** Kubernetes'e ilk kez başlayan öğrenciler için temel kaynaklar.
+- **Beginner:** Kubernetes'e yeni başlayanlar için temel kaynaklar.
 - **Intermediate:** Uygulama yayınlama, ölçekleme, hata ayıklama ve güvenlik.
 - **Advanced:** Gateway API, StatefulSet, ileri deployment stratejileri, Helm ve monitoring.
 

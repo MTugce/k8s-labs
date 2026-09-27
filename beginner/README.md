@@ -1,6 +1,6 @@
 # Beginner Kubernetes Labları
 
-Bu bölüm Kubernetes'e yeni başlayan öğrenciler için hazırlanmıştır. Labları aşağıdaki sırayla uygulayın.
+Bu bölüm Kubernetes'e yeni başlayanlar için hazırlanmıştır. Labları aşağıdaki sırayla uygulayın.
 
 | Sıra | Lab | Süre | Öğrenme hedefi |
 |---:|---|---:|---|

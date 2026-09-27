@@ -2,7 +2,7 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 55–70 dakika
-> **Eğitim durumu:** Orta seviye çekirdek
+> **Lab Kapsamı:** Orta seviye çekirdek
 
 ## Amaç
 
@@ -56,7 +56,7 @@ kubectl wait -n private-app --for=condition=Ready pod/test-client --timeout=90s
 
 [Recreate Mermaid akışını aç](diagrams/recreate.md)
 
-Recreate stratejisi eski Pod'ların tamamını kapattıktan sonra yeni sürümü başlatır. Manifestteki dört saniyelik başlangıç gecikmesi, kesintinin eğitim sırasında açıkça görülmesini sağlar.
+Recreate stratejisi eski Pod'ların tamamını kapattıktan sonra yeni sürümü başlatır. Manifestteki dört saniyelik başlangıç gecikmesi, kesintinin deney sırasında açıkça görülmesini sağlar.
 
 ```bash
 sed "s|__IMAGE__|${IMAGE}|g" starter/recreate.yaml | kubectl apply -f -
@@ -156,7 +156,7 @@ Beklenen sonuç: Uygulama yeniden `"version":"1.0"` yanıtı verir.
 - `maxUnavailable` ve `maxSurge` değerlerinin görevini açıklayabiliyorsunuz.
 - Deployment'ı önceki sürüme geri alabildiniz.
 
-## Hızlı öğrenci ek görevi
+## Opsiyonel İleri Seviye Görev
 
 ```bash
 kubectl rollout history deployment/devops-app-rolling -n private-app

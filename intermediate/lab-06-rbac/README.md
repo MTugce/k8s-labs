@@ -2,7 +2,7 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 40–50 dakika
-> **Eğitim durumu:** Seviyeye göre
+> **Lab Kapsamı:** Seviyeye göre
 
 ## Amaç
 

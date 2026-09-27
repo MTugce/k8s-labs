@@ -2,7 +2,7 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 40–50 dakika
-> **Eğitim durumu:** Zorunlu
+> **Lab Kapsamı:** Zorunlu
 
 ## Amaç
 

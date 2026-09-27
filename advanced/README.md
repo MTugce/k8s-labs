@@ -1,6 +1,6 @@
 # Advanced Kubernetes Labları
 
-Bu bölüm birden fazla controller ve operasyonel bileşen içeren ileri seviye çalışmalar içindir. İki günlük temel eğitimin zorunlu parçası değildir.
+Bu bölüm birden fazla controller ve operasyonel bileşen içeren ileri seviye çalışmalar içindir.
 
 | Sıra | Lab | Süre | Öğrenme hedefi |
 |---:|---|---:|---|

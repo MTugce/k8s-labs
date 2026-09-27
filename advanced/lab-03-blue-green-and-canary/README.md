@@ -2,7 +2,7 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 75–100 dakika
-> **Eğitim durumu:** İsteğe bağlı
+> **Lab Kapsamı:** İsteğe bağlı
 
 ## Amaç
 
@@ -163,7 +163,7 @@ kubectl delete service strategy-canary -n private-app
 
 > Bu bölüm için Advanced Lab 1 tamamlanmış ve Traefik `30088` portunda veya cutover yapıldıysa ana ingress portunda çalışıyor olmalıdır.
 
-Gateway API kuralında öğrenci DNS adınızı (`studentX-app1.devopsatolyesi.com`) kullanarak ağırlıklı canary testi yapabilirsiniz:
+Gateway API kuralında ortamınıza tanımlı alan adınızı (`studentX-app1.devopsatolyesi.com`) kullanarak ağırlıklı canary testi yapabilirsiniz:
 
 ```bash
 export STUDENT_ID="${STUDENT_ID:-$(hostname)}"
@@ -177,10 +177,10 @@ kubectl rollout status deployment/strategy-app-v2 -n private-app --timeout=120s
 kubectl get gateway,httproute -n private-app
 ```
 
-Trafiği öğrenci DNS adresi üzerinden (%90 v1 / %10 v2 ağırlığıyla) test edin:
+Trafiği tanımlanan alan adı üzerinden (%90 v1 / %10 v2 ağırlığıyla) test edin:
 
 ```bash
-# 1. Yöntem: Gateway API Cutover yapıldıysa doğrudan öğrenci DNS adresi (HTTPS):
+# 1. Yöntem: Gateway API Cutover yapıldıysa doğrudan alan adı (HTTPS):
 for i in $(seq 1 20); do
   curl -k -s "https://${APP_HOST}/" | grep -o '"version":"[^"]*"'
 done

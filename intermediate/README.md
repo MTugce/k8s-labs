@@ -1,6 +1,6 @@
 # Intermediate Kubernetes Labları
 
-Bu bölüm temel Kubernetes nesnelerini bilen öğrenciler içindir. Beginner bölümü tamamlanmadan başlamayın.
+Bu bölüm temel Kubernetes nesnelerini bilenler içindir. Beginner bölümü tamamlanmadan başlamayın.
 
 | Sıra | Lab | Süre | Öğrenme hedefi |
 |---:|---|---:|---|

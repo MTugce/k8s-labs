@@ -2,7 +2,7 @@
 
 > **Seviye:** Başlangıç / Orta
 > **Tahmini süre:** Çekirdek 45 dakika, ek görev 30 dakika
-> **Eğitim durumu:** ConfigMap/Secret zorunlu; private registry ek görev
+> **Lab Kapsamı:** ConfigMap/Secret zorunlu; private registry ek görev
 
 ## Amaç
 
@@ -66,7 +66,7 @@ Secret anahtarlarını görüntüleyin; değer doğrudan yazdırılmaz:
 kubectl describe secret devops-app-secret -n private-app
 ```
 
-Eğitim amacıyla değeri geri çözün:
+Değeri doğrulamak için base64 kodunu geri çözün:
 
 ```bash
 kubectl get secret devops-app-secret -n private-app \
@@ -111,7 +111,7 @@ kubectl exec -n private-app "$APP_POD" -- printenv APP_MESSAGE APP_VERSION APP_A
 
 # Bölüm B — Orta Seviye Ek Görev: Private Docker Hub
 
-Bu bölüm için private Docker Hub repository ve Personal Access Token gerekir. Temel eğitim akışı bu bölüme bağlı değildir.
+Bu bölüm için private Docker Hub repository ve Personal Access Token gerekir. Temel lab akışı bu bölüme bağlı değildir.
 
 ## 6. Private repository ve image hazırla
 

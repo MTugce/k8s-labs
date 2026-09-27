@@ -2,11 +2,11 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 55–70 dakika
-> **Eğitim durumu:** Zorunlu
+> **Lab Kapsamı:** Zorunlu
 
 ## Amaç
 
-Uygulamayı NGINX Ingress Controller kullanarak öğrenci DNS adı üzerinden internete ve dış dünyaya açmak.
+Uygulamayı NGINX Ingress Controller kullanarak alan adı (DNS) üzerinden internete ve dış dünyaya açmak.
 
 ## Kullanılan Kubernetes nesneleri
 
@@ -163,7 +163,7 @@ export APP_HOST="${STUDENT_ID}-app1.devopsatolyesi.com"
 echo "Hedef Host: $APP_HOST"
 ```
 
-Beklenen sonuç: `student101-app1.devopsatolyesi.com` (veya size atanan öğrenci numarası) görünür.
+Beklenen sonuç: `student101-app1.devopsatolyesi.com` (veya ortamınıza atanan host/slot adı) görünür.
 
 ---
 
@@ -229,7 +229,7 @@ Beklenen sonuç: `HTTP/1.1 200 OK` koduyla birlikte JSON çıktısı görünür:
 - NGINX Ingress Controller Pod'larını doğruladınız.
 - Host adına göre çalışan Ingress kuralını oluşturdunuz.
 - DNS katmanından bağımsız olarak `Host` header ile `19001` portunu test ettiniz.
-- Öğrenci DNS adresinden HTTPS yanıtı alabildiniz.
+- Tanımlanan alan adı (DNS) üzerinden HTTPS yanıtı alabildiniz.
 
 ## Temizlik
 
@@ -241,7 +241,7 @@ kubectl delete namespace private-app
 
 ---
 
-## 6. Öğrenci DNS adı ve HTTPS ile test et
+## 6. Alan adı (DNS) ve HTTPS ile test et
 
 Bu test tüm internet akışını doğrular: DNS → Cloudflare SSL → Edge Nginx → Kind :80 → Ingress Controller → Service → Pod.
 

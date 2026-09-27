@@ -2,7 +2,7 @@
 
 > **Seviye:** Advanced
 > **Tahmini süre:** 50–65 dakika
-> **Eğitim durumu:** İsteğe bağlı
+> **Lab Kapsamı:** İsteğe bağlı
 
 ## Amaç
 

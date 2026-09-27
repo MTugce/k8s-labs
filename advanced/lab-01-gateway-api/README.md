@@ -3,7 +3,7 @@
 > **Seviye:** Advanced
 > **Tahmini süre:** 60–75 dakika
 > **Ön koşul:** Intermediate Lab 1
-> **Eğitim durumu:** İsteğe bağlı
+> **Lab Kapsamı:** İsteğe bağlı
 
 ## Amaç
 
@@ -135,7 +135,7 @@ spec:
           port: 80
 ```
 
-Kendi öğrenci DNS adını değişkene ata:
+Kendi alan adını (DNS) değişkene ata:
 
 ```bash
 export STUDENT_ID="${STUDENT_ID:-$(hostname)}"

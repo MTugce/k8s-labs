@@ -2,7 +2,7 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 55–70 dakika
-> **Eğitim durumu:** HPA çekirdek; DaemonSet ek görev
+> **Lab Kapsamı:** HPA çekirdek; DaemonSet ek görev
 
 ## Amaç
 

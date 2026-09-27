@@ -2,7 +2,7 @@
 
 > **Seviye:** Orta
 > **Tahmini süre:** 60–75 dakika
-> **Eğitim durumu:** Zorunlu
+> **Lab Kapsamı:** Zorunlu
 
 ## Amaç
 
@@ -161,7 +161,7 @@ Yalnızca readiness kontrolünü geçen Pod'lar Service trafiği alır.
 - `ImagePullBackOff`, `CrashLoopBackOff`, readiness hatası ve `Pending` durumlarının nedenlerini bulabiliyorsunuz.
 - Teşhis için `get`, `describe`, `logs`, `logs --previous` ve Events kullanabiliyorsunuz.
 
-## Hızlı öğrenci ek görevi
+## Opsiyonel İleri Seviye Görev
 
 `failed-readiness.yaml` dosyasındaki probe yolunu `/` yaparak yeni bir yerel dosya oluşturun ve Pod'un `Ready` olduğunu kanıtlayın:
 
