@@ -127,10 +127,10 @@ Bağlantıların aktif olduğunu yerel `curl` ile kontrol et:
 
 ```bash
 curl -I http://127.0.0.1:13000
-curl -I http://127.0.0.1:19090
+curl -I http://127.0.0.1:19090/-/healthy
 ```
 
-Beklenen sonuç: Her iki porttan da HTTP yanıtı (200 veya 302 yönlendirmesi) alınır. Artık hem `https://KULLANICI-grafana.ALAN_ADI` hem de doğrudan `http://SUNUCU_IP:30089` üzerinden erişilebilir.
+Beklenen sonuç: Her iki porttan da HTTP yanıtı (200 OK veya 302 Found yönlendirmesi) alınır. Artık hem `https://KULLANICI-grafana.ALAN_ADI` hem de doğrudan `http://SUNUCU_IP:30089` üzerinden erişilebilir.
 
 ---
 
@@ -242,7 +242,7 @@ Kuralların ve panonun yüklendiğini kontrol et:
 
 ```bash
 kubectl -n monitoring get prometheusrule cluster-workload-alerts
-kubectl -n monitoring get configmap cluster-summary-dashboard -l grafana_dashboard=1
+kubectl -n monitoring get configmap -l grafana_dashboard=1
 ```
 
 Grafana'da **Dashboards** sayfasına dönüldüğünde **Küme ve Sistem Özeti** panosunun otomatik yüklendiğini gör.
