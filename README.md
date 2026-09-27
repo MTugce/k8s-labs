@@ -100,7 +100,7 @@ rm -f kubectl
 #### 4. Kind kurulumu
 
 ```bash
-KIND_VERSION="v0.27.0"
+KIND_VERSION="v0.33.0"
 ARCH=$(dpkg --print-architecture)
 curl -sLo ./kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-${ARCH}"
 chmod +x ./kind

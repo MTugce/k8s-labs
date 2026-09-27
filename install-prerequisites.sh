@@ -58,7 +58,7 @@ if command -v kind &>/dev/null; then
     echo -e "${GREEN}✓ kind zaten kurulu: $(kind version)${NC}"
 else
     echo "kind bulunamadı, kuruluyor..."
-    KIND_VERSION="v0.27.0"
+    KIND_VERSION="v0.33.0"
     ARCH=$(dpkg --print-architecture)
     curl -sLo ./kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-${ARCH}"
     chmod +x ./kind
