@@ -23,7 +23,7 @@ cd ~/k8s-labs/intermediate/lab-01-ingress-and-dns
 
 ## Trafik mimarisi nasıl çalışır?
 
-[![NGINX Ingress Ağ ve Trafik Mimarisi](images/ingress-traffic-flow.jpg)](images/ingress-traffic-flow.jpg)
+![NGINX Ingress Ağ ve Trafik Mimarisi](images/ingress-traffic-flow.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```text

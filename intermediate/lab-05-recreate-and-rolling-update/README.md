@@ -52,7 +52,7 @@ kubectl wait -n private-app --for=condition=Ready pod/test-client --timeout=90s
 
 ## 3. Recreate stratejisini uygula
 
-[![Recreate stratejisi](images/recreate-infographic.jpg)](images/recreate-infographic.jpg)
+![Recreate stratejisi](images/recreate-infographic.jpg)
 
 [Recreate Mermaid akışını aç](diagrams/recreate.md)
 
@@ -100,7 +100,7 @@ kubectl delete service strategy-recreate -n private-app
 
 ## 4. RollingUpdate stratejisini uygula
 
-[![RollingUpdate stratejisi](images/rolling-update-infographic.jpg)](images/rolling-update-infographic.jpg)
+![RollingUpdate stratejisi](images/rolling-update-infographic.jpg)
 
 [RollingUpdate Mermaid akışını aç](diagrams/rolling-update.md)
 

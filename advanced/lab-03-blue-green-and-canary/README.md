@@ -31,7 +31,7 @@ kubectl wait -n private-app --for=condition=Ready pod/test-client --timeout=90s
 
 ## 2. Blue-Green dağıtımını başlat
 
-[![Blue-Green stratejisi](images/blue-green-infographic.jpg)](images/blue-green-infographic.jpg)
+![Blue-Green stratejisi](images/blue-green-infographic.jpg)
 
 [Blue-Green Mermaid akışını aç](diagrams/blue-green.md)
 
@@ -91,7 +91,7 @@ kubectl delete service strategy-app -n private-app
 
 ## 5. Pod oranıyla Canary yayınını başlat
 
-[![Canary stratejisi](images/canary-infographic.jpg)](images/canary-infographic.jpg)
+![Canary stratejisi](images/canary-infographic.jpg)
 
 [Canary Mermaid akışını aç](diagrams/canary.md)
 

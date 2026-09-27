@@ -30,7 +30,7 @@ cd ~/k8s-labs/advanced/lab-06-prometheus-grafana
 
 ## Erişim ve Ağ Mimarisi
 
-[![Prometheus ve Grafana Küme İzleme Mimarisi](images/monitoring-architecture.jpg)](images/monitoring-architecture.jpg)
+![Prometheus ve Grafana Küme İzleme Mimarisi](images/monitoring-architecture.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 İzleme araçlarına iki farklı yöntemle erişilebilir. Her iki yöntem de port çakışması yaşanmayacak şekilde ayrılmıştır:

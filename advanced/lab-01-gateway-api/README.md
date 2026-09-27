@@ -24,7 +24,7 @@ cd ~/k8s-labs/advanced/lab-01-gateway-api
 
 ## Gateway API mimarisi
 
-[![Kubernetes Gateway API Rol Tabanlı Mimari](images/gateway-api-architecture.jpg)](images/gateway-api-architecture.jpg)
+![Kubernetes Gateway API Rol Tabanlı Mimari](images/gateway-api-architecture.jpg)
 *(Görseli tam boyutta büyütmek için üzerine tıklayabilirsiniz)*
 
 ```text
