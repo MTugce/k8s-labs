@@ -212,7 +212,7 @@ Terminalden `kubectl auth can-i` komutuyla `headlamp-viewer` hesabının yetkile
 kubectl auth can-i get pods --as=system:serviceaccount:headlamp:headlamp-viewer
 
 # Node durumlarını inceleme izni (Beklenen: yes)
-kubectl auth can-i get nodes --as=system:serviceaccount:headlamp:headlamp-viewer
+kubectl auth can-i get nodes -A --as=system:serviceaccount:headlamp:headlamp-viewer
 
 # Gizli bilgileri (Secret) okuma izni (Beklenen: no)
 kubectl auth can-i get secrets --as=system:serviceaccount:headlamp:headlamp-viewer
