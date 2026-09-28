@@ -238,11 +238,13 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 [Beginner bölüm özeti](beginner/README.md)
 
 | Sıra | Lab ve doğrudan rehber | Kısa özet |
-|---:|---|---|
-| B1 | [Kind Cluster, Context, Kubeconfig, Namespace ve Label](beginner/lab-01-cluster-kubectl-namespace-labels/README.md) | Geçici cluster oluşturma ve silme, cluster'lar arası geçiş, kubeconfig kurtarma ve temel kaynak keşfi |
-| B2 | [Pod, Deployment, Service ve DNS](beginner/lab-02-pod-deployment-service/README.md) | Pod, self-healing, Service türleri, Service Discovery, DNS ve EndpointSlice |
-| B3 | [ConfigMap, Secret ve Private Image](beginner/lab-03-configmap-secret-private-image/README.md) | ConfigMap ve Secret kullanımı; ek görevde private registry erişimi |
-| B4 | [PV, PVC, Static ve Dynamic Storage](beginner/lab-04-pv-pvc-storage/README.md) | Static ve dynamic provisioning ile kalıcı veri yönetimi |
+|:---:|---|---|
+| B1 | [Imperative kubectl ve İlk Podlar](beginner/lab-01-imperative-kubectl-and-pod-basics/README.md) | Tek satırlık komutlarla ilk Pod, `get`, `describe`, `logs`, `exec`, `port-forward` ve `--dry-run=client -o yaml` ile manifest üretimi |
+| B2 | [Pod Tasarım Kalıpları: Multi-Container, Init ve Sidecar](beginner/lab-02-pod-design-patterns-multi-init-sidecar/README.md) | Multi-Container pod, localhost ağı, Init Container ile veri hazırlığı ve `emptyDir` ile canlı log sidecar |
+| B3 | [Kendi Kendini Onarma: ReplicaSet ve Deployment](beginner/lab-03-replicaset-and-deployment/README.md) | Tekil Pod ile Controller farkı, ReplicaSet self-healing, Deployment yönetimi, `scale`, `set image` ve `rollout undo` |
+| B4 | [Ağ, Servisler ve Küme İçi DNS Keşfi](beginner/lab-04-services-and-dns/README.md) | ClusterIP, CoreDNS çözümlemesi, NodePort (30086) dış erişimi ve mikroservisler arası servis keşfi |
+| B5 | [Konfigürasyon, Gizli Değerler ve Uygulama Yönetimi](beginner/lab-05-configmap-secret-and-application/README.md) | ConfigMap, Secret, `devops-app` uygulaması, canlı `/config` doğrulaması, Public vs Private imaj ve `imagePullSecrets` |
+| B6 | [Temel Depolama: emptyDir, PV ve Dynamic PVC](beginner/lab-06-storage-emptydir-and-pvc/README.md) | Geçici depolama (`emptyDir`), PV/PVC ilişkisi, dinamik disk provizyonu ve Pod silinse dahi veri kalıcılığı |
 
 ## 6. Intermediate Labları
 

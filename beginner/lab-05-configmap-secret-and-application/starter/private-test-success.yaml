@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: private-image-success
+  labels:
+    app: private-test
+spec:
+  imagePullSecrets:
+    - name: my-registry-secret
+  containers:
+    - name: app
+      image: devops-app:1.0
+      imagePullPolicy: IfNotPresent
