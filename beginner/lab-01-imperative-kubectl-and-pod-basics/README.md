@@ -3,10 +3,10 @@
 
 ## Amaç
 
-Bu laboratuvarda [Kubernetes Quick Reference](https://kubernetes.io/docs/reference/kubectl/quick-reference/) kılavuzundaki temel **imperative (emirsel)** komutları kullanarak Kubernetes kümesinde ilk Pod'unuzu çalıştıracak, durumunu ve loglarını inceleyecek, konteyner içine bağlanarak komut koşturacak ve `port-forward` ile uygulamaya erişeceksiniz.
+Bu laboratuvarda [Kubernetes Quick Reference](https://kubernetes.io/docs/reference/kubectl/quick-reference/) kılavuzundaki temel **imperative** komutları kullanarak Kubernetes cluster'ında ilk Pod'unuzu çalıştıracak, durumunu ve loglarını inceleyecek, konteyner içine bağlanarak komut koşturacak ve `port-forward` ile uygulamaya erişeceksiniz.
 
 
-Ardından `--dry-run=client -o yaml` tekniği ile emirsel komuttan **declarative (deklaratif/manifest)** YAML şablonu üretmeyi ve `kubectl apply` ile yönetmeyi öğreneceksiniz.
+Ardından `--dry-run=client -o yaml` tekniği ile imperative komuttan **declarative (YAML manifest)** şablonu üretmeyi ve `kubectl apply` ile yönetmeyi öğreneceksiniz.
 
 ---
 
@@ -15,9 +15,9 @@ Ardından `--dry-run=client -o yaml` tekniği ile emirsel komuttan **declarative
 | Kavram | Açıklama |
 |---|---|
 | **Pod** | Kubernetes'in en küçük dağıtılabilir işlem birimidir; bir veya birden fazla konteyneri barındırır. |
-| **Imperative (Emirsel)** | Kümeye doğrudan ne yapacağını söyleyen tek satırlık CLI komutlarıdır (`kubectl run`, `kubectl delete`). Hızlı test ve prototipleme için idealdir. |
-| **Declarative (Bildirimsel)** | İstenen nihai durumu bir YAML dosyasında (manifest) tanımlayıp kümeye sunma yaklaşımıdır (`kubectl apply -f`). GitOps ve üretim ortamlarının standardıdır. |
-| **Dry-Run** | Komutu kümeye göndermeden sadece istemci tarafında çalıştırıp manifest çıktısı üretme tekniğidir (`--dry-run=client -o yaml`). |
+| **Imperative** | Cluster'a doğrudan ne yapacağını söyleyen tek satırlık CLI komutlarıdır (`kubectl run`, `kubectl delete`). Hızlı test ve prototipleme için idealdir. |
+| **Declarative** | İstenen nihai durumu bir YAML dosyasında (manifest) tanımlayıp cluster'a sunma yaklaşımıdır (`kubectl apply -f`). GitOps ve üretim ortamlarının standardıdır. |
+| **Dry-Run** | Komutu cluster'a göndermeden sadece istemci tarafında çalıştırıp manifest çıktısı üretme tekniğidir (`--dry-run=client -o yaml`). |
 
 ---
 
@@ -160,7 +160,7 @@ kubectl run my-simple-pod \
 cat starter/my-simple-pod.yaml
 ```
 
-Dosyayı declarative olarak kümeye uygulayın:
+Dosyayı declarative olarak cluster'a uygulayın:
 
 ```bash
 kubectl apply -f starter/my-simple-pod.yaml -n beginner-basics

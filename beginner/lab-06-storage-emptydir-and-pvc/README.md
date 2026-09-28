@@ -8,7 +8,7 @@ Konteynerlerin kök dosya sistemi geçicidir (ephemeral). Bir konteyner çöktü
 Bu laboratuvarda:
 1. Aynı Pod içindeki konteynerler arasında geçici dosya paylaşımı sağlayan **emptyDir** birimini,
 2. Kalıcı depolama mimarisini oluşturan **PersistentVolume (PV)** ve **PersistentVolumeClaim (PVC)** ilişkisini,
-3. Kind kümesindeki hazır `standard` StorageClass ile **dinamik provizyon (dynamic provisioning)** yapmayı,
+3. Kind cluster'ındaki hazır `standard` StorageClass ile **dinamik provizyon (dynamic provisioning)** yapmayı,
 4. Pod silinse dahi diske yazılan verinin yeni Pod tarafından aynen korunduğunu uygulamalı olarak kanıtlayacaksınız.
 
 ---
@@ -18,7 +18,7 @@ Bu laboratuvarda:
 | Nesne / Kavram | Açıklama |
 |---|---|
 | **emptyDir** | Pod oluşturulduğunda tahsis edilen ve Pod silindiğinde silinen geçici bir birimdir; aynı Pod içindeki konteynerlerin dosya paylaşımı için idealdir. |
-| **PersistentVolume (PV)** | Kümedeki gerçek bir depolama kaynağını (yerel disk, ağ diski, bulut diski) temsil eden küme düzeyinde nesnedir. |
+| **PersistentVolume (PV)** | Cluster'daki gerçek bir depolama kaynağını (yerel disk, ağ diski, bulut diski) temsil eden cluster düzeyinde nesnedir. |
 | **PersistentVolumeClaim (PVC)** | Bir kullanıcının/uygulamanın belirli boyutta (örn. 1Gi) ve erişim modunda disk talep etmesidir. |
 | **StorageClass & Dynamic Provisioning** | PVC oluşturulduğunda arkada otomatik olarak uygun PV oluşturan mekanizmadır. |
 

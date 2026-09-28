@@ -130,7 +130,7 @@ Manifestteki kritik detaylar:
 
 ## 4. Manifesti Uygulama ve Sıralı Başlatmayı İzleme
 
-Manifesti kümeye uygulayın:
+Manifesti cluster'a uygulayın:
 
 ```bash
 kubectl apply -f starter/mysql-statefulset.yaml -n beginner-statefulset
@@ -192,7 +192,7 @@ Her replika (`mysql-0` ve `mysql-1`) için tamamen bağımsız, ayrı birer kal�
 
 ## 6. Headless Service ile Pod DNS Adlarını Keşfetme
 
-Headless Service sayesinde her Pod'un küme içinde sabit bir DNS adı vardır:
+Headless Service sayesinde her Pod'un cluster içinde sabit bir DNS adı vardır:
 - `mysql-0.mysql-headless.beginner-statefulset.svc.cluster.local`
 - `mysql-1.mysql-headless.beginner-statefulset.svc.cluster.local`
 

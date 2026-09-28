@@ -1,4 +1,4 @@
-# Lab 04: Ağ, Servisler ve Küme İçi DNS Keşfi
+# Lab 04: Ağ, Servisler ve Cluster İçi DNS Keşfi
 
 
 ## Amaç
@@ -7,8 +7,8 @@ Pod'lar yeniden başlatıldığında, güncellendiğinde veya ölçeklendiğinde
 
 Bu laboratuvarda:
 1. Pod IP'lerinin neden güvenilir bir adresleme sağlayamadığını,
-2. **ClusterIP Service** ile küme içi sabit IP ve yük dengeleme sağlamayı,
-3. **NodePort Service** ile uygulamayı Kubernetes kümesi dışına (host makineye / tarayıcıya) açmayı,
+2. **ClusterIP Service** ile cluster içi sabit IP ve yük dengeleme sağlamayı,
+3. **NodePort Service** ile uygulamayı Kubernetes cluster'ı dışına (host makineye / tarayıcıya) açmayı,
 4. **CoreDNS Service Discovery** sayesinde mikroservislerin birbirini IP yerine servis adıyla nasıl otomatik bulduğunu öğreneceksiniz.
 
 ---
@@ -17,11 +17,11 @@ Bu laboratuvarda:
 
 | Nesne / Kavram | Açıklama |
 |---|---|
-| **Service** | Değişken Pod kümesinin önüne sabit bir sanal IP (ClusterIP) ve DNS adı koyan Kubernetes ağ nesnesidir. |
-| **ClusterIP** | Varsayılan servis türüdür; servisi yalnızca küme içerisinden erişilebilir kılar. |
+| **Service** | Değişken Pod grubunun önüne sabit bir sanal IP (ClusterIP) ve DNS adı koyan Kubernetes ağ nesnesidir. |
+| **ClusterIP** | Varsayılan servis türüdür; servisi yalnızca cluster içerisinden erişilebilir kılar. |
 | **NodePort** | Servisi her worker node'un belirlenen statik bir portundan (30000–32767) dış dünyaya açar. |
 | **Selector** | Servisin hangi Pod'lara trafik yönlendireceğini belirleyen etiket filtresidir (`app: backend-app`). |
-| **CoreDNS** | `servis-adi.namespace.svc.cluster.local` formatındaki isimleri ClusterIP'ye çözen küme içi DNS sunucusudur. |
+| **CoreDNS** | `servis-adi.namespace.svc.cluster.local` formatındaki isimleri ClusterIP'ye çözen cluster içi DNS sunucusudur. |
 
 ---
 
@@ -130,9 +130,9 @@ kubectl get endpoints backend-service -n beginner-services
 
 ---
 
-## 4. Küme İçinden DNS ve Yük Dengeleme Testi
+## 4. Cluster İçinden DNS ve Yük Dengeleme Testi
 
-Küme içinden `backend-service` adına istek atabilmek için geçici bir test konteyneri çalıştıralım:
+Cluster içinden `backend-service` adına istek atabilmek için geçici bir test konteyneri çalıştıralım:
 
 ```bash
 kubectl run test-client --image=curlimages/curl:8.12.1 -n beginner-services --restart=Never -- sleep 3600
@@ -199,7 +199,7 @@ curl -I http://127.0.0.1:30086
 ```
 
 **Beklenen sonuç:** `HTTP/1.1 200 OK`  
-Uygulamanız artık küme dışından da erişilebilmektedir!
+Uygulamanız artık cluster dışından da erişilebilmektedir!
 
 ---
 

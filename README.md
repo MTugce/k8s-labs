@@ -22,7 +22,7 @@ Beginner → Intermediate → Advanced
 Laboratuvarları çalıştırabilmek için sisteminizde (Ubuntu 20.04/22.04/24.04 önerilir) aşağıdaki dört temel aracın kurulu olması gerekir:
 
 1. **Docker:** Konteyner motoru ve Kind node'larının üzerinde çalışacağı ortam.
-2. **Kind:** Docker konteynerleri içinde çok düğümlü yerel Kubernetes cluster'ı çalıştıran araç.
+2. **Kind:** Docker konteynerleri içinde çok node'lu yerel Kubernetes cluster'ı çalıştıran araç.
 3. **kubectl:** Kubernetes API sunucusu ile iletişim kuran resmi komut satırı aracı.
 4. **Helm:** WordPress, Traefik, Prometheus ve Headlamp kurulumlarında kullanılan Kubernetes paket yöneticisi.
 
@@ -242,7 +242,7 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 | B1 | [Imperative kubectl ve İlk Podlar](beginner/lab-01-imperative-kubectl-and-pod-basics/README.md) | Tek satırlık komutlarla ilk Pod, `get`, `describe`, `logs`, `exec`, `port-forward` ve `--dry-run=client -o yaml` ile manifest üretimi |
 | B2 | [Pod Tasarım Kalıpları: Multi-Container, Init ve Sidecar](beginner/lab-02-pod-design-patterns-multi-init-sidecar/README.md) | Multi-Container pod, localhost ağı, Init Container ile veri hazırlığı ve `emptyDir` ile canlı log sidecar |
 | B3 | [Kendi Kendini Onarma: ReplicaSet ve Deployment](beginner/lab-03-replicaset-and-deployment/README.md) | Tekil Pod ile Controller farkı, ReplicaSet self-healing, Deployment yönetimi, `scale`, `set image` ve `rollout undo` |
-| B4 | [Ağ, Servisler ve Küme İçi DNS Keşfi](beginner/lab-04-services-and-dns/README.md) | ClusterIP, CoreDNS çözümlemesi, NodePort (30086) dış erişimi ve mikroservisler arası servis keşfi |
+| B4 | [Ağ, Servisler ve Cluster İçi DNS Keşfi](beginner/lab-04-services-and-dns/README.md) | ClusterIP, CoreDNS çözümlemesi, NodePort (30086) dış erişimi ve mikroservisler arası servis keşfi |
 | B5 | [Konfigürasyon, Gizli Değerler ve Uygulama Yönetimi](beginner/lab-05-configmap-secret-and-application/README.md) | ConfigMap, Secret, `devops-app` uygulaması, canlı `/config` doğrulaması, Public vs Private imaj ve `imagePullSecrets` |
 | B6 | [Temel Depolama: emptyDir, PV ve Dynamic PVC](beginner/lab-06-storage-emptydir-and-pvc/README.md) | Geçici depolama (`emptyDir`), PV/PVC ilişkisi, dinamik disk provizyonu ve Pod silinse dahi veri kalıcılığı |
 | B7 | [Durumlu Uygulamalar: StatefulSet ve Veritabanı](beginner/lab-07-statefulset-and-database/README.md) | StatefulSet mimarisi, Headless Service (`clusterIP: None`), kararlı ağ kimlikleri (`pod-0.service`), `volumeClaimTemplates` ile pod başına özel PVC tahsisi ve MySQL veri kalıcılığı |
