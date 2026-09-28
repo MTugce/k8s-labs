@@ -247,6 +247,8 @@ kind create cluster --name k8s-labs --config kind-cluster.yaml
 | B6 | [Temel Depolama: emptyDir, PV ve Dynamic PVC](beginner/lab-06-storage-emptydir-and-pvc/README.md) | Geçici depolama (`emptyDir`), PV/PVC ilişkisi, dinamik disk provizyonu ve Pod silinse dahi veri kalıcılığı |
 | B7 | [Durumlu Uygulamalar: StatefulSet ve Veritabanı](beginner/lab-07-statefulset-and-database/README.md) | StatefulSet mimarisi, Headless Service (`clusterIP: None`), kararlı ağ kimlikleri (`pod-0.service`), `volumeClaimTemplates` ile pod başına özel PVC tahsisi ve MySQL veri kalıcılığı |
 | B8 | [Pod Sorun Giderme: CrashLoopBackOff ve OOMKilled](beginner/lab-08-pod-troubleshooting-crashloop-oom/README.md) | En yaygın pod arızalarını teşhis etme, `kubectl logs --previous` ile çökme loglarını okuma, `Exit Code 137` (cgroups OOM Killer) tespiti ve kaynak optimizasyonu |
+| B9 | [Uçtan Uca Mikroservis Dağıtımı (Capstone Projesi)](beginner/lab-09-capstone-project/README.md) | Docker Hub Private/Public imaj çekme, `imagePullSecrets`, ConfigMap, Secret, PVC'li MySQL StatefulSet ve NodePort (30088) ile tam entegre bitiş projesi |
+
 
 
 ## 6. Intermediate Labları

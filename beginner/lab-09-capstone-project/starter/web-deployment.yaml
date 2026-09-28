@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  labels:
+    app: web-app
+    app.kubernetes.io/part-of: capstone-project
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-cred
+      containers:
+      - name: web
+        image: hbayraktar/devops-app:nginx-1.0
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: app-config

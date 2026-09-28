@@ -128,9 +128,44 @@ kubectl get secret devops-app-secret -n beginner-config -o jsonpath='{.data.APP_
 
 ---
 
-## 5. Uygulamamızı (`devops-app`) Dağıtma
+## 5. Uygulamayı Dockerize Etme ve Dağıtma (`devops-app`)
 
-`starter/deployment.yaml` manifestinde `envFrom` bloğu sayesinde ConfigMap ve Secret doğrudan konteynerin ortam değişkenlerine bağlanır:
+Kubernetes'te geliştirdiğiniz bir uygulamayı çalıştırma süreci 3 temel adımdan oluşur:
+1. **Dockerize Etme:** Uygulama kodunu bir `Dockerfile` ile paketleyip container imajı haline getirmek.
+2. **Registry'ye Gönderme (Push):** İmajı Docker Hub'a (veya yerel Kind cluster'ına) aktarmak.
+3. **Kubernetes'te Çalıştırma:** Deployment manifestinde bu imajı çağırıp ConfigMap ve Secret değerlerini bağlamak.
+
+### Adım 5.1: Dockerfile ve Uygulama Kodunu İnceleme
+
+Laboratuvarımızda kullanacağımız uygulama [`app/devops-app`](../../app/devops-app) dizininde bulunan hafif bir Node.js servisidir.
+
+Uygulamanın `Dockerfile` dosyasını inceleyin:
+
+```bash
+cat ~/k8s-labs/app/devops-app/Dockerfile
+```
+
+### Adım 5.2: İmajı Build Etme ve Cluster'a Aktarma
+
+İmajı derleyin ve yerel Kind cluster node'larına yükleyin:
+
+```bash
+docker build -t devops-app:1.0 ~/k8s-labs/app/devops-app
+kind load docker-image devops-app:1.0 --name k8s-labs
+```
+
+> [!NOTE]
+> Gerçek bir üretim ortamında bu imajı Docker Hub'a gönderip oradan çekersiniz:
+> ```bash
+> # docker tag devops-app:1.0 <dockerhub-kullanici>/devops-app:1.0
+> # docker push <dockerhub-kullanici>/devops-app:1.0
+> # Deployment içinde: image: <dockerhub-kullanici>/devops-app:1.0
+> ```
+> Biz yerel Kind cluster'ında çalıştığımız için `kind load docker-image` komutu imajı doğrudan node'lara aktarır ve internete göndermeden anında kullanıma hazır hale getirir.
+
+### Adım 5.3: Deployment ve Service ile Uygulamayı Başlatma
+
+`starter/deployment.yaml` manifestinde `image: devops-app:1.0` çağrılır ve `envFrom` bloğu sayesinde ConfigMap ve Secret doğrudan konteynerin ortam değişkenlerine bağlanır:
 
 ```yaml
 apiVersion: apps/v1

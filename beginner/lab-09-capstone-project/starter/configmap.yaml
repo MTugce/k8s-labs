@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app.kubernetes.io/part-of: capstone-project
+data:
+  DB_HOST: "mysql-service"
+  DB_PORT: "3306"
+  DB_NAME: "devopsdb"
+  ENVIRONMENT: "production"
+  APP_TITLE: "DevOps Practitioner Capstone Web App"
