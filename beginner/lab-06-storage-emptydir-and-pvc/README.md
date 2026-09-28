@@ -1,4 +1,4 @@
-# Temel Depolama: emptyDir, PV ve Dynamic PVC
+# Lab 06: Temel Depolama (emptyDir, PV ve Dynamic PVC)
 
 
 ## Amaç

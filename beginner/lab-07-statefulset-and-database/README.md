@@ -1,4 +1,4 @@
-# StatefulSet ile Veritabanı Yönetimi
+# Lab 07: Durumlu Uygulamalar (StatefulSet ve MySQL Veritabanı)
 
 ## Amaç
 

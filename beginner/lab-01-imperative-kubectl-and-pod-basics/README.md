@@ -1,9 +1,10 @@
-# Imperative kubectl ve İlk Podlar
+# Lab 01: Imperative kubectl ve İlk Podlar
 
 
 ## Amaç
 
 Bu laboratuvarda [Kubernetes Quick Reference](https://kubernetes.io/docs/reference/kubectl/quick-reference/) kılavuzundaki temel **imperative (emirsel)** komutları kullanarak Kubernetes kümesinde ilk Pod'unuzu çalıştıracak, durumunu ve loglarını inceleyecek, konteyner içine bağlanarak komut koşturacak ve `port-forward` ile uygulamaya erişeceksiniz.
+
 
 Ardından `--dry-run=client -o yaml` tekniği ile emirsel komuttan **declarative (deklaratif/manifest)** YAML şablonu üretmeyi ve `kubectl apply` ile yönetmeyi öğreneceksiniz.
 
@@ -117,7 +118,12 @@ Pod'un 80 portunu geçici olarak yerel bilgisayarınızın 8080 portuna yönlend
 kubectl port-forward -n beginner-basics pod/my-first-pod 8080:80 &
 ```
 
-*(Komut arka planda çalışacaktır).* Başka bir komutla curl isteği atarak Nginx karşılama sayfasını doğrulayın:
+*(Komut arka planda çalışacaktır).* 
+
+> [!TIP]
+> `port-forward` çıktısı (`Forwarding from 127.0.0.1:8080 -> 80`) ekranda belirdiğinde terminal kilitlenmiş gibi görünürse klavyenizden bir kez `Enter` tuşuna basarak yeni komut satırına geçebilirsiniz. Alternatif olarak ayrı bir terminal sekmesinde `&` koymadan da çalıştırabilirsiniz.
+
+Başka bir komutla curl isteği atarak Nginx karşılama sayfasını doğrulayın:
 
 ```bash
 curl -I http://127.0.0.1:8080

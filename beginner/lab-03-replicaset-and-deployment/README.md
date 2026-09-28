@@ -1,4 +1,4 @@
-# Kendi Kendini Onarma: ReplicaSet ve Deployment
+# Lab 03: Kendi Kendini Onarma (ReplicaSet ve Deployment)
 
 
 ## Amaç

@@ -1,4 +1,4 @@
-# Ağ, Servisler ve Küme İçi DNS Keşfi
+# Lab 04: Ağ, Servisler ve Küme İçi DNS Keşfi
 
 
 ## Amaç

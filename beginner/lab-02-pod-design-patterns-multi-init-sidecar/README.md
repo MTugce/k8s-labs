@@ -1,4 +1,4 @@
-# Pod Tasarım Kalıpları: Multi-Container, Init ve Sidecar
+# Lab 02: Pod Tasarım Kalıpları (Multi-Container, Init ve Sidecar)
 
 
 ## Amaç

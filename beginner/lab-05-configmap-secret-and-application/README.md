@@ -1,4 +1,4 @@
-# Konfigürasyon, Gizli Değerler ve Uygulama Yönetimi
+# Lab 05: Konfigürasyon, Gizli Değerler ve Uygulama Yönetimi
 
 
 ## Amaç
