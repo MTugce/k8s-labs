@@ -16,6 +16,8 @@ Aşağıdaki laboratuvarları sırasıyla tamamlayın:
 | **B4** | [Ağ, Servisler ve Küme İçi DNS Keşfi](lab-04-services-and-dns/README.md) | Değişken Pod IP'leri sorunu, ClusterIP servisi, CoreDNS ile servis keşfi, NodePort (30086) ile dış erişim ve mikroservis iletişimi |
 | **B5** | [Konfigürasyon, Gizli Değerler ve Uygulama Yönetimi](lab-05-configmap-secret-and-application/README.md) | ConfigMap ve Secret oluşturma, `devops-app` uygulamasına bağlama, canlı `/config` testi, Public ve Private imaj ayrımı ile `imagePullSecrets` |
 | **B6** | [Temel Depolama: emptyDir, PV ve Dynamic PVC](lab-06-storage-emptydir-and-pvc/README.md) | Geçici disk (`emptyDir`), kalıcı disk (PV/PVC) ilişkisi, dinamik disk talebi ve Pod silinse dahi verinin korunduğunun kanıtı |
+| **B7** | [Durumlu Uygulamalar: StatefulSet ve Veritabanı](lab-07-statefulset-and-database/README.md) | StatefulSet mimarisi, Headless Service (`clusterIP: None`), kararlı ağ kimlikleri (`pod-0.service`), `volumeClaimTemplates` ile pod başına özel PVC tahsisi ve MySQL veri kalıcılığı |
+| **B8** | [Pod Sorun Giderme: CrashLoopBackOff ve OOMKilled](lab-08-pod-troubleshooting-crashloop-oom/README.md) | En yaygın pod arızalarını teşhis etme, `kubectl logs --previous` ile çökme loglarını okuma, `Exit Code 137` (cgroups OOM Killer) tespiti ve kaynak optimizasyonu |
 
 ---
 

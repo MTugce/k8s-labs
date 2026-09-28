@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-demo
+  labels:
+    app: oom-demo
+spec:
+  containers:
+  - name: memory-eater
+    image: alpine:3.21
+    command: ["sh", "-c", "echo 'Bellek ayrildi (guvenli limitlerde)...'; dd if=/dev/zero of=/dev/shm/fill bs=1M count=20; echo 'Pod stabil olarak calisiyor.'; sleep 3600"]
+    resources:
+      limits:
+        memory: "128Mi"
+      requests:
+        memory: "64Mi"

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom-demo
+  labels:
+    app: oom-demo
+spec:
+  restartPolicy: Never
+  containers:
+  - name: memory-eater
+    image: alpine:3.21
+    command: ["sh", "-c", "echo 'Bellek tuketimi baslatiliyor (100MB ayrilacak)...'; dd if=/dev/zero of=/dev/shm/fill bs=1M count=100; sleep 3600"]
+    resources:
+      limits:
+        memory: "32Mi"
+      requests:
+        memory: "16Mi"

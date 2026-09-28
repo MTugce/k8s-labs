@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crash-demo
+  labels:
+    app: crash-demo
+spec:
+  containers:
+  - name: broken-app
+    image: busybox:1.36
+    command: ["sh", "-c", "echo 'Uygulama baslatiliyor...'; sleep 2; echo 'Kritik hata: veritabanina baglanilamadi!'; exit 1"]
