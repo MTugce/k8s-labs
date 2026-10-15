@@ -5,8 +5,8 @@
 Bu laboratuvar, Beginner serisi boyunca öğrendiğiniz tüm temel kavramları (Pod, Deployment, Service, ConfigMap, Secret, PersistentVolumeClaim ve StatefulSet) tek bir gerçek dünya üretim mimarisinde birleştiren **bitiş projesidir (Capstone Project)**.
 
 Bu projede:
-1. **Docker Hub Registry Entegrasyonu:** Public ve Private repository'lerin farkını yaşayacak, kilitli bir private repodan (`hbayraktar/devops-app`) imaj çekerken oluşan yetki hatasını (`ErrImagePull`) gözlemleyecek ve `imagePullSecrets` ile yetkili erişim sağlayacaksınız.
-2. **Konfigürasyon ve Güvenlik:** Uygulama parametrelerini **ConfigMap**, veritabanı parolalarını **Secret** nesneleriyle deklaratif olarak yöneteceksiniz.
+1. **Docker Hub Registry Entegrasyonu:** Public ve Private repository'lerin farkını yaşayacak, kilitli bir private repodan (`<DOCKERHUB_USER>/devops-app`) imaj çekerken oluşan yetki hatasını (`ErrImagePull`) gözlemleyecek ve `imagePullSecrets` ile yetkili erişim sağlayacaksınız.
+2. **Konfigürasyon ve Güvenlik:** Uygulama parametrelerini **ConfigMap**, veritabanı parolalarını Base64 kodlu **Secret** nesneleriyle deklaratif olarak yöneteceksiniz.
 3. **Durumlu Arka Uç (StatefulSet & PVC):** MySQL veritabanını dinamik disk tahsisi sağlayan **PVC** ile ayağa kaldıracak, cluster içi **Headless Service** ile web katmanına bağlayacaksınız.
 4. **Ön Yüz Dağıtımı ve Dış Erişim:** Web uygulamasını 2 replikalı bir **Deployment** olarak çalıştıracak ve **NodePort (30088)** servisi üzerinden cluster dışına açacaksınız.
 5. **Kalıcılık Kanıtı:** Veritabanına kayıt ekleyip Pod'u silecek; yeni Pod ayağa kalktığında verilerin PVC sayesinde aynen korunduğunu test edeceksiniz.
@@ -21,28 +21,29 @@ Bu projede:
            ┌─────────────────────────┴────────────────────────┐
            │                                                  │
    [Public Repository]                                [Private Repository]
-(devops-app-pub:nginx-1.0)                          (devops-app:nginx-1.0)
-     Doğrudan Çekilir                                          │
-                                                [Secret: dockerhub-cred]
+     (nginx:alpine)                       (<DOCKERHUB_USER>/devops-app:nginx-1.0)
+    Doğrudan Çekilir                                          │
+                                                 [Secret: dockerhub-cred]
                                                                │
                                                                ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ Namespace: beginner-capstone                                                │
 │                                                                             │
 │   [ConfigMap: app-config] ──┐                                               │
-│   [Secret: db-secret]     ──┼──> [Deployment: web-app] (2 Replicas)        │
-│                             │             │                                 │
-│                             │             ▼                                 │
-│                             │    [Service: web-service] (NodePort: 30088)   │
-│                             │             │                                 │
-│                             │             ▼                                 │
-│                             │    Dış Erişim: http://localhost:30088         │
-│                             │                                               │
-│                             └──> [StatefulSet: mysql]                       │
-│                                           │                                 │
-│                                  [PVC: mysql-data] (1Gi Kalıcı Disk)        │
-│                                           │                                 │
-│                                  [Service: mysql-service] (ClusterIP: 3306) │
+│                             ├──> [Deployment: web-app] (2 Replicas)         │
+│   [Secret: dockerhub-cred] ─┘           │                                   │
+│                                         ▼                                   │
+│                                [Service: web-service] (NodePort: 30088)     │
+│                                         │                                   │
+│                                         ▼                                   │
+│                                Dış Erişim: http://localhost:30088           │
+│                                                                             │
+│   [ConfigMap: app-config] ──┐                                               │
+│   [Secret: db-secret]     ──┼──> [StatefulSet: mysql]                       │
+│                             │           │                                   │
+│                             │  [PVC: mysql-data] (1Gi Kalıcı Disk)          │
+│                             │           │                                   │
+│                             └──> [Service: mysql-service] (ClusterIP: 3306) │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -69,15 +70,15 @@ kubectl create namespace beginner-capstone --dry-run=client -o yaml | kubectl ap
 ## 2. Docker Hub Registry ve İmaj Yetkilendirmesi (Public vs Private)
 
 Docker Hub üzerinde iki tür repository bulunur:
-* **Public Repo (`devops-app-pub`):** Herkes tarafından oturum açmadan çekilebilir.
-* **Private Repo (`devops-app`):** Yalnızca yetkili hesaplar tarafından çekilebilir.
+* **Public Repo:** Herkes tarafından oturum açmadan doğrudan çekilebilir (`nginx:alpine` vb.).
+* **Private Repo:** Yalnızca yetkili hesaplar veya `imagePullSecrets` anahtarına sahip Kubernetes cluster'ları tarafından çekilebilir.
 
 ### Adım 2.1: Public İmajı Çekme Testi
 
-Herhangi bir şifre tanımlamadan public imajı test edin:
+Herhangi bir kimlik bilgisi tanımlamadan Docker Hub'daki standart public imajı test edin:
 
 ```bash
-kubectl run pub-test --image=hbayraktar/devops-app-pub:nginx-1.0 -n beginner-capstone
+kubectl run pub-test --image=nginx:alpine -n beginner-capstone
 kubectl wait --for=condition=Ready pod/pub-test -n beginner-capstone --timeout=60s
 ```
 
@@ -93,41 +94,59 @@ Test pod'unu silin:
 kubectl delete pod pub-test -n beginner-capstone
 ```
 
-### Adım 2.2: Private İmajı Yetkisiz Çekmeyi Deneme (Beklenen Hata!)
+### Adım 2.2: Kendi Private İmajınızı Hazırlama ve Yetkisiz Çekmeyi Deneme (Beklenen Hata!)
 
-Şimdi yetki vermeden doğrudan private depodan bir Pod çalıştırmayı deneyin:
+Lab katılımcısı olarak kendi Docker Hub hesabınızı kullanacaksınız:
 
-```bash
-kubectl run priv-fail-test --image=hbayraktar/devops-app:nginx-1.0 --restart=Never -n beginner-capstone
-```
+1. Kendi Docker Hub kullanıcı adınızı terminalde ortam değişkeni olarak tanımlayın:
+   ```bash
+   export DOCKERHUB_USER="<kendi-dockerhub-kullanici-adiniz>"
+   ```
 
-Pod durumunu inceleyin:
+2. [Docker Hub](https://hub.docker.com) arayüzüne girin ve **Create repository** butonuna tıklayarak `devops-app` isimli bir **Private** repository oluşturun.
 
-```bash
-kubectl get pod priv-fail-test -n beginner-capstone
-```
+3. Terminalinizde yerel bir imajı etiketleyip kendi private reponuza push edin:
+   ```bash
+   docker pull nginx:alpine
+   docker tag nginx:alpine ${DOCKERHUB_USER}/devops-app:nginx-1.0
+   docker login -u ${DOCKERHUB_USER}
+   docker push ${DOCKERHUB_USER}/devops-app:nginx-1.0
+   ```
 
-`STATUS` sütununda `ErrImagePull` veya `ImagePullBackOff` göreceksiniz! Hata detayını `describe` ile inceleyin:
+4. Şimdi Kubernetes cluster'ında herhangi bir yetki tanımlamadan bu private depodan bir Pod çalıştırmayı deneyin:
+   ```bash
+   kubectl run priv-fail-test --image=${DOCKERHUB_USER}/devops-app:nginx-1.0 --restart=Never -n beginner-capstone
+   ```
 
-```bash
-kubectl describe pod priv-fail-test -n beginner-capstone | grep -E "Failed|Error"
-```
+5. Pod durumunu inceleyin:
+   ```bash
+   kubectl get pod priv-fail-test -n beginner-capstone
+   ```
 
-Çıktıda Docker Hub'ın erişim izni vermediğini (`pull access denied` veya `unauthorized`) gözlemleyin. Hatalı pod'u temizleyin:
+   `STATUS` sütununda `ErrImagePull` veya `ImagePullBackOff` göreceksiniz! Hata detayını `describe` ile inceleyin:
+   ```bash
+   kubectl describe pod priv-fail-test -n beginner-capstone | grep -E "Failed|Error"
+   ```
 
-```bash
-kubectl delete pod priv-fail-test -n beginner-capstone
-```
+   Çıktıda Docker Hub'ın erişim izni vermediğini (`pull access denied` veya `unauthorized`) gözlemleyin. Hatalı pod'u temizleyin:
+   ```bash
+   kubectl delete pod priv-fail-test -n beginner-capstone
+   ```
 
 ### Adım 2.3: `docker-registry` Secret'ı ile Kimlik Tanımlama
 
-Kubernetes kubelet'in Docker Hub private deposundan imaj çekebilmesi için bir kimlik kartı (`docker-registry` türünde Secret) oluşturun:
+Kubernetes kubelet'in Docker Hub private deposundan imaj çekebilmesi için bir kimlik kartı (`docker-registry` türünde Secret) oluşturun. Parolanızı / Personal Access Token'ınızı komut geçmişine (`bash_history`) yazdırmamak için gizli giriş (`read -rsp`) kullanın:
+
+> [!TIP]
+> Docker Hub parolanız yerine **Account Settings -> Security -> Personal Access Tokens (PAT)** bölümünden salt okuma (`Read-only`) yetkili bir PAT oluşturup kullanmanız en iyi güvenlik uygulamasıdır.
 
 ```bash
+read -rsp "Docker Hub PAT / Parola: " DOCKERHUB_TOKEN; echo
+
 kubectl create secret docker-registry dockerhub-cred \
   --docker-server=https://index.docker.io/v1/ \
-  --docker-username=hbayraktar \
-  --docker-password=dckr_pat_5w0ubBN7WzUYxn2PNtlQEFvw2Ss \
+  --docker-username="${DOCKERHUB_USER}" \
+  --docker-password="${DOCKERHUB_TOKEN}" \
   -n beginner-capstone
 ```
 
@@ -166,9 +185,21 @@ Manifesti uygulayın:
 kubectl apply -f starter/configmap.yaml -n beginner-capstone
 ```
 
-### Adım 3.2: Secret Manifestini İnceleme ve Uygulama
+### Adım 3.2: Secret Manifestini (Base64) İnceleme ve Uygulama
 
-`starter/secret.yaml` dosyasını inceleyin. Veritabanı `root` ve kullanıcı parolaları burada tanımlanmıştır:
+Kubernetes'te hassas veriler `Secret` kaynakları ile yönetilir. Manifest dosyalarında düz metin (`stringData`) kullanmak yerine değerleri **Base64** formatında kodlayarak `data` alanına yazmak standart Kubernetes deklaratif yaklaşımıdır.
+
+> [!NOTE]
+> **Base64 Güvenlik Hatırlatması:** Base64 bir **şifreleme (encryption)** değil, verileri güvenle taşımak için bir **kodlama (encoding)** formatıdır. YAML çıktısına erişen herhangi biri bu değeri decode edebilir. Prodüksiyon ortamlarında verilerin diske şifreli yazılması (Encryption at Rest) ve HashiCorp Vault, Sealed Secrets veya External Secrets Operator gibi araçlar tercih edilir.
+
+Değerlerin Base64 karşılıkları şu şekilde üretilmiştir:
+```bash
+echo -n "RootPassword123!" | base64   # Um9vdFBhc3N3b3JkMTIzIQ==
+echo -n "UserPassword123!" | base64   # VXNlclBhc3N3b3JkMTIzIQ==
+echo -n "devopsuser" | base64         # ZGV2b3BzdXNlcg==
+```
+
+`starter/secret.yaml` dosyasını inceleyin:
 
 ```yaml
 apiVersion: v1
@@ -178,10 +209,10 @@ metadata:
   labels:
     app.kubernetes.io/part-of: capstone-project
 type: Opaque
-stringData:
-  MYSQL_ROOT_PASSWORD: "RootPassword123!"
-  MYSQL_PASSWORD: "UserPassword123!"
-  MYSQL_USER: "devopsuser"
+data:
+  MYSQL_ROOT_PASSWORD: Um9vdFBhc3N3b3JkMTIzIQ==
+  MYSQL_PASSWORD: VXNlclBhc3N3b3JkMTIzIQ==
+  MYSQL_USER: ZGV2b3BzdXNlcg==
 ```
 
 Manifesti uygulayın:
@@ -190,11 +221,13 @@ Manifesti uygulayın:
 kubectl apply -f starter/secret.yaml -n beginner-capstone
 ```
 
-Oluşturulan konfigürasyonları teyit edin:
+Oluşturulan Secret içindeki Base64 veriyi geri çözerek doğrulayın:
 
 ```bash
-kubectl get configmap,secret -n beginner-capstone
+kubectl get secret db-secret -n beginner-capstone -o jsonpath='{.data.MYSQL_ROOT_PASSWORD}' | base64 --decode; echo
 ```
+
+**Beklenen sonuç:** `RootPassword123!`
 
 ---
 
@@ -202,7 +235,7 @@ kubectl get configmap,secret -n beginner-capstone
 
 Veritabanları durum bilgisi (state) tuttuğu için rastgele Pod'lar yerine kararlı kimliklere (`mysql-0`) ve her replika için bağımsız bir kalıcı diske (`volumeClaimTemplates`) ihtiyaç duyar.
 
-`starter/mysql-statefulset.yaml` dosyasını inceleyin:
+`starter/mysql-statefulset.yaml` dosyasını inceleyin. Parolanın `readinessProbe` içine açık metin yazılması yerine ortam değişkeninden dinamik okunması ve kaynak limitleri (`resources`) tanımlanmıştır:
 
 ```yaml
 apiVersion: v1
@@ -211,6 +244,7 @@ metadata:
   name: mysql-service
   labels:
     app: mysql
+    app.kubernetes.io/part-of: capstone-project
 spec:
   ports:
   - port: 3306
@@ -223,6 +257,9 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
+  labels:
+    app: mysql
+    app.kubernetes.io/part-of: capstone-project
 spec:
   serviceName: mysql-service
   replicas: 1
@@ -240,6 +277,13 @@ spec:
         ports:
         - containerPort: 3306
           name: mysql
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
         env:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
@@ -253,7 +297,10 @@ spec:
               key: DB_NAME
         readinessProbe:
           exec:
-            command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-pRootPassword123!"]
+            command:
+            - sh
+            - -c
+            - 'mysqladmin ping -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD"'
           initialDelaySeconds: 10
           periodSeconds: 3
           timeoutSeconds: 2
@@ -292,6 +339,9 @@ kubectl get pvc -n beginner-capstone
 
 ## 5. Web Katmanı ve Dış Erişim: Deployment ve NodePort Service
 
+> [!NOTE]
+> **Mimari Not:** Web uygulaması mikroservis ön yüzünü temsil eder ve `app-config` üzerinden DB bağlantı bilgilerini ortam değişkeni olarak alır. Bu temel projede web container'ı statik bir karşılama arayüzü sunmaktadır; veritabanı okuma/yazma testleri Adım 6'da doğrudan MySQL pod'u üzerinden yapılacaktır.
+
 ### Adım 5.1: Web Deployment Manifestini İnceleme
 
 `starter/web-deployment.yaml` manifestinde 2 replika tanımlıdır. Private imajı çekmek için `imagePullSecrets: [name: dockerhub-cred]` ve ortam ayarlarını aktarmak için `envFrom` tanımlanmıştır:
@@ -303,6 +353,7 @@ metadata:
   name: web-app
   labels:
     app: web-app
+    app.kubernetes.io/part-of: capstone-project
 spec:
   replicas: 2
   selector:
@@ -317,9 +368,16 @@ spec:
       - name: dockerhub-cred
       containers:
       - name: web
-        image: hbayraktar/devops-app:nginx-1.0
+        image: DOCKERHUB_USER/devops-app:nginx-1.0
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         envFrom:
         - configMapRef:
             name: app-config
@@ -345,10 +403,12 @@ spec:
     nodePort: 30088
 ```
 
-Manifestleri uygulayın:
+### Adım 5.3: Deployment ve Service Manifestlerini Uygulama
+
+Manifest içerisindeki `DOCKERHUB_USER` yer tutucusunu ortam değişkeninizle değiştirerek cluster'a uygulayın:
 
 ```bash
-kubectl apply -f starter/web-deployment.yaml -n beginner-capstone
+sed "s|DOCKERHUB_USER|${DOCKERHUB_USER}|g" starter/web-deployment.yaml | kubectl apply -f - -n beginner-capstone
 kubectl apply -f starter/web-service.yaml -n beginner-capstone
 kubectl rollout status deployment/web-app -n beginner-capstone --timeout=90s
 ```
@@ -359,9 +419,9 @@ Pod'ların çalıştığını kontrol edin:
 kubectl get pods -n beginner-capstone -l app=web-app
 ```
 
-**Beklenen sonuç:** Her iki web pod'u da `Running (1/1)` durumundadır.
+**Beklenen sonuç:** Her iki web pod'u da private imajı başarıyla çekerek `Running (1/1)` durumuna gelmiştir.
 
-### Adım 5.3: Web Uygulamasına Dışarıdan Erişme (NodePort 30088)
+### Adım 5.4: Web Uygulamasına Dışarıdan Erişme (NodePort 30088)
 
 Host terminalinden doğrudan NodePort portuna istek gönderin:
 
@@ -375,22 +435,7 @@ Web sayfasının içeriğini görüntüleyin:
 curl -s http://127.0.0.1:30088
 ```
 
-**Beklenen sonuç:**
-```html
-<!doctype html>
-<html lang="tr">
-  <head>
-    <meta charset="utf-8">
-    <title>Docker Hub Access Lab</title>
-  </head>
-  <body>
-    <h1>Docker Hub access lab</h1>
-    <p>Public ve private image yayını doğrulandı.</p>
-  </body>
-</html>
-```
-
-Tarayıcınızdan `http://<SANAL_MAKİNE_IP>:30088` adresine giderek arayüzü görsel olarak da açabilirsiniz!
+Tarayıcınızdan `http://localhost:30088` (veya `http://<SANAL_MAKİNE_IP>:30088`) adresine giderek arayüzü görsel olarak da açabilirsiniz!
 
 ---
 
@@ -400,10 +445,16 @@ Uygulamamız çalışıyor, peki veritabanı podu çökerse veriler korunacak m�
 
 ### Adım 6.1: Veritabanına Veri Yazma
 
+Öncelikle MySQL root parolasını dinamik olarak Secret nesnesinden okuyalım ve güvenli bir değişken olarak tutalım:
+
+```bash
+DB_PASS=$(kubectl get secret db-secret -n beginner-capstone -o jsonpath='{.data.MYSQL_ROOT_PASSWORD}' | base64 --decode)
+```
+
 MySQL içine bağlanarak bir tablo oluşturalım ve iki müşteri kaydı ekleyelim:
 
 ```bash
-kubectl exec -n beginner-capstone mysql-0 -- mysql -h 127.0.0.1 -u root -pRootPassword123! devopsdb -e "
+kubectl exec -n beginner-capstone mysql-0 -- mysql -h 127.0.0.1 -u root -p"${DB_PASS}" devopsdb -e "
 CREATE TABLE musteri_kayitlari (id INT AUTO_INCREMENT PRIMARY KEY, ad VARCHAR(100), sirket VARCHAR(100));
 INSERT INTO musteri_kayitlari (ad, sirket) VALUES ('Ali Can', 'IBB'), ('Fatma Demir', 'Tech Istanbul');
 "
@@ -412,7 +463,7 @@ INSERT INTO musteri_kayitlari (ad, sirket) VALUES ('Ali Can', 'IBB'), ('Fatma De
 Eklenen veriyi okuyun:
 
 ```bash
-kubectl exec -n beginner-capstone mysql-0 -- mysql -h 127.0.0.1 -u root -pRootPassword123! devopsdb -e "SELECT * FROM musteri_kayitlari;"
+kubectl exec -n beginner-capstone mysql-0 -- mysql -h 127.0.0.1 -u root -p"${DB_PASS}" devopsdb -e "SELECT * FROM musteri_kayitlari;"
 ```
 
 ### Adım 6.2: Pod'u Silerek Felaket Testi Yapma
@@ -434,7 +485,7 @@ kubectl wait --for=condition=Ready pod/mysql-0 -n beginner-capstone --timeout=12
 Yeni doğan `mysql-0` pod'u eski PVC'yi (`mysql-data-mysql-0`) otomatik olarak yeniden bağlamıştır. Kayıtları tekrar sorgulayın:
 
 ```bash
-kubectl exec -n beginner-capstone mysql-0 -- mysql -h 127.0.0.1 -u root -pRootPassword123! devopsdb -e "SELECT * FROM musteri_kayitlari;"
+kubectl exec -n beginner-capstone mysql-0 -- mysql -h 127.0.0.1 -u root -p"${DB_PASS}" devopsdb -e "SELECT * FROM musteri_kayitlari;"
 ```
 
 **Beklenen sonuç:**
@@ -468,7 +519,7 @@ Tebrikler! Beginner seviyesinin tüm bileşenlerini uçtan uca tek bir üretim m
 |---|---|---|
 | **Kimlik Doğrulama** | `Secret (docker-registry)` | Kurumsal özel imaj deposundan (Docker Hub / Harbor / ECR / GCR) güvenli imaj çekme |
 | **Konfigürasyon** | `ConfigMap` | Ortam ayarlarının (Environment, DB Host) koddan bağımsız yönetilmesi |
-| **Güvenlik** | `Secret (Opaque)` | Hassas şifrelerin ve token'ların güvenli saklanması |
+| **Güvenlik** | `Secret (Opaque - Base64)` | Hassas şifrelerin ve token'ların güvenli saklanması |
 | **Ön Yüz (Web)** | `Deployment (Replicas: 2)` | Kesintisiz çalışan, ölçeklenebilir ve kendini onaran web uygulaması |
 | **Dış Ağ Erişimi** | `Service (NodePort: 30088)` | Dış dünyadan tarayıcı veya curl ile web uygulamasına erişim |
 | **Arka Yüz (Veritabanı)** | `StatefulSet & Headless Service` | Kararlı DNS adı (`mysql-service:3306`) ile çalışan ilişkisel veritabanı |

@@ -19,9 +19,16 @@ spec:
       - name: dockerhub-cred
       containers:
       - name: web
-        image: hbayraktar/devops-app:nginx-1.0
+        image: DOCKERHUB_USER/devops-app:nginx-1.0
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         envFrom:
         - configMapRef:
             name: app-config
