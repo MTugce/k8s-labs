@@ -7,8 +7,9 @@ Stateless (durumsuz) web uygulamaları için Deployment mükemmel bir çözümd�
 Bu laboratuvarda:
 1. Veritabanlarının neden Deployment yerine **StatefulSet** ile çalıştırıldığını,
 2. **Headless Service (`clusterIP: None`)** ile her bir Pod kopyasına nasıl doğrudan DNS adı atandığını,
-3. **`volumeClaimTemplates`** mekanizması ile her Pod için otomatik bağımsız PVC üretimini,
-4. Pod silinse dahi yeni oluşturulan Pod'un aynı ismi alarak **aynı diski ve veriyi** koruduğunu adım adım öğreneceksiniz.
+3. Hassas veritabanı parolasının **Secret** nesnesinde Base64 olarak saklanıp Pod'a ve probe kontrolüne nasıl güvenle aktarıldığını,
+4. **`volumeClaimTemplates`** mekanizması ile her Pod için otomatik bağımsız PVC üretimini,
+5. Pod silinse dahi yeni oluşturulan Pod'un aynı ismi alarak **aynı diski ve veriyi** koruduğunu adım adım öğreneceksiniz.
 
 ---
 
@@ -18,6 +19,7 @@ Bu laboratuvarda:
 |---|---|
 | **StatefulSet** | Durum bilgisi saklayan uygulamalar için tasarlanmış controller nesnesidir. Pod'lara `isim-0`, `isim-1` şeklinde sıralı ve kalıcı kimlik verir. |
 | **Headless Service** | `clusterIP: None` olarak tanımlanan servistir. Ortak bir sanal IP arkasında yük dağıtmak yerine, her Pod için doğrudan tekil bir DNS A kaydı (`mysql-0.mysql-headless`) üretir. |
+| **Secret (Opaque)** | Veritabanı parolasını Base64 formatında tutar ve Pod içine ortam değişkeni (`secretKeyRef`) olarak aktarır. |
 | **volumeClaimTemplates** | StatefulSet içindeki her Pod replikası için otomatik olarak `disk-adi-pod-adi` formatında bağımsız ve kalıcı bir PVC oluşturan şablondur. |
 | **Sıralı Dağıtım (Ordered Deployment)** | StatefulSet Pod'ları rastgele aynı anda değil; sırayla (0'dan başlayarak) ayağa kaldırır ve bir önceki Pod tamamen hazır (`Ready`) olmadan sonrakini başlatmaz. |
 
@@ -55,7 +57,32 @@ Deployment nesnesi web sunucuları gibi birbiriyle tıpatıp aynı ve durumu olm
 
 ---
 
-## 3. Headless Service ve StatefulSet Manifestini İnceleme
+## 3. Konfigürasyon ve Manifestleri İnceleme
+
+### Adım 3.1: Veritabanı Parolası Secret Manifesti
+
+Veritabanı root parolasını manifest dosyalarında açık metin yazmak yerine deklaratif olarak bir `Secret` nesnesinde tutuyoruz.
+
+Parolanın Base64 karşılığı:
+```bash
+echo -n "RootSecretPassword123" | base64   # Um9vdFNlY3JldFBhc3N3b3JkMTIz
+```
+
+`starter/secret.yaml` manifestini inceleyin:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  labels:
+    app: mysql
+type: Opaque
+data:
+  MYSQL_ROOT_PASSWORD: Um9vdFNlY3JldFBhc3N3b3JkMTIz
+```
+
+### Adım 3.2: Headless Service ve StatefulSet Manifesti
 
 `starter/mysql-statefulset.yaml` manifestini inceleyin:
 
@@ -92,9 +119,19 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "RootSecretPassword123"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQL_DATABASE
               value: "devops_db"
           ports:
@@ -102,8 +139,11 @@ spec:
               containerPort: 3306
           readinessProbe:
             exec:
-              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-pRootSecretPassword123"]
-            initialDelaySeconds: 5
+              command:
+                - sh
+                - -c
+                - 'mysqladmin ping -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD"'
+            initialDelaySeconds: 10
             periodSeconds: 2
             timeoutSeconds: 2
           volumeMounts:
@@ -123,16 +163,18 @@ spec:
 Manifestteki kritik detaylar:
 - `clusterIP: None`: Servisin bir ClusterIP almasını engeller, doğrudan Headless Service moduna geçirir.
 - `serviceName: mysql-headless`: StatefulSet'i bu servise bağlar; DNS kayıtlarının oluşturulmasını sağlar.
-- `volumeClaimTemplates`: Her replika için 1Gi boyutunda bağımsız disk üretilmesini talimatlandırır.
-- `readinessProbe`: MySQL sunucusu gerçekten istemci kabul etmeye hazır olana kadar Pod'u `Ready` yapmaz.
+- `secretKeyRef`: Parolayı `mysql-secret` nesnesinden güvenle okur.
+- `readinessProbe`: Parolayı doğrudan ortam değişkeninden okuyarak (`$MYSQL_ROOT_PASSWORD`) sunucu hazır olana kadar Pod'u `Ready` yapmaz.
+- `volumeClaimTemplates`: Her replika için 1Gi boyutunda bağımsız disk üretilmesini sağlar.
 
 ---
 
-## 4. Manifesti Uygulama ve Sıralı Başlatmayı İzleme
+## 4. Manifestleri Uygulama ve Sıralı Başlatmayı İzleme
 
-Manifesti cluster'a uygulayın:
+Önce Secret, ardından StatefulSet manifestlerini cluster'a uygulayın:
 
 ```bash
+kubectl apply -f starter/secret.yaml -n beginner-statefulset
 kubectl apply -f starter/mysql-statefulset.yaml -n beginner-statefulset
 ```
 
@@ -208,10 +250,16 @@ kubectl exec -it -n beginner-statefulset mysql-1 -- getent hosts mysql-0.mysql-h
 
 ## 7. Canlı Veri Yazma (MySQL Tablo ve Veri Ekleme)
 
+Parolayı Secret'tan güvenle çekerek bir değişkene atayalım:
+
+```bash
+DB_PASS=$(kubectl get secret mysql-secret -n beginner-statefulset -o jsonpath='{.data.MYSQL_ROOT_PASSWORD}' | base64 --decode)
+```
+
 `mysql-0` veritabanına bağlanıp `devops_db` içinde bir tablo oluşturalım ve veri ekleyelim:
 
 ```bash
-kubectl exec -n beginner-statefulset mysql-0 -- mysql -h 127.0.0.1 -u root -pRootSecretPassword123 devops_db -e "
+kubectl exec -n beginner-statefulset mysql-0 -- mysql -h 127.0.0.1 -u root -p"${DB_PASS}" devops_db -e "
 CREATE TABLE ogrenciler (id INT AUTO_INCREMENT PRIMARY KEY, ad VARCHAR(50), notu INT);
 INSERT INTO ogrenciler (ad, notu) VALUES ('Ahmet', 95), ('Zeynep', 100);
 "
@@ -220,7 +268,7 @@ INSERT INTO ogrenciler (ad, notu) VALUES ('Ahmet', 95), ('Zeynep', 100);
 Eklenen veriyi okuyun:
 
 ```bash
-kubectl exec -n beginner-statefulset mysql-0 -- mysql -h 127.0.0.1 -u root -pRootSecretPassword123 devops_db -e "SELECT * FROM ogrenciler;"
+kubectl exec -n beginner-statefulset mysql-0 -- mysql -h 127.0.0.1 -u root -p"${DB_PASS}" devops_db -e "SELECT * FROM ogrenciler;"
 ```
 
 **Beklenen sonuç:**
@@ -240,7 +288,7 @@ id	ad	notu
 kubectl delete pod mysql-0 -n beginner-statefulset
 ```
 
-StatefulSet'in anında yeni bir `mysql-0` üretmesini izleyin:
+StatefulSet'in anında yeni bir `mysql-0` üretmesini bekleyin:
 
 ```bash
 kubectl wait --for=condition=Ready pod/mysql-0 -n beginner-statefulset --timeout=120s
@@ -249,7 +297,7 @@ kubectl wait --for=condition=Ready pod/mysql-0 -n beginner-statefulset --timeout
 Yeni oluşturulan `mysql-0` içindeki verileri tekrar sorgulayın:
 
 ```bash
-kubectl exec -n beginner-statefulset mysql-0 -- mysql -h 127.0.0.1 -u root -pRootSecretPassword123 devops_db -e "SELECT * FROM ogrenciler;"
+kubectl exec -n beginner-statefulset mysql-0 -- mysql -h 127.0.0.1 -u root -p"${DB_PASS}" devops_db -e "SELECT * FROM ogrenciler;"
 ```
 
 **Beklenen sonuç:**

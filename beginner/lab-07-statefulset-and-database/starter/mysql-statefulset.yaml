@@ -30,9 +30,19 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "RootSecretPassword123"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
             - name: MYSQL_DATABASE
               value: "devops_db"
           ports:
@@ -40,8 +50,11 @@ spec:
               containerPort: 3306
           readinessProbe:
             exec:
-              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-pRootSecretPassword123"]
-            initialDelaySeconds: 5
+              command:
+                - sh
+                - -c
+                - 'mysqladmin ping -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD"'
+            initialDelaySeconds: 10
             periodSeconds: 2
             timeoutSeconds: 2
           volumeMounts:

@@ -14,7 +14,7 @@ echo -e "${BLUE}====================================================${NC}"
 # 1. Temel Sistem Paketleri
 echo -e "\n${YELLOW}>>> [1/6] Temel paketler kontrol ediliyor...${NC}"
 sudo apt-get update -y -q
-sudo apt-get install -y -q apt-transport-https ca-certificates curl gnupg lsb-release git conntrack jq
+sudo apt-get install -y -q apt-transport-https ca-certificates curl gnupg lsb-release git conntrack jq nfs-common
 
 # 2. Docker Kurulumu
 echo -e "\n${YELLOW}>>> [2/6] Docker kontrol ediliyor...${NC}"

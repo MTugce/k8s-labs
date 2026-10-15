@@ -12,6 +12,7 @@ NFS üzerinde `ReadWriteMany` (RWX) dinamik depolama ile StatefulSet'in sıralı
 
 - **StatefulSet:** Sabit/sıralı Pod adı (`mysql-0`) ve her Pod için otomatik bağımsız kalıcı disk sağlar.
 - **Headless Service (`clusterIP: None`):** StatefulSet Pod'larına tek tek doğrudan DNS adı verir.
+- **Secret (Opaque):** MySQL root parolasını güvenli Base64 formatında tutar.
 - **StorageClass & RWX PVC:** Birden fazla Pod'un aynı anda yazabildiği NFS depolama alanıdır.
 
 ## Çalışma dizini
@@ -22,7 +23,24 @@ cd ~/k8s-labs/advanced/lab-02-nfs-and-statefulset
 
 ---
 
-## 1. NFS Sunucusunu Başlat
+## 1. Kind Node'larına NFS İstemcisi (`nfs-common`) Kurulumu
+
+Kind cluster node'ları Docker container'ı olarak çalıştığından, varsayılan node imajlarında `/sbin/mount.nfs` programı bulunmaz. Kubelet'in NFS depolama birimlerini (`PV`/`PVC`) Pod'lara bağlayabilmesi (mount) için tüm Kind node'ları içerisine `nfs-common` paketini kurun:
+
+```bash
+for node in $(kubectl get nodes -o jsonpath='{.items[*].metadata.name}'); do
+  echo ">>> $node üzerine nfs-common kuruluyor..."
+  docker exec -i "$node" apt-get update -y -q
+  docker exec -i "$node" apt-get install -y -q nfs-common
+done
+```
+
+> [!NOTE]
+> Bu adım tamamlanmadan NFS PVC'si kullanan Pod'lar başlatılırsa, kubelet `/sbin/mount.nfs helper program missing` hatası verir ve Pod'lar `ContainerCreating` durumunda kilitlenir.
+
+---
+
+## 2. NFS Sunucusunu Başlat
 
 Aşağıdaki manifest (`starter/nfs-server.yaml`), laboratuvar ortamında paylaşımlı disk alanı sunacak hafif bir NFS sunucusu ve Service tanımlar:
 
@@ -89,7 +107,7 @@ Beklenen sonuç: `nfs-server` Pod'u `Running` ve Service `ClusterIP` ile listele
 
 ---
 
-## 2. NFS Dinamik Depolama Sınıfını (StorageClass) Kur
+## 3. NFS Dinamik Depolama Sınıfını (StorageClass) Kur
 
 NFS sunucusunun IP adresini alıp Helm provisioner'ı kurarak PVC'lerin otomatik disk açabilmesini sağlayacağız:
 
@@ -120,7 +138,7 @@ Beklenen sonuç: `lab-nfs` StorageClass'ı listelenir.
 
 ---
 
-## 3. Paylaşımlı Depolamayı (RWX) İki Pod ile Test Et
+## 4. Paylaşımlı Depolamayı (RWX) İki Pod ile Test Et
 
 Aşağıdaki manifest (`starter/rwx-writers.yaml`), `ReadWriteMany` erişim moduna sahip tek bir PVC (`shared-rwx`) oluşturur ve bu diski aynı anda iki farklı Pod'a (`writer-a` ve `writer-b`) bağlar:
 
@@ -193,23 +211,39 @@ Beklenen sonuç: Çıktıda hem `writer-a` hem de `writer-b` satırı görünür
 
 ---
 
-## 4. MySQL Parolasını Secret Olarak Oluştur
+## 5. MySQL Parolasını Secret Olarak Oluştur
 
-Veritabanı için ayrı bir namespace açıp parolasını Secret olarak kaydedelim:
+Veritabanı için ayrı bir namespace açıp parolasını Base64 kodlu Secret olarak tanımlayalım.
+
+Parolanın Base64 karşılığı:
+```bash
+echo -n "MyRootSecretPass123" | base64   # TXlSb290U2VjcmV0UGFzczEyMw==
+```
+
+`starter/mysql-secret.yaml` manifestini inceleyin:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: stateful-lab
+type: Opaque
+data:
+  MYSQL_ROOT_PASSWORD: TXlSb290U2VjcmV0UGFzczEyMw==
+```
+
+Namespace'i ve Secret manifestini uygulayın:
 
 ```bash
 kubectl create namespace stateful-lab --dry-run=client -o yaml | kubectl apply -f -
-export MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-MyRootSecretPass123}"
-
-kubectl -n stateful-lab create secret generic mysql-secret \
-  --from-literal=MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD"
-
+kubectl apply -f starter/mysql-secret.yaml
 kubectl -n stateful-lab get secret mysql-secret
 ```
 
 ---
 
-## 5. MySQL StatefulSet'i İncele ve Başlat
+## 6. MySQL StatefulSet'i İncele ve Başlat
 
 StatefulSet nesnesi, Deployment'tan farklı olarak Pod'lara rastgele hash değil sıralı ve sabit isim (`mysql-0`) verir. `volumeClaimTemplates` alanı ise her replica için otomatik olarak ayrı ve kalıcı bir PVC üretir:
 
@@ -246,6 +280,13 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.4
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
@@ -260,7 +301,7 @@ spec:
               command:
                 - sh
                 - -c
-                - "mysql -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1;'"
+                - 'mysqladmin ping -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD"'
             initialDelaySeconds: 15
             periodSeconds: 2
   volumeClaimTemplates:              # Her replica için otomatik PVC açar
@@ -288,14 +329,22 @@ Beklenen sonuç:
 - PVC adı otomatik olarak `mysql-data-mysql-0` olarak açılır ve `lab-nfs` StorageClass ile `Bound` duruma geçer.
 - `mysql-headless` servisi Pod'a küme içinde `mysql-0.mysql-headless.stateful-lab.svc.cluster.local` DNS adresi sağlar.
 
-## 6. StatefulSet kimliğini ve veriyi doğrula
+---
 
-MySQL Pod adını ve hostname bilgisini kontrol edin:
+## 7. StatefulSet Kimliğini ve Veriyi Doğrula
+
+Parolayı Secret'tan dinamik alarak değişkene atayın:
+
+```bash
+DB_PASS=$(kubectl get secret mysql-secret -n stateful-lab -o jsonpath='{.data.MYSQL_ROOT_PASSWORD}' | base64 --decode)
+```
+
+MySQL Pod adını ve hostname bilgisini kontrol edin, ardından test veritabanı oluşturun:
 
 ```bash
 kubectl exec -n stateful-lab mysql-0 -- uname -n
 kubectl exec -n stateful-lab mysql-0 -- \
-  mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e 'CREATE DATABASE IF NOT EXISTS labdb; SHOW DATABASES;'
+  mysql -uroot -p"${DB_PASS}" -e 'CREATE DATABASE IF NOT EXISTS labdb; SHOW DATABASES;'
 ```
 
 Pod'u silin ve aynı kimlikle yeniden oluşmasını bekleyin:
@@ -305,17 +354,22 @@ kubectl delete pod mysql-0 -n stateful-lab
 kubectl wait -n stateful-lab --for=condition=Ready pod/mysql-0 --timeout=180s
 sleep 5
 kubectl exec -n stateful-lab mysql-0 -- \
-  mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e 'SHOW DATABASES;'
+  mysql -uroot -p"${DB_PASS}" -e 'SHOW DATABASES;'
 ```
 
 Beklenen sonuç: Pod yeniden `mysql-0` adıyla gelir ve `labdb` veritabanı kalıcı diskte korunur.
 
-## Başarı kriterleri
+---
 
+## Başarı Kriterleri
+
+- Kind node'larında `nfs-common` istemcisinin çalıştığını doğruladınız.
 - Aynı RWX PVC'ye iki Pod'dan erişebildiniz.
 - NFS provisioner ile dinamik PVC oluşturdunuz.
 - StatefulSet Pod'unun sabit kimliğini ve headless DNS adını doğruladınız.
 - Pod silindikten sonra MySQL verisinin korunduğunu gördünüz.
+
+---
 
 ## Temizlik
 

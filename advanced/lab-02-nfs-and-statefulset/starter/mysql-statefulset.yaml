@@ -30,6 +30,13 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.4
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           env:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
@@ -44,7 +51,7 @@ spec:
               command:
                 - sh
                 - -c
-                - "mysql -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1;'"
+                - 'mysqladmin ping -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD"'
             initialDelaySeconds: 15
             periodSeconds: 2
   volumeClaimTemplates:
